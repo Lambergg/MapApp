@@ -1,4 +1,4 @@
-from sqlalchemy import select
+from sqlalchemy import select, func
 
 from src.models import UsersOrm
 from src.repositories.users import UsersRepository
@@ -12,10 +12,15 @@ class AdminRepository(UsersRepository):
         self,
         limit,
         offset,
+        email,
     ) -> list[UserDTO]:
         query = select(UsersOrm)
 
-        # Пагинация
+        if email:
+            query = query.filter(
+                func.lower(UsersOrm.email).contains(email.strip().lower())
+            )
+
         query = query.limit(limit).offset(offset)
 
         # Логирование SQL (для отладки — раскомментировать при необходимости)

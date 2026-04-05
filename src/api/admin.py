@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Path, Body, status
+from fastapi import APIRouter, Path, Body, status, Query
 from fastapi_cache.decorator import cache
 
 from src.api.dependencies import DBDep, UserRoleDep, PaginationDep
@@ -23,12 +23,15 @@ async def get_users(
     db: DBDep,
     pagination: PaginationDep,
     role: UserRoleDep,
+    email: str | None = Query(None, description="Email пользователя"),
+
 ):
     if role != "admin":
         raise AdminOnlyAccessHTTPException
 
     return await AdminService(db).get_filtered_by_time(
         pagination,
+        email,
     )
 
 
