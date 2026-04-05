@@ -20,7 +20,6 @@ AsyncSessionLocal = async_session_maker
 async def seed_data():
     async with AsyncSessionLocal() as session:
         async with session.begin():
-
             await session.execute(text("DELETE FROM users"))
 
             users = [

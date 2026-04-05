@@ -9,7 +9,7 @@ class DBManager:
     async def __aenter__(self):
         self.session = self.session_factory()
 
-        #Инициализация репозиториев
+        # Инициализация репозиториев
         self.users = UsersRepository(self.session)
         self.admin = AdminRepository(self.session)
 

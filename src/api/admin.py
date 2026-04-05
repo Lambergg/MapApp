@@ -2,7 +2,11 @@ from fastapi import APIRouter, Path, Body, status
 from fastapi_cache.decorator import cache
 
 from src.api.dependencies import DBDep, UserRoleDep, PaginationDep
-from src.exceptions import AdminOnlyAccessHTTPException, ObjectNotFoundException, UserNotFoundHTTPException
+from src.exceptions import (
+    AdminOnlyAccessHTTPException,
+    ObjectNotFoundException,
+    UserNotFoundHTTPException,
+)
 from src.schemas.users import UserPutDTO
 from src.services.admin import AdminService
 
@@ -12,7 +16,7 @@ router = APIRouter(prefix="/admin", tags=["Администрирование"])
 @router.get(
     "/users",
     summary="Получение всех пользователей",
-    description="Получение списка всех пользователей. Требуются права администратора"
+    description="Получение списка всех пользователей. Требуются права администратора",
 )
 @cache(expire=10)
 async def get_users(
@@ -49,7 +53,7 @@ async def get_user(
 
 @router.put(
     "/change_role/{user_id}",
-    summary="Обновление роли пользователя",
+    summary="Обновление роли и статуса пользователя",
     description="Обновляем роль и статус аккаунта пользователю. Нужно обязательно передать ID, новую роль и статус аккаунта. Требуются права администратора",
     status_code=status.HTTP_200_OK,
 )

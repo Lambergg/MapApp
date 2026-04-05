@@ -1,9 +1,9 @@
 # ruff: noqa F401
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import String, Boolean, Integer
-#from typing import TYPE_CHECKING
+# from typing import TYPE_CHECKING
 
-#if TYPE_CHECKING:
+# if TYPE_CHECKING:
 #    from src.models.products import ProductsOrm
 
 from src.database import Base
@@ -20,5 +20,6 @@ class UsersOrm(Base):
     hashed_password: Mapped[str] = mapped_column(String(200))
     role: Mapped[str] = mapped_column(String(100), default="guest")
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+
 
 #    products: Mapped[list["ProductsOrm"]] = relationship("ProductsOrm", back_populates="seller")

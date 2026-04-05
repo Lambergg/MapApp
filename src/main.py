@@ -29,7 +29,7 @@ async def lifespan(app: FastAPI):
     await redis_manager.connect()
     await redis_manager_auth.connect()
     await redis_manager.ping()
-    FastAPICache.init(RedisBackend(redis_manager._redis), prefix='fastapi-cache')
+    FastAPICache.init(RedisBackend(redis_manager._redis), prefix="fastapi-cache")
     logging.info("FastApiCache инициирован")
     yield
     # При выключении/перезагрузке приложения
@@ -82,6 +82,7 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
         localized_msg = error_msg
 
     raise HTTPException(status_code=422, detail=localized_msg)
+
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)

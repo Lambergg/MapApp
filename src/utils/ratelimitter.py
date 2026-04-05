@@ -24,11 +24,11 @@ class RateLimiter:
             self._lua_sha = await redis_manager._redis.script_load(script)
 
     async def is_limited(
-            self,
-            ip_address: str,
-            endpoint: str,
-            max_requests: int,
-            window_seconds: int,
+        self,
+        ip_address: str,
+        endpoint: str,
+        max_requests: int,
+        window_seconds: int,
     ) -> bool:
         await self._load_script()
 
@@ -56,12 +56,12 @@ _rate_limiter = RateLimiter()
 
 
 def rate_limiter_factory(
-        endpoint: str,
-        max_requests: int,
-        window_seconds: int,
+    endpoint: str,
+    max_requests: int,
+    window_seconds: int,
 ):
     async def dependency(
-            request: Request,
+        request: Request,
     ):
         ip_address = request.client.host
 
@@ -75,10 +75,11 @@ def rate_limiter_factory(
         if limited:
             raise HTTPException(
                 status_code=status.HTTP_429_TOO_MANY_REQUESTS,
-                detail="Превышено количество запросов. Повторите позже"
+                detail="Превышено количество запросов. Повторите позже",
             )
 
     return dependency
+
 
 rate_limit_auth_refresh = rate_limiter_factory("/auth/refresh", 1, 3)
 rate_limit_auth_get_me = rate_limiter_factory("/auth/me", 1, 3)

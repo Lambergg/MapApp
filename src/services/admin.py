@@ -1,4 +1,8 @@
-from src.exceptions import UserIndexWrongHTTPException, ObjectNotFoundException, UserNotFoundHTTPException
+from src.exceptions import (
+    UserIndexWrongHTTPException,
+    ObjectNotFoundException,
+    UserNotFoundHTTPException,
+)
 from src.schemas.users import UserPutDTO
 from src.services.base import BaseService
 from src.utils.redis_utils import delete_refresh_token
@@ -20,7 +24,9 @@ class AdminService(BaseService):
             raise UserIndexWrongHTTPException
         return await self.db.users.get_one(id=user_id)
 
-    async def edit_user_role_status(self, user_id: int, data: UserPutDTO, exclude_unset: bool = False):
+    async def edit_user_role_status(
+        self, user_id: int, data: UserPutDTO, exclude_unset: bool = False
+    ):
         if user_id <= 0:
             raise UserIndexWrongHTTPException
         try:

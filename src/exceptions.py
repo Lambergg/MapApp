@@ -88,6 +88,7 @@ class AdminOnlyAccessHTTPException(MapAppHTTPException):
     status_code = 403
     detail = "Доступ только для администратора"
 
+
 class AdminOrManagerOnlyAccessHTTPException(MapAppHTTPException):
     status_code = 403
     detail = "Доступ только для администратора или менеджера"

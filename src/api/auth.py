@@ -23,7 +23,7 @@ async def register_user(
             "1": {
                 "summary": "Новый пользователь",
                 "value": {
-                    "name":"Игорь" ,
+                    "name": "Игорь",
                     "sname": "Котопес",
                     "age": 34,
                     "email": "koto-pes@mail.ru",
@@ -65,11 +65,7 @@ async def login_user(
     summary="Получение информации о пользователе",
     description="<h1>Для получения информации о пользователе он должен быть аутентифицирован</h1>",
 )
-async def get_me(
-    user_id: UserIdDep,
-    db: DBDep,
-    _: None = Depends(rate_limit_auth_get_me)
-):
+async def get_me(user_id: UserIdDep, db: DBDep, _: None = Depends(rate_limit_auth_get_me)):
     return await AuthService(db).get_me(user_id)
 
 
@@ -99,9 +95,6 @@ async def logout_user(
     description="Обновляет аксесс ключ на основе рефреша. При этом обновляется кука с аксесс токеном.",
 )
 async def refresh(
-        request: Request,
-        response: Response,
-        db: DBDep,
-        _: None = Depends(rate_limit_auth_refresh)
+    request: Request, response: Response, db: DBDep, _: None = Depends(rate_limit_auth_refresh)
 ):
     return await AuthService(db).refresh_tokens(request, response)

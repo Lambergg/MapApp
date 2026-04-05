@@ -9,9 +9,9 @@ class AdminRepository(UsersRepository):
     pass
 
     async def get_filtered_by_time(
-            self,
-            limit,
-            offset,
+        self,
+        limit,
+        offset,
     ) -> list[UserDTO]:
         query = select(UsersOrm)
 
