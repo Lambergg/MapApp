@@ -1,14 +1,15 @@
 from fastapi import APIRouter, Path, Body, status, Query
 from fastapi_cache.decorator import cache
 
-from src.api.dependencies import DBDep, UserRoleDep, PaginationDep
+from src.api.dependencies import DBDep, UserRoleDep, PaginationDep, UserIdDep
 from src.exceptions import (
     AdminOnlyAccessHTTPException,
     ObjectNotFoundException,
-    UserNotFoundHTTPException,
+    UserNotFoundHTTPException, UserIndexWrongHTTPException,
 )
 from src.schemas.users import UserPutDTO
 from src.services.admin import AdminService
+from src.utils.redis_utils import delete_refresh_token
 
 router = APIRouter(prefix="/admin", tags=["Администрирование"])
 
@@ -88,7 +89,7 @@ async def edit_user_role_status(
     description="Удалем выбранного пользователя: нужно отправить id пользователя. Требуются права администратора",
     status_code=status.HTTP_204_NO_CONTENT,
 )
-async def delete_hotel(
+async def delete_user(
     db: DBDep,
     role: UserRoleDep,
     user_id: int = Path(..., le=2147483647),
@@ -97,3 +98,25 @@ async def delete_hotel(
         raise AdminOnlyAccessHTTPException
     await AdminService(db).delete_user(user_id)
     return status.HTTP_204_NO_CONTENT
+
+
+@router.post(
+    "/delete_account/{user_id}",
+    summary="Мягкое удаление аккаунта",
+    description="<h1>Пользователь деактивируется (Баниться), происходит logout</h1>",
+    status_code=status.HTTP_200_OK,
+)
+async def delete_account(
+    db: DBDep,
+    user_id: int = Path(..., le=2147483647),
+):
+    if user_id <= 0:
+        raise UserIndexWrongHTTPException
+    try:
+        await db.users.get_one(id=user_id)
+    except ObjectNotFoundException:
+        raise UserNotFoundHTTPException
+    await AdminService(db).soft_delete_user(user_id)
+    await delete_refresh_token(user_id)
+    return {"message": "Аккаунт успешно деактивирован (Забанен)", "status": status.HTTP_200_OK}
+

@@ -79,6 +79,11 @@ class UserNotFoundHTTPException(MapAppHTTPException):
     detail = "Пользователь не существует"
 
 
+class UserBanExistsHTTPException(MapAppHTTPException):
+    status_code = 409
+    detail = "Пользователь с таким id уже заблокирован"
+
+
 class WrongPasswordHTTPException(MapAppHTTPException):
     status_code = 401
     detail = "Неверный пароль"

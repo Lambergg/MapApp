@@ -48,3 +48,6 @@ class AdminService(BaseService):
         await delete_refresh_token(user_id)
         await self.db.users.delete(id=user_id)
         await self.db.commit()
+
+    async def soft_delete_user(self, user_id: int):
+        await self.db.users.deactivate_user(user_id)

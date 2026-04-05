@@ -1,6 +1,7 @@
-from sqlalchemy import select
+from sqlalchemy import select, update
 from pydantic import EmailStr
 
+from src.exceptions import UserBanExistsHTTPException
 from src.repositories.base import BaseRepository
 from src.models.users import UsersOrm
 from src.repositories.mappers.mappers import UserDataMapper
@@ -22,3 +23,16 @@ class UsersRepository(BaseRepository):
             return None
 
         return UserWithHashedPassword.model_validate(model)
+
+    async def deactivate_user(self, user_id: int):
+        query = select(self.model).filter_by(id=user_id)
+        result = await self.session.execute(query)
+        user = result.scalars().one_or_none()
+
+        if not user.is_active:
+            raise UserBanExistsHTTPException
+
+        stmt = update(self.model).where(self.model.id == user_id).values(is_active=False)
+        await self.session.execute(stmt)
+        await self.session.commit()
+
