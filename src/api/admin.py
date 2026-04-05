@@ -12,7 +12,7 @@ router = APIRouter(prefix="/admin", tags=["Администрирование"])
 @router.get(
     "/users",
     summary="Получение всех пользователей",
-    description="Получение списка всех пользователей"
+    description="Получение списка всех пользователей. Требуются права администратора"
 )
 @cache(expire=10)
 async def get_users(
@@ -31,7 +31,7 @@ async def get_users(
 @router.get(
     "/users/{user_id}",
     summary="Получение конкретного пользователя",
-    description="Тут мы получаем конкретного пользователя, нужно указать id",
+    description="Тут мы получаем конкретного пользователя, нужно указать id. Требуются права администратора",
 )
 @cache(expire=10)
 async def get_user(
@@ -50,7 +50,7 @@ async def get_user(
 @router.put(
     "/change_role/{user_id}",
     summary="Обновление роли пользователя",
-    description="Обновляем роль пользователю. Нужно передать ID и новую роль.",
+    description="Обновляем роль и статус аккаунта пользователю. Нужно обязательно передать ID, новую роль и статус аккаунта. Требуются права администратора",
     status_code=status.HTTP_200_OK,
 )
 async def edit_user_role_status(
@@ -60,9 +60,9 @@ async def edit_user_role_status(
     user_data: UserPutDTO = Body(
         openapi_examples={
             "1": {
-                "summary": "Пример роли продавца",
+                "summary": "Пример роли и статуса аккаунта пользователя",
                 "value": {
-                    "role": "saller",
+                    "role": "user",
                     "is_active": True,
                 },
             },
@@ -78,7 +78,7 @@ async def edit_user_role_status(
 @router.delete(
     "/delete_user/{user_id}",
     summary="Удаление выбранного пользователя",
-    description="Удалем выбранного пользователя: нужно отправить id пользователя.",
+    description="Удалем выбранного пользователя: нужно отправить id пользователя. Требуются права администратора",
     status_code=status.HTTP_204_NO_CONTENT,
 )
 async def delete_hotel(

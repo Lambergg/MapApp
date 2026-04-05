@@ -5,6 +5,7 @@ from src.exceptions import UserDeleteTokenHTTPException
 from src.schemas.users import UserRequestAddDTO, UserLoginDTO
 from src.services.auth import AuthService
 from src.utils.ratelimitter import rate_limit_auth_refresh, rate_limit_auth_get_me
+from src.utils.redis_utils import delete_refresh_token
 
 router = APIRouter(prefix="/auth", tags=["Авторизация и аутентификация"])
 
@@ -12,7 +13,7 @@ router = APIRouter(prefix="/auth", tags=["Авторизация и аутент
 @router.post(
     "/register",
     summary="Регистрация нового пользователя",
-    description="<h1>Для регистрации нового пользователя нужно передать email и пароль</h1>",
+    description="<h1>Для регистрации нового пользователя нужно передать имя, фамилию и возраст + email и пароль</h1>",
     status_code=status.HTTP_201_CREATED,
 )
 async def register_user(
@@ -22,7 +23,7 @@ async def register_user(
             "1": {
                 "summary": "Новый пользователь",
                 "value": {
-                    "name":"Игорь",
+                    "name":"Игорь" ,
                     "sname": "Котопес",
                     "age": 34,
                     "email": "koto-pes@mail.ru",
@@ -75,10 +76,11 @@ async def get_me(
 @router.post(
     "/logout",
     summary="Выход пользователя",
-    description="<h1>Выход пользователя и удаление токена из cookie</h1>",
+    description="<h1>Выход пользователя и удаление токена из cookie и Redis</h1>",
     status_code=status.HTTP_200_OK,
 )
 async def logout_user(
+    user_id: UserIdDep,
     response: Response,
     request: Request,
 ):
@@ -87,13 +89,14 @@ async def logout_user(
         raise UserDeleteTokenHTTPException
     response.delete_cookie("access_token")
     response.delete_cookie("refresh_token")
+    await delete_refresh_token(user_id)
     return status.HTTP_200_OK
 
 
 @router.post(
     "/refresh",
     summary="Обноввление пары access/refresh токенов",
-    description="Обновляет аксессный ключ на основе рефреша. При этом обновляется кука с акцессным токном.",
+    description="Обновляет аксесс ключ на основе рефреша. При этом обновляется кука с аксесс токеном.",
 )
 async def refresh(
         request: Request,

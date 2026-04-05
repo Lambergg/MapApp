@@ -1,47 +1,47 @@
 from fastapi import HTTPException
 
 
-class TestException(Exception):
+class MapAppException(Exception):
     detail = "Неожиданная ошибка"
 
     def __init__(self, *args, **kwargs):
         super().__init__(self.detail, *args, **kwargs)
 
 
-class ObjectNotFoundException(TestException):
+class ObjectNotFoundException(MapAppException):
     detail = "Объект не найден"
 
 
-class ToShortPasswordValueErrorException(TestException):
+class ToShortPasswordValueErrorException(MapAppException):
     detail = "Пароль должен быть не менее восьми символов"
 
 
-class ObjectAlreadyExistsException(TestException):
+class ObjectAlreadyExistsException(MapAppException):
     detail = "Похожий объект уже существует"
 
 
-class UserDeleteTokenException(TestException):
+class UserDeleteTokenException(MapAppException):
     detail = "Вы уже вышли из аккаунта"
 
 
-class UserAllReadyExistsException(TestException):
+class UserAllReadyExistsException(MapAppException):
     detail = "Пользователь с таким email уже зарегистрирован"
 
 
-class UserNotRegisterException(TestException):
+class UserNotRegisterException(MapAppException):
     detail = "Пользователь с таким email не зарегистрирован"
 
 
-class WrongPasswordException(TestException):
+class WrongPasswordException(MapAppException):
     detail = "Неверный пароль"
 
 
-class AdminOnlyAccessException(TestException):
+class AdminOnlyAccessException(MapAppException):
     detail = "Доступ только для администратора"
 
 
 # === HTTP-исключения (для ответа клиенту) ===
-class TestHTTPException(HTTPException):
+class MapAppHTTPException(HTTPException):
     status_code = 500
     detail = None
 
@@ -49,80 +49,80 @@ class TestHTTPException(HTTPException):
         super().__init__(status_code=self.status_code, detail=self.detail)
 
 
-class UserDeleteTokenHTTPException(TestHTTPException):
+class UserDeleteTokenHTTPException(MapAppHTTPException):
     status_code = 401
     detail = "Вы уже вышли из аккаунта"
 
 
-class UserPasswordToShortHTTPException(TestHTTPException):
+class UserPasswordToShortHTTPException(MapAppHTTPException):
     status_code = 422
     detail = "Пароль должен содержать минимум 8 символов"
 
 
-class UserAllReadyExistsHTTPException(TestHTTPException):
+class UserAllReadyExistsHTTPException(MapAppHTTPException):
     status_code = 409
     detail = "Пользователь с таким email уже зарегистрирован"
 
 
-class UserNotRegisterHTTPException(TestHTTPException):
+class UserNotRegisterHTTPException(MapAppHTTPException):
     status_code = 401
     detail = "Пользователь с таким email не зарегистрирован"
 
 
-class UserIndexWrongHTTPException(TestHTTPException):
+class UserIndexWrongHTTPException(MapAppHTTPException):
     status_code = 422
     detail = "Индекс не может быть меньше или равным нулю"
 
 
-class UserNotFoundHTTPException(TestHTTPException):
+class UserNotFoundHTTPException(MapAppHTTPException):
     status_code = 404
     detail = "Пользователь не существует"
 
 
-class WrongPasswordHTTPException(TestHTTPException):
+class WrongPasswordHTTPException(MapAppHTTPException):
     status_code = 401
     detail = "Неверный пароль"
 
 
-class AdminOnlyAccessHTTPException(TestHTTPException):
+class AdminOnlyAccessHTTPException(MapAppHTTPException):
     status_code = 403
     detail = "Доступ только для администратора"
 
-class AdminOrManagerOnlyAccessHTTPException(TestHTTPException):
+class AdminOrManagerOnlyAccessHTTPException(MapAppHTTPException):
     status_code = 403
     detail = "Доступ только для администратора или менеджера"
 
 
-class DeactivateUserHTTPException(TestHTTPException):
+class DeactivateUserHTTPException(MapAppHTTPException):
     status_code = 403
     detail = "Аккаунт деактивирован. Обратитесь к администратору."
 
 
-class TokenWrongTypeHTTPException(TestHTTPException):
+class TokenWrongTypeHTTPException(MapAppHTTPException):
     status_code = 401
     detail = "Неверный тип токена"
 
 
-class ExpiredSignatureErrorHTTPException(TestHTTPException):
+class ExpiredSignatureErrorHTTPException(MapAppHTTPException):
     status_code = 401
     detail = "Токен истек"
 
 
-class PyJWTErrorHTTPException(TestHTTPException):
+class PyJWTErrorHTTPException(MapAppHTTPException):
     status_code = 401
     detail = "Неверный JWT-токен"
 
 
-class RefreshTokenRequiredHTTPException(TestHTTPException):
+class RefreshTokenRequiredHTTPException(MapAppHTTPException):
     status_code = 401
     detail = "Требуется рефреш токен"
 
 
-class WrongRefreshTokenHTTPException(TestHTTPException):
+class WrongRefreshTokenHTTPException(MapAppHTTPException):
     status_code = 401
     detail = "Неверный рефреш токен"
 
 
-class WrongUserDataHTTPException(TestHTTPException):
+class WrongUserDataHTTPException(MapAppHTTPException):
     status_code = 401
     detail = "Неудалось получить данные пользователя"

@@ -61,7 +61,7 @@ async def seed_data():
             session.add_all(users)
 
         await session.commit()
-        logging.info(f"Тестовые данные успешно загружены!")
+        logging.info("Тестовые данные успешно загружены!")
 
 
 if __name__ == "__main__":
