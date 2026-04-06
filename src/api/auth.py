@@ -4,6 +4,7 @@ from src.api.dependencies import UserIdDep, DBDep, UserRoleDep
 from src.exceptions import UserDeleteTokenHTTPException, WrongUserDataHTTPException
 from src.schemas.users import UserRequestAddDTO, UserLoginDTO, UserPatchDTO
 from src.services.auth import AuthService
+from src.tasks.tasks import test_task
 from src.utils.ratelimitter import rate_limit_auth_refresh, rate_limit_auth_get_me
 from src.utils.redis_utils import delete_refresh_token
 
@@ -66,6 +67,8 @@ async def login_user(
     description="<h1>Для получения информации о пользователе он должен быть аутентифицирован</h1>",
 )
 async def get_me(user_id: UserIdDep, db: DBDep, _: None = Depends(rate_limit_auth_get_me)):
+    test_task.delay()  # type: ignore
+
     return await AuthService(db).get_me(user_id)
 
 

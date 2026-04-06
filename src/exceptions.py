@@ -148,3 +148,9 @@ class WrongRefreshTokenHTTPException(MapAppHTTPException):
 class WrongUserDataHTTPException(MapAppHTTPException):
     status_code = 401
     detail = "Неудалось получить данные пользователя"
+
+
+class WrongTypeImageHTTPException(MapAppHTTPException):
+    status_code = 400
+    detail = "Разрешены только изображения: JPEG, PNG, JPG, WebP"
+

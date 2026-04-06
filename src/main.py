@@ -20,6 +20,7 @@ from src.init import redis_manager, redis_manager_auth
 from src.health.health import router as heals_router
 from src.api.auth import router as auth_router
 from src.api.admin import router as admin_router
+from src.api.images import router as images_router
 
 
 @asynccontextmanager
@@ -44,6 +45,7 @@ app = FastAPI(docs_url=None, lifespan=lifespan)
 app.include_router(heals_router)
 app.include_router(auth_router)
 app.include_router(admin_router)
+app.include_router(images_router)
 
 
 app.add_middleware(
