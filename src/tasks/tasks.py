@@ -24,26 +24,8 @@ def test_task():
 
 @celery_instance.task
 def resize_image(image_path: str):
-    """
-    Асинхронно изменяет размер изображения на несколько стандартных значений.
-
-    Параметры:
-    - image_path (str): Полный путь к исходному изображению.
-
-    Логика:
-    1. Открывает изображение с помощью PIL.
-    2. Создаёт версии с шириной: 1000px, 500px, 200px.
-    3. Сохраняет в `src/static/images` с суффиксом `_размерpx`.
-
-    Особенности:
-    - Сохраняет пропорции изображения.
-    - Использует `LANCZOS` для высококачественного ресемплинга.
-
-    Пример выходных файлов:
-        original.jpg → original_1000px.jpg, original_500px.jpg, original_200px.jpg
-    """
     logging.debug(f"Вызываеться resize_image с аргументом {image_path=}")
-    sizes = [800, 500, 400, 320, 256, 200, 90]
+    sizes = [90]
     output_folder = "src/static/images"
 
     # Открываем изображение
@@ -61,7 +43,7 @@ def resize_image(image_path: str):
         )
 
         # Формируем имя нового файла
-        new_file_name = f"{name}_{size}px{ext}"
+        new_file_name = f"{name}{ext}"
 
         # Полный путь для сохранения
         output_path = os.path.join(output_folder, new_file_name)

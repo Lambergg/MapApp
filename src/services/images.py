@@ -20,7 +20,7 @@ class ImagesService(BaseService):
     ALLOWED_TYPES = {"image/jpeg", "image/png", "image/jpg", "image/webp"}
     UPLOAD_DIR = Path("src/static/images")
 
-    def upload_image(self, file: UploadFile):
+    def upload_image(self, file: UploadFile) -> str:
         """
         Сохраняет загруженное изображение на диск и запускает фоновое изменение размера.
 
