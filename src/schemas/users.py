@@ -51,5 +51,21 @@ class UserPutDTO(BaseModel):
     is_active: bool | None = None
 
 
+class UserPatchDTO(BaseModel):
+    name: str | None = None
+    sname: str | None = None
+    age: int | None = None
+    email: EmailStr | None = None
+    password: str | None = None
+
+    @field_validator("password")
+    def validate_email(cls, v) -> str:
+        if len(v) < 8:
+            raise ValueError('Пароль должен быть больше восьми символов')
+        return v
+
+    model_config = ConfigDict(from_attributes=True)
+
+
 class UserWithHashedPassword(UserDTO):
     hashed_password: str

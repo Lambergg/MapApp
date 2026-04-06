@@ -35,6 +35,7 @@ class AdminService(BaseService):
             await self.db.users.get_one(id=user_id)
         except ObjectNotFoundException:
             raise UserNotFoundHTTPException
+
         await self.db.users.edit(data, id=user_id, exclude_unset=exclude_unset)
         await self.db.commit()
 

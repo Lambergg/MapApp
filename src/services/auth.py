@@ -16,10 +16,10 @@ from src.exceptions import (
     PyJWTErrorHTTPException,
     WrongRefreshTokenHTTPException,
     RefreshTokenRequiredHTTPException,
-    WrongUserDataHTTPException,
+    WrongUserDataHTTPException, UserIndexWrongHTTPException, ObjectNotFoundException, UserNotFoundHTTPException,
 )
 
-from src.schemas.users import UserRequestAddDTO, UserAddDTO, UserLoginDTO
+from src.schemas.users import UserRequestAddDTO, UserAddDTO, UserLoginDTO, UserPatchDTO
 from src.services.base import BaseService
 from src.init import redis_manager_auth
 
@@ -190,3 +190,25 @@ class AuthService(BaseService):
     ):
         user = await self.db.users.get_one_or_none(id=user_id)
         return user
+
+    async def edit_user_profile(self, user_id: int, data: UserPatchDTO, exclude_unset: bool = False):
+        if user_id <= 0:
+            raise UserIndexWrongHTTPException
+        try:
+            await self.db.users.get_one(id=user_id)
+        except ObjectNotFoundException:
+            raise UserNotFoundHTTPException
+
+        update_data = data.model_dump(exclude_unset=exclude_unset)
+
+        if "password" in update_data:
+            password = update_data.pop("password")
+            if password is not None:
+                update_data["hashed_password"] = self.hash_password(password)
+
+        if not data.model_dump(exclude_unset=True):
+            return
+
+        await self.db.users.edit(update_data, id=user_id, exclude_unset=exclude_unset)
+        await self.db.commit()
+

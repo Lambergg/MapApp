@@ -20,6 +20,22 @@ class ObjectAlreadyExistsException(MapAppException):
     detail = "Похожий объект уже существует"
 
 
+class ObjectNotNullException(MapAppException):
+    detail = "Нельзя обновить объект без полей"
+
+
+class ObjectNoDataException(MapAppException):
+    detail = "Нет данных для обновления. Переданы только неустановленные поля."
+
+
+class ObjectEmptyDataException(MapAppException):
+    detail = "Словарь с данными пуст."
+
+
+class ObjectTypeErrorException(MapAppException):
+    detail = "Данные должны быть в формате dict или BaseModel"
+
+
 class UserDeleteTokenException(MapAppException):
     detail = "Вы уже вышли из аккаунта"
 

@@ -9,7 +9,8 @@ from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.database import Base
-from src.exceptions import ObjectNotFoundException, ObjectAlreadyExistsException
+from src.exceptions import ObjectNotFoundException, ObjectAlreadyExistsException, ObjectNotNullException, \
+    ObjectNoDataException, ObjectEmptyDataException, ObjectTypeErrorException
 
 from src.repositories.mappers.base import DataMapper
 
@@ -72,12 +73,41 @@ class BaseRepository:
         await self.session.execute(add_data_stmt)
 
     async def edit(self, data: BaseModel, exclude_unset: bool = False, **filter_by) -> None:
-        update_stmt = (
-            update(self.model)
-            .filter_by(**filter_by)
-            .values(**data.model_dump(exclude_unset=exclude_unset))
-        )
-        await self.session.execute(update_stmt)
+        try:
+            if isinstance(data, BaseModel):
+                values = data.model_dump(exclude_unset=exclude_unset)
+                if not values:
+                    raise ObjectNoDataException
+            elif isinstance(data, dict):
+                values = data
+                if not values:
+                    raise ObjectEmptyDataException
+            else:
+                raise ObjectTypeErrorException
+
+            update_stmt = (
+                update(self.model)
+                .filter_by(**filter_by)
+                .values(**values)
+            )
+            result = await self.session.execute(update_stmt)
+
+            if result.rowcount == 0:
+                raise ObjectNotFoundException
+
+        except IntegrityError as ex:
+            logging.error(
+                f"Ошибка целостности БД при обновлении: {data=}, тип ошибки: {type(ex.orig.__cause__)=}"
+            )
+            if isinstance(ex.orig.__cause__, UniqueViolationError):
+                raise ObjectAlreadyExistsException from ex
+            elif "not-null" in str(ex.orig):
+                raise ObjectNotNullException("Обязательные поля не могут быть пустыми") from ex
+            else:
+                logging.error(
+                    f"Незнакомая ошибка. Входные данные: {data=}, тип ошибки: {type(ex.orig.__cause__)=}"
+                )
+                raise ex
 
     async def delete(self, **filter_by) -> None:
         delete_stmt = delete(self.model).filter_by(**filter_by)

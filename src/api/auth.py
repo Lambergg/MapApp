@@ -1,8 +1,8 @@
-from fastapi import APIRouter, Response, Request, Body, status, Depends
+from fastapi import APIRouter, Response, Request, Body, status, Depends, Path
 
-from src.api.dependencies import UserIdDep, DBDep
-from src.exceptions import UserDeleteTokenHTTPException
-from src.schemas.users import UserRequestAddDTO, UserLoginDTO
+from src.api.dependencies import UserIdDep, DBDep, UserRoleDep
+from src.exceptions import UserDeleteTokenHTTPException, WrongUserDataHTTPException
+from src.schemas.users import UserRequestAddDTO, UserLoginDTO, UserPatchDTO
 from src.services.auth import AuthService
 from src.utils.ratelimitter import rate_limit_auth_refresh, rate_limit_auth_get_me
 from src.utils.redis_utils import delete_refresh_token
@@ -89,10 +89,42 @@ async def logout_user(
     return status.HTTP_200_OK
 
 
+@router.patch(
+    "/edit_profile/{user_id}",
+    summary="Обновление профиля пользователя",
+    description="<h1>Обновляем профиль пользователя. Нужно передать ID и новые данные.</h1>",
+    status_code=status.HTTP_200_OK,
+)
+async def edit_user_profile(
+    db: DBDep,
+    role: UserRoleDep,
+    user_id: int = Path(..., le=2147483647),
+    user_data: UserPatchDTO = Body(
+        openapi_examples={
+            "1": {
+                "summary": "Пример данных",
+                "value": {
+                    "name": "Игорь",
+                    "sname": "Котопес",
+                    "age": 34,
+                    "email": "koto-pes@mail.ru",
+                    "password": "abcd1234",
+                },
+            },
+        }
+    ),
+):
+    if role not in ("admin", "user", "guest"):
+        raise WrongUserDataHTTPException
+    await AuthService(db).edit_user_profile(user_id, user_data, exclude_unset=False)
+    return status.HTTP_200_OK
+
+
+
 @router.post(
     "/refresh",
     summary="Обноввление пары access/refresh токенов",
-    description="Обновляет аксесс ключ на основе рефреша. При этом обновляется кука с аксесс токеном.",
+    description="<h1>Обновляет аксесс ключ на основе рефреша. При этом обновляется кука с аксесс токеном.</h1>",
 )
 async def refresh(
     request: Request, response: Response, db: DBDep, _: None = Depends(rate_limit_auth_refresh)
