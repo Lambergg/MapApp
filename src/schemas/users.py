@@ -1,4 +1,4 @@
-from pydantic import BaseModel, ConfigDict, EmailStr, field_validator
+from pydantic import BaseModel, ConfigDict, EmailStr, field_validator, Field
 
 
 class UserRequestAddDTO(BaseModel):
@@ -47,8 +47,8 @@ class UserDTO(BaseModel):
 
 
 class UserPutDTO(BaseModel):
-    role: str | None = None
-    is_active: bool | None = None
+    role: str = Field(..., min_length=1)
+    is_active: bool = Field(...)
 
 
 class UserPatchDTO(BaseModel):
