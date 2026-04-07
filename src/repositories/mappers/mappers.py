@@ -6,7 +6,3 @@ from src.schemas.users import UserDTO
 class UserDataMapper(DataMapper):
     db_model = UsersOrm
     schema = UserDTO
-
-
-# class AdminDataMapper(UserDataMapper):
-#    pass
