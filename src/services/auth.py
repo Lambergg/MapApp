@@ -19,7 +19,8 @@ from src.exceptions import (
     WrongUserDataHTTPException,
     UserIndexWrongHTTPException,
     ObjectNotFoundException,
-    UserNotFoundHTTPException, UserIsBannedHTTPException,
+    UserNotFoundHTTPException,
+    UserIsBannedHTTPException,
 )
 
 from src.schemas.users import UserRequestAddDTO, UserAddDTO, UserLoginDTO, UserPatchDTO
@@ -195,6 +196,8 @@ class AuthService(BaseService):
         user_id: int,
     ):
         user = await self.db.users.get_one_or_none(id=user_id)
+        if not user.is_active:
+            raise UserIsBannedHTTPException
         return user
 
     async def edit_user_profile(
@@ -203,9 +206,11 @@ class AuthService(BaseService):
         if user_id <= 0:
             raise UserIndexWrongHTTPException
         try:
-            await self.db.users.get_one(id=user_id)
+            user = await self.db.users.get_one(id=user_id)
         except ObjectNotFoundException:
             raise UserNotFoundHTTPException
+        if not user.is_active:
+            raise UserIsBannedHTTPException
 
         update_data = data.model_dump(exclude_unset=exclude_unset)
 

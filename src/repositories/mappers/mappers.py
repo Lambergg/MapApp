@@ -8,5 +8,5 @@ class UserDataMapper(DataMapper):
     schema = UserDTO
 
 
-class AdminDataMapper(UserDataMapper):
-    pass
+# class AdminDataMapper(UserDataMapper):
+#    pass
