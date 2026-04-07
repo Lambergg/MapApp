@@ -9,7 +9,7 @@ router = APIRouter(prefix="/health", tags=["Health"])
     "/redis_set",
     status_code=status.HTTP_201_CREATED,
     summary="Установка значений",
-    description="Проверка установки данных в Redis, устанавливает ключи A и B со значениями 1234 и 3421",
+    description="<h1>Проверка установки данных в Redis, устанавливает ключи A и B со значениями 1234 и 3421</h1>",
 )
 async def redis_set():
     key1 = "A"

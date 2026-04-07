@@ -9,8 +9,14 @@ from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.database import Base
-from src.exceptions import ObjectNotFoundException, ObjectAlreadyExistsException, ObjectNotNullException, \
-    ObjectNoDataException, ObjectEmptyDataException, ObjectTypeErrorException
+from src.exceptions import (
+    ObjectNotFoundException,
+    ObjectAlreadyExistsException,
+    ObjectNotNullException,
+    ObjectNoDataException,
+    ObjectEmptyDataException,
+    ObjectTypeErrorException,
+)
 
 from src.repositories.mappers.base import DataMapper
 
@@ -85,11 +91,7 @@ class BaseRepository:
             else:
                 raise ObjectTypeErrorException
 
-            update_stmt = (
-                update(self.model)
-                .filter_by(**filter_by)
-                .values(**values)
-            )
+            update_stmt = update(self.model).filter_by(**filter_by).values(**values)
             result = await self.session.execute(update_stmt)
 
             if result.rowcount == 0:

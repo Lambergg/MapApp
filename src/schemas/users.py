@@ -61,7 +61,7 @@ class UserPatchDTO(BaseModel):
     @field_validator("password")
     def validate_email(cls, v) -> str:
         if len(v) < 8:
-            raise ValueError('Пароль должен быть больше восьми символов')
+            raise ValueError("Пароль должен быть больше восьми символов")
         return v
 
     model_config = ConfigDict(from_attributes=True)

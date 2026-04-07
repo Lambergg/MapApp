@@ -123,7 +123,6 @@ async def edit_user_profile(
     return status.HTTP_200_OK
 
 
-
 @router.post(
     "/refresh",
     summary="Обноввление пары access/refresh токенов",

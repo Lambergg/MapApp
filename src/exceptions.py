@@ -100,6 +100,11 @@ class UserBanExistsHTTPException(MapAppHTTPException):
     detail = "Пользователь с таким id уже заблокирован"
 
 
+class UserIsBannedHTTPException(MapAppHTTPException):
+    status_code = 401
+    detail = "Пользователь заблокирован"
+
+
 class WrongPasswordHTTPException(MapAppHTTPException):
     status_code = 401
     detail = "Неверный пароль"
@@ -153,4 +158,3 @@ class WrongUserDataHTTPException(MapAppHTTPException):
 class WrongTypeImageHTTPException(MapAppHTTPException):
     status_code = 400
     detail = "Разрешены только изображения: JPEG, PNG, JPG, WebP"
-

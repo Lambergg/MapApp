@@ -26,7 +26,7 @@ class AdminService(BaseService):
             raise UserIndexWrongHTTPException
         return await self.db.users.get_one(id=user_id)
 
-    async def edit_user_role_status(
+    async def edit_user_role(
         self, user_id: int, data: UserPutDTO, exclude_unset: bool = False
     ):
         if user_id <= 0:

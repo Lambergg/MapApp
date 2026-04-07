@@ -6,6 +6,7 @@ from fastapi_cache.backends.redis import RedisBackend
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.exceptions import RequestValidationError
 from fastapi.openapi.docs import get_swagger_ui_html
+from fastapi.staticfiles import StaticFiles
 import logging
 from pathlib import Path
 import sys
@@ -41,6 +42,8 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(docs_url=None, lifespan=lifespan)
+
+app.mount("/static", StaticFiles(directory="src/static"), name="static")
 
 app.include_router(heals_router)
 app.include_router(auth_router)

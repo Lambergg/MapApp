@@ -1,11 +1,12 @@
 from fastapi import APIRouter, Path, Body, status, Query
 from fastapi_cache.decorator import cache
 
-from src.api.dependencies import DBDep, UserRoleDep, PaginationDep, UserIdDep
+from src.api.dependencies import DBDep, UserRoleDep, PaginationDep
 from src.exceptions import (
     AdminOnlyAccessHTTPException,
     ObjectNotFoundException,
-    UserNotFoundHTTPException, UserIndexWrongHTTPException,
+    UserNotFoundHTTPException,
+    UserIndexWrongHTTPException,
 )
 from src.schemas.users import UserPutDTO
 from src.services.admin import AdminService
@@ -25,7 +26,6 @@ async def get_users(
     pagination: PaginationDep,
     role: UserRoleDep,
     email: str | None = Query(None, description="Email пользователя"),
-
 ):
     if role != "admin":
         raise AdminOnlyAccessHTTPException
@@ -61,7 +61,7 @@ async def get_user(
     description="<h1>Обновляем роль и статус аккаунта пользователю. Нужно обязательно передать ID, новую роль и статус аккаунта. Требуются права администратора</h1>",
     status_code=status.HTTP_200_OK,
 )
-async def edit_user_role_status(
+async def edit_user_role(
     db: DBDep,
     role: UserRoleDep,
     user_id: int = Path(..., le=2147483647),
@@ -79,7 +79,7 @@ async def edit_user_role_status(
 ):
     if role != "admin":
         raise AdminOnlyAccessHTTPException
-    await AdminService(db).edit_user_role_status(user_id, user_data, exclude_unset=False)
+    await AdminService(db).edit_user_role(user_id, user_data, exclude_unset=False)
     return status.HTTP_200_OK
 
 
@@ -103,13 +103,16 @@ async def delete_user(
 @router.post(
     "/delete_account/{user_id}",
     summary="Мягкое удаление аккаунта",
-    description="<h1>Пользователь деактивируется (Баниться), происходит logout</h1>",
+    description="<h1>Пользователь деактивируется (Банится), происходит logout</h1>",
     status_code=status.HTTP_200_OK,
 )
 async def delete_account(
     db: DBDep,
+    role: UserRoleDep,
     user_id: int = Path(..., le=2147483647),
 ):
+    if role != "admin":
+        raise AdminOnlyAccessHTTPException
     if user_id <= 0:
         raise UserIndexWrongHTTPException
     try:
@@ -119,4 +122,3 @@ async def delete_account(
     await AdminService(db).soft_delete_user(user_id)
     await delete_refresh_token(user_id)
     return {"message": "Аккаунт успешно деактивирован (Забанен)", "status": status.HTTP_200_OK}
-

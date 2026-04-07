@@ -16,7 +16,10 @@ from src.exceptions import (
     PyJWTErrorHTTPException,
     WrongRefreshTokenHTTPException,
     RefreshTokenRequiredHTTPException,
-    WrongUserDataHTTPException, UserIndexWrongHTTPException, ObjectNotFoundException, UserNotFoundHTTPException,
+    WrongUserDataHTTPException,
+    UserIndexWrongHTTPException,
+    ObjectNotFoundException,
+    UserNotFoundHTTPException, UserIsBannedHTTPException,
 )
 
 from src.schemas.users import UserRequestAddDTO, UserAddDTO, UserLoginDTO, UserPatchDTO
@@ -94,6 +97,9 @@ class AuthService(BaseService):
 
     async def login_user(self, data: UserLoginDTO, response: Response):
         user = await self.db.users.get_user_with_hashed_password(email=data.email)
+        if not user.is_active:
+            raise UserIsBannedHTTPException
+
         if not user:
             raise UserNotRegisterHTTPException
         if not self.verify_password(data.password, user.hashed_password):
@@ -191,7 +197,9 @@ class AuthService(BaseService):
         user = await self.db.users.get_one_or_none(id=user_id)
         return user
 
-    async def edit_user_profile(self, user_id: int, data: UserPatchDTO, exclude_unset: bool = False):
+    async def edit_user_profile(
+        self, user_id: int, data: UserPatchDTO, exclude_unset: bool = False
+    ):
         if user_id <= 0:
             raise UserIndexWrongHTTPException
         try:
@@ -211,4 +219,3 @@ class AuthService(BaseService):
 
         await self.db.users.edit(update_data, id=user_id, exclude_unset=exclude_unset)
         await self.db.commit()
-

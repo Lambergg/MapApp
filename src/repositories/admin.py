@@ -17,9 +17,7 @@ class AdminRepository(UsersRepository):
         query = select(UsersOrm)
 
         if email:
-            query = query.filter(
-                func.lower(UsersOrm.email).contains(email.strip().lower())
-            )
+            query = query.filter(func.lower(UsersOrm.email).contains(email.strip().lower()))
 
         query = query.limit(limit).offset(offset)
 

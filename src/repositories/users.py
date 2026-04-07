@@ -35,4 +35,3 @@ class UsersRepository(BaseRepository):
         stmt = update(self.model).where(self.model.id == user_id).values(is_active=False)
         await self.session.execute(stmt)
         await self.session.commit()
-
