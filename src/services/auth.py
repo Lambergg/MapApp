@@ -20,10 +20,10 @@ from src.exceptions import (
     UserIndexWrongHTTPException,
     ObjectNotFoundException,
     UserNotFoundHTTPException,
-    UserIsBannedHTTPException,
+    UserIsBannedHTTPException, EventsNotFoundHTTPException,
 )
 
-from src.schemas.users import UserRequestAddDTO, UserAddDTO, UserLoginDTO, UserPatchDTO
+from src.schemas.users import UserRequestAddDTO, UserAddDTO, UserLoginDTO, UserPatchDTO, UserDTO
 from src.services.base import BaseService
 from src.init import redis_manager_auth
 
@@ -195,7 +195,7 @@ class AuthService(BaseService):
         self,
         user_id: int,
     ):
-        user = await self.db.users.get_one_or_none(id=user_id)
+        user = await self.db.users.get_one_with_events(id=user_id)
         if not user.is_active:
             raise UserIsBannedHTTPException
         return user
@@ -214,6 +214,8 @@ class AuthService(BaseService):
 
         update_data = data.model_dump(exclude_unset=exclude_unset)
 
+        events_ids_for_sync = update_data.pop("events_ids", None)
+
         if "password" in update_data:
             password = update_data.pop("password")
             if password is not None:
@@ -222,5 +224,28 @@ class AuthService(BaseService):
         if not data.model_dump(exclude_unset=True):
             return
 
+        if events_ids_for_sync is not None:
+
+            if events_ids_for_sync:
+                existing_events = await self.db.events.get_many_by_ids(data.events_ids)  # type: ignore
+                existing_ids = {e.id for e in existing_events}
+                missing_ids = set(data.events_ids) - existing_ids
+
+                if missing_ids:
+                    raise EventsNotFoundHTTPException
+
+            await self.db.users_events.set_user_events(
+                user_id, events_ids=events_ids_for_sync
+            )
+
+            await self.get_user_with_check(user_id)  # type: ignore
+
         await self.db.users.edit(update_data, id=user_id, exclude_unset=exclude_unset)
+
         await self.db.commit()
+
+    async def get_user_with_check(self, user_id: int) -> UserDTO:
+        try:
+            return await self.db.users.get_one(id=user_id)  # type: ignore
+        except ObjectNotFoundException:
+            raise UserNotFoundHTTPException

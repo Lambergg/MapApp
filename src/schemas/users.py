@@ -1,5 +1,7 @@
 from pydantic import BaseModel, ConfigDict, EmailStr, field_validator, Field
 
+from src.schemas.events import EventsDTO
+
 
 class UserRequestAddDTO(BaseModel):
     name: str
@@ -7,6 +9,7 @@ class UserRequestAddDTO(BaseModel):
     age: int
     email: EmailStr
     password: str
+    events_ids: list[int] = []
 
     @field_validator("password")
     def validate_email(cls, v) -> str:
@@ -46,6 +49,10 @@ class UserDTO(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
+class UserWithEvents(UserDTO):
+    events: list[EventsDTO]
+
+
 class UserPutDTO(BaseModel):
     role: str = Field(..., min_length=1)
     is_active: bool = Field(...)
@@ -57,6 +64,7 @@ class UserPatchDTO(BaseModel):
     age: int | None = None
     email: EmailStr | None = None
     password: str | None = None
+    events_ids: list[int] = []
 
     @field_validator("password")
     def validate_email(cls, v) -> str:

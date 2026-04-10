@@ -12,6 +12,10 @@ class ObjectNotFoundException(MapAppException):
     detail = "Объект не найден"
 
 
+class UserNotFoundException(MapAppException):
+    detail = "Пользователь не найден"
+
+
 class ToShortPasswordValueErrorException(MapAppException):
     detail = "Пароль должен быть не менее восьми символов"
 
@@ -158,3 +162,13 @@ class WrongUserDataHTTPException(MapAppHTTPException):
 class WrongTypeImageHTTPException(MapAppHTTPException):
     status_code = 400
     detail = "Разрешены только изображения: JPEG, PNG, JPG, WebP"
+
+
+class EventsAlreadyExistsHTTPException(MapAppHTTPException):
+    status_code = 409
+    detail = "Такое событие уже есть"
+
+
+class EventsNotFoundHTTPException(MapAppHTTPException):
+    status_code = 404
+    detail = "События не найдены"

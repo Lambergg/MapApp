@@ -1,10 +1,12 @@
 from sqlalchemy import select, update
+from sqlalchemy.orm import selectinload
 from pydantic import EmailStr
+from sqlalchemy.exc import NoResultFound
 
-from src.exceptions import UserBanExistsHTTPException
+from src.exceptions import UserBanExistsHTTPException, UserNotFoundException
 from src.repositories.base import BaseRepository
 from src.models.users import UsersOrm
-from src.repositories.mappers.mappers import UserDataMapper
+from src.repositories.mappers.mappers import UserDataMapper, UserDataWithEventMapper
 from src.schemas.users import UserWithHashedPassword
 
 
@@ -35,3 +37,14 @@ class UsersRepository(BaseRepository):
         stmt = update(self.model).where(self.model.id == user_id).values(is_active=False)
         await self.session.execute(stmt)
         await self.session.commit()
+
+    async def get_one_with_events(self, **filter_by):
+        query = (
+            select(self.model).options(selectinload(self.model.events)).filter_by(**filter_by)  # type: ignore
+        )
+        result = await self.session.execute(query)
+        try:
+            model = result.scalar_one()
+        except NoResultFound:
+            raise UserNotFoundException
+        return UserDataWithEventMapper.map_to_domain_entity(model)

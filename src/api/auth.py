@@ -112,6 +112,7 @@ async def edit_user_profile(
                     "age": 34,
                     "email": "koto-pes@mail.ru",
                     "password": "abcd1234",
+                    "events_ids": [],
                 },
             },
         }

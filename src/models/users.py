@@ -1,10 +1,10 @@
 # ruff: noqa F401
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import String, Boolean, Integer
-# from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING
 
-# if TYPE_CHECKING:
-#    from src.models.products import ProductsOrm
+if TYPE_CHECKING:
+    from src.models.events import EventsOrm
 
 from src.database import Base
 
@@ -21,5 +21,8 @@ class UsersOrm(Base):
     role: Mapped[str] = mapped_column(String(100), default="guest")
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
 
-
-#    products: Mapped[list["ProductsOrm"]] = relationship("ProductsOrm", back_populates="seller")
+    events: Mapped[list["EventsOrm"]] = relationship(
+        "EventsOrm",
+        back_populates="users",
+        secondary="users_events",
+    )

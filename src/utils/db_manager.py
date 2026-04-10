@@ -1,4 +1,5 @@
 from src.repositories.admin import AdminRepository
+from src.repositories.events import UsersEventsRepository, EventsRepository
 from src.repositories.users import UsersRepository
 
 
@@ -12,6 +13,8 @@ class DBManager:
         # Инициализация репозиториев
         self.users = UsersRepository(self.session)
         self.admin = AdminRepository(self.session)
+        self.events = EventsRepository(self.session)
+        self.users_events = UsersEventsRepository(self.session)
 
         return self
 
