@@ -172,3 +172,13 @@ class EventsAlreadyExistsHTTPException(MapAppHTTPException):
 class EventsNotFoundHTTPException(MapAppHTTPException):
     status_code = 404
     detail = "События не найдены"
+
+
+class EventIndexWrongHTTPException(MapAppHTTPException):
+    status_code = 422
+    detail = "Индекс не может быть меньше или равным нулю"
+
+
+class EventNotFoundHTTPException(MapAppHTTPException):
+    status_code = 404
+    detail = "Событие не существует"

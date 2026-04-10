@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Body
+from fastapi import APIRouter, Body, status, Path
 from fastapi_cache.decorator import cache
 
 from src.api.dependencies import DBDep, UserRoleDep, UserIdDep
@@ -54,3 +54,17 @@ async def create_facilities(
 
     events = await EventsService(db).create_events(data)
     return {"Status": "Ok", "data": events}
+
+
+@router.delete(
+    "/{event_id}",
+         summary="Удаление выбранного события",
+         description="<h1>Удалем выбранное событие: нужно отправить id события.</h1>",
+         status_code=status.HTTP_204_NO_CONTENT,
+)
+async def delete_event(
+    db: DBDep,
+    event_id: int = Path(..., le=2147483647),
+):
+    await EventsService(db).delete_event(event_id)
+    return status.HTTP_204_NO_CONTENT
