@@ -18,6 +18,15 @@ class EventsDTO(EventsAddDTO):
     model_config = ConfigDict(from_attributes=True)
 
 
+class EventsUpdateDTO(BaseModel):
+    title: str | None = Field(None)
+    descriptions: str | None = Field(None)
+    category: str | None = Field(None)
+    address: str | None = Field(None)
+    date: datetime | None = Field(None)
+    max_users: int | None = Field(None)
+
+
 class UsersEventsAddDTO(BaseModel):
     user_id: int
     event_id: int

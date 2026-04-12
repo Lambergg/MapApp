@@ -1,6 +1,7 @@
 from src.exceptions import ObjectAlreadyExistsException, EventsAlreadyExistsHTTPException, EventIndexWrongHTTPException, \
-    ObjectNotFoundException, EventNotFoundHTTPException
-from src.schemas.events import EventsAddDTO
+    ObjectNotFoundException, EventNotFoundHTTPException, EventsNotFoundHTTPException, ObjectEmptyDataException, \
+    EventDataEmptyHTTPException
+from src.schemas.events import EventsAddDTO, EventsUpdateDTO
 from src.services.base import BaseService
 
 
@@ -16,6 +17,22 @@ class EventsService(BaseService):
 
     async def get_events(self):
         return await self.db.events.get_all()
+
+    async def edit_event(self, event_id: int, data: EventsUpdateDTO, exclude_unset: bool = False):
+        if event_id <= 0:
+            raise EventIndexWrongHTTPException
+        try:
+            await self.db.events.get_one(id=event_id)
+        except ObjectNotFoundException:
+            raise EventsNotFoundHTTPException
+
+        update_data = data.model_dump(exclude_unset=exclude_unset)
+        try:
+            await self.db.events.edit(update_data, id=event_id, exclude_unset=exclude_unset)
+        except ObjectEmptyDataException:
+            raise EventDataEmptyHTTPException
+
+        await self.db.commit()
 
     async def delete_event(self, event_id: int):
         if event_id <= 0:

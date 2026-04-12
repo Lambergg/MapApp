@@ -120,7 +120,7 @@ async def edit_user_profile(
 ):
     if role not in ("admin", "user", "guest"):
         raise WrongUserDataHTTPException
-    await AuthService(db).edit_user_profile(user_id, user_data, exclude_unset=False)
+    await AuthService(db).edit_user_profile(user_id, user_data, exclude_unset=True)
     return status.HTTP_200_OK
 
 
