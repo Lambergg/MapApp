@@ -92,7 +92,7 @@ async def logout_user(
     return status.HTTP_200_OK
 
 
-@router.patch(
+@router.put(
     "/edit_profile/{user_id}",
     summary="Обновление профиля пользователя",
     description="<h1>Обновляем профиль пользователя. Нужно передать ID и новые данные.</h1>",

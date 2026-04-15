@@ -29,6 +29,7 @@ async def get_events(
     "",
     summary="Добавить событие",
     description="<h1>Добавляет событие</h1>",
+    status_code=status.HTTP_200_OK,
 )
 async def create_events(
         db: DBDep,
@@ -53,11 +54,11 @@ async def create_events(
         raise WrongUserDataHTTPException
 
     events = await EventsService(db).create_events(data)
-    return {"Status": "Ok", "data": events}
+    return {"Status": status.HTTP_200_OK, "data": events}
 
 
-@router.post(
-    "edit_events/{event_id}",
+@router.put(
+    "/edit_events/{event_id}",
     summary="Обновление события",
     description="<h1>Обновляем событие. Нужно передать ID и новые данные.</h1>",
     status_code=status.HTTP_200_OK,

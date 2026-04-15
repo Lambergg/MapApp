@@ -85,6 +85,14 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
         localized_msg = "Некорректный email"
     elif "JSON decode error" in error_msg:
         localized_msg = "Неполные данные"
+    elif "Input should be a valid datetime or date, input is too short" in error_msg:
+        localized_msg = "Некорректная дата"
+    elif "String should have at least 1 character" in error_msg:
+        localized_msg = "Строка слишком короткая"
+    elif "Input should be greater than or equal to 1" in error_msg:
+        localized_msg = "Значение должно быть больше или равно 1"
+    elif "Input should be greater than 0" in error_msg:
+        localized_msg = "Значение должно быть больше 0"
     else:
         localized_msg = error_msg
 

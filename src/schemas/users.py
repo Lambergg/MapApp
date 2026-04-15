@@ -59,15 +59,15 @@ class UserPutDTO(BaseModel):
 
 
 class UserPatchDTO(BaseModel):
-    name: str | None = None
-    sname: str | None = None
-    age: int | None = None
-    email: EmailStr | None = None
-    password: str | None = None
+    name: str = Field(..., min_length=1)
+    sname: str = Field(..., min_length=1)
+    age: int = Field(..., ge=1)
+    email: EmailStr = Field(...)
+    password: str = Field(...)
     events_ids: list[int] = []
 
     @field_validator("password")
-    def validate_email(cls, v) -> str:
+    def validate_pass(cls, v) -> str:
         if len(v) < 8:
             raise ValueError("Пароль должен быть больше восьми символов")
         return v
