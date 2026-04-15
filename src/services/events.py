@@ -1,6 +1,13 @@
-from src.exceptions import ObjectAlreadyExistsException, EventsAlreadyExistsHTTPException, EventIndexWrongHTTPException, \
-    ObjectNotFoundException, EventNotFoundHTTPException, EventsNotFoundHTTPException, ObjectEmptyDataException, \
-    EventDataEmptyHTTPException
+from src.exceptions import (
+    ObjectAlreadyExistsException,
+    EventsAlreadyExistsHTTPException,
+    EventIndexWrongHTTPException,
+    ObjectNotFoundException,
+    EventNotFoundHTTPException,
+    EventsNotFoundHTTPException,
+    ObjectEmptyDataException,
+    EventDataEmptyHTTPException,
+)
 from src.schemas.events import EventsAddDTO, EventsUpdateDTO
 from src.services.base import BaseService
 

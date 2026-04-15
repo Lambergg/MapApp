@@ -20,7 +20,8 @@ from src.exceptions import (
     UserIndexWrongHTTPException,
     ObjectNotFoundException,
     UserNotFoundHTTPException,
-    UserIsBannedHTTPException, EventsNotFoundHTTPException,
+    UserIsBannedHTTPException,
+    EventsNotFoundHTTPException,
 )
 
 from src.schemas.users import UserRequestAddDTO, UserAddDTO, UserLoginDTO, UserPatchDTO, UserDTO
@@ -225,7 +226,6 @@ class AuthService(BaseService):
             return
 
         if events_ids_for_sync is not None:
-
             if events_ids_for_sync:
                 existing_events = await self.db.events.get_many_by_ids(data.events_ids)  # type: ignore
                 existing_ids = {e.id for e in existing_events}
@@ -234,9 +234,7 @@ class AuthService(BaseService):
                 if missing_ids:
                     raise EventsNotFoundHTTPException
 
-            await self.db.users_events.set_user_events(
-                user_id, events_ids=events_ids_for_sync
-            )
+            await self.db.users_events.set_user_events(user_id, events_ids=events_ids_for_sync)
 
             await self.get_user_with_check(user_id)  # type: ignore
 

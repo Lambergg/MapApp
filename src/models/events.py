@@ -10,7 +10,6 @@ if typing.TYPE_CHECKING:
 
 
 class EventsOrm(Base):
-
     __tablename__ = "events"
 
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -29,8 +28,11 @@ class EventsOrm(Base):
 
 
 class UsersEventsOrm(Base):
-
     __tablename__ = "users_events"
 
-    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), primary_key=True)
-    event_id: Mapped[int] = mapped_column(ForeignKey("events.id", ondelete="CASCADE"), primary_key=True)
+    user_id: Mapped[int] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"), primary_key=True
+    )
+    event_id: Mapped[int] = mapped_column(
+        ForeignKey("events.id", ondelete="CASCADE"), primary_key=True
+    )
