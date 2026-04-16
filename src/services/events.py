@@ -25,6 +25,24 @@ class EventsService(BaseService):
     async def get_events(self):
         return await self.db.events.get_all()
 
+    async def get_filtered_by_time(
+        self,
+        pagination,
+        title,
+        category,
+        address,
+        date,
+    ):
+        per_page = pagination.per_page or 5
+        return await self.db.events.get_filtered_by_time(
+            limit=per_page,
+            offset=per_page * (pagination.page - 1),
+            title=title,
+            category=category,
+            address=address,
+            date=date,
+        )
+
     async def edit_event(self, event_id: int, data: EventsUpdateDTO, exclude_unset: bool = False):
         if event_id <= 0:
             raise EventIndexWrongHTTPException

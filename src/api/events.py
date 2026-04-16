@@ -1,7 +1,7 @@
-from fastapi import APIRouter, Body, status, Path
+from fastapi import APIRouter, Body, status, Path, Query
 from fastapi_cache.decorator import cache
 
-from src.api.dependencies import DBDep, UserRoleDep
+from src.api.dependencies import DBDep, UserRoleDep, PaginationDep
 from src.exceptions import WrongUserDataHTTPException
 from src.schemas.events import EventsAddDTO, EventsUpdateDTO
 from src.services.events import EventsService
@@ -23,6 +23,33 @@ async def get_events(
         raise WrongUserDataHTTPException
 
     return await EventsService(db).get_events()
+
+
+@router.get(
+    "/search",
+    summary="Поиск по событиям",
+    description="<h1>Поиск событий по фильтрам.</h1>",
+)
+@cache(expire=10)
+async def get_search_events(
+    db: DBDep,
+    pagination: PaginationDep,
+    role: UserRoleDep,
+    title: str | None = Query(None, description="Название события"),
+    category: str | None = Query(None, description="Категория события"),
+    address: str | None = Query(None, description="Адрес события"),
+    date: str | None = Query(None, description="Дата/время события"),
+):
+    if role not in ("admin", "user", "guest"):
+        raise WrongUserDataHTTPException
+
+    return await EventsService(db).get_filtered_by_time(
+        pagination,
+        title,
+        category,
+        address,
+        date,
+    )
 
 
 @router.post(

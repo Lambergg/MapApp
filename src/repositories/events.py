@@ -1,10 +1,10 @@
 from typing import Sequence
-from sqlalchemy import select, delete, insert
+from sqlalchemy import select, delete, insert, func
 
 from src.repositories.base import BaseRepository
 from src.models.events import EventsOrm, UsersEventsOrm
 from src.repositories.mappers.mappers import EventDataMapper
-from src.schemas.events import UsersEventsDTO
+from src.schemas.events import UsersEventsDTO, EventsDTO
 
 
 class EventsRepository(BaseRepository):
@@ -15,6 +15,42 @@ class EventsRepository(BaseRepository):
         query = select(self.model).where(self.model.id.in_(ids))
         result = await self.session.execute(query)
         return list(result.scalars().all())
+
+    async def get_filtered_by_time(
+        self,
+        limit,
+        offset,
+        title,
+        category,
+        address,
+        date,
+    ) -> list[EventsDTO]:
+        query = select(EventsOrm)
+
+        if title:
+            query = query.filter(
+                func.lower(EventsOrm.title).contains(title.strip().lower())
+            ).order_by(EventsOrm.id.asc())
+        if category:
+            query = query.filter(
+                func.lower(EventsOrm.category).contains(category.strip().lower())
+            ).order_by(EventsOrm.id.asc())
+        if address:
+            query = query.filter(
+                func.lower(EventsOrm.address).contains(address.strip().lower())
+            ).order_by(EventsOrm.id.asc())
+        if date:
+            query = query.filter(
+                func.to_char(EventsOrm.date, "YYYY-MM-DD").contains(date.strip())
+            ).order_by(EventsOrm.id.asc())
+
+        query = query.limit(limit).offset(offset).order_by(EventsOrm.id.asc())
+
+        # Логирование SQL (для отладки — раскомментировать при необходимости)
+        print(query.compile(compile_kwargs={"literal_binds": True}))
+        result = await self.session.execute(query)
+
+        return [self.mapper.map_to_domain_entity(event) for event in result.scalars().all()]
 
 
 class UsersEventsRepository(BaseRepository):
