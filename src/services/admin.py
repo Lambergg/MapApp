@@ -13,12 +13,16 @@ class AdminService(BaseService):
         self,
         pagination,
         email,
+        name,
+        sname,
     ):
         per_page = pagination.per_page or 5
         return await self.db.admin.get_filtered_by_time(
             limit=per_page,
             offset=per_page * (pagination.page - 1),
             email=email,
+            name=name,
+            sname=sname,
         )
 
     async def get_user(self, user_id: int):

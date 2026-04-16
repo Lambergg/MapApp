@@ -13,13 +13,25 @@ class AdminRepository(UsersRepository):
         limit,
         offset,
         email,
+        name,
+        sname,
     ) -> list[UserDTO]:
         query = select(UsersOrm)
 
         if email:
-            query = query.filter(func.lower(UsersOrm.email).contains(email.strip().lower()))
+            query = query.filter(
+                func.lower(UsersOrm.email).contains(email.strip().lower())
+            ).order_by(UsersOrm.id.asc())
+        if name:
+            query = query.filter(func.lower(UsersOrm.name).contains(name.strip().lower())).order_by(
+                UsersOrm.id.asc()
+            )
+        if sname:
+            query = query.filter(
+                func.lower(UsersOrm.sname).contains(sname.strip().lower())
+            ).order_by(UsersOrm.id.asc())
 
-        query = query.limit(limit).offset(offset)
+        query = query.limit(limit).offset(offset).order_by(UsersOrm.id.asc())
 
         # Логирование SQL (для отладки — раскомментировать при необходимости)
         print(query.compile(compile_kwargs={"literal_binds": True}))

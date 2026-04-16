@@ -26,6 +26,8 @@ async def get_users(
     pagination: PaginationDep,
     role: UserRoleDep,
     email: str | None = Query(None, description="Email пользователя"),
+    name: str | None = Query(None, description="Имя пользователя"),
+    sname: str | None = Query(None, description="Фамилия пользователя"),
 ):
     if role != "admin":
         raise AdminOnlyAccessHTTPException
@@ -33,6 +35,8 @@ async def get_users(
     return await AdminService(db).get_filtered_by_time(
         pagination,
         email,
+        name,
+        sname,
     )
 
 
