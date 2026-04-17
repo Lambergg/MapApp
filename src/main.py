@@ -23,6 +23,7 @@ from src.api.auth import router as auth_router
 from src.api.admin import router as admin_router
 from src.api.images import router as images_router
 from src.api.events import router as events_router
+from src.api.chat import router as chat
 
 
 @asynccontextmanager
@@ -51,6 +52,7 @@ app.include_router(auth_router)
 app.include_router(admin_router)
 app.include_router(images_router)
 app.include_router(events_router)
+app.include_router(chat)
 
 
 app.add_middleware(
