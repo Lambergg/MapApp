@@ -24,6 +24,7 @@ class EventsRepository(BaseRepository):
         category,
         address,
         date,
+        max_users,
     ) -> list[EventsDTO]:
         query = select(EventsOrm)
 
@@ -42,6 +43,10 @@ class EventsRepository(BaseRepository):
         if date:
             query = query.filter(
                 func.to_char(EventsOrm.date, "YYYY-MM-DD").contains(date.strip())
+            ).order_by(EventsOrm.id.asc())
+        if max_users:
+            query = query.filter(
+                EventsOrm.max_users == max_users
             ).order_by(EventsOrm.id.asc())
 
         query = query.limit(limit).offset(offset).order_by(EventsOrm.id.asc())

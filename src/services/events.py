@@ -32,6 +32,7 @@ class EventsService(BaseService):
         category,
         address,
         date,
+        max_users,
     ):
         per_page = pagination.per_page or 5
         return await self.db.events.get_filtered_by_time(
@@ -41,6 +42,7 @@ class EventsService(BaseService):
             category=category,
             address=address,
             date=date,
+            max_users=max_users,
         )
 
     async def edit_event(self, event_id: int, data: EventsUpdateDTO, exclude_unset: bool = False):

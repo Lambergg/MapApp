@@ -39,6 +39,7 @@ async def get_search_events(
     category: str | None = Query(None, description="Категория события"),
     address: str | None = Query(None, description="Адрес события"),
     date: str | None = Query(None, description="Дата/время события"),
+    max_users: int | None = Query(None, description="Максимальное количество участников события"),
 ):
     if role not in ("admin", "user", "guest"):
         raise WrongUserDataHTTPException
@@ -49,6 +50,7 @@ async def get_search_events(
         category,
         address,
         date,
+        max_users,
     )
 
 
