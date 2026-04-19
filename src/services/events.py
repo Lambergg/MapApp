@@ -25,6 +25,14 @@ class EventsService(BaseService):
     async def get_events(self):
         return await self.db.events.get_all()
 
+    async def get_my_events(self, user_id: int):
+        events = await self.db.events.get_events_by_user_id(user_id=user_id)
+
+        if not events:
+            raise EventsNotFoundHTTPException
+
+        return events
+
     async def get_filtered_by_time(
         self,
         pagination,

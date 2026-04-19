@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Body, status, Path, Query
 from fastapi_cache.decorator import cache
 
-from src.api.dependencies import DBDep, UserRoleDep, PaginationDep
+from src.api.dependencies import DBDep, UserRoleDep, PaginationDep, UserIdDep
 from src.exceptions import WrongUserDataHTTPException
 from src.schemas.events import EventsAddDTO, EventsUpdateDTO
 from src.services.events import EventsService
@@ -23,6 +23,16 @@ async def get_events(
         raise WrongUserDataHTTPException
 
     return await EventsService(db).get_events()
+
+
+@router.get(
+    "/me",
+    summary="Получить все события пользователя",
+    description="<h1>Получаем все события пользователя</h1>",
+)
+@cache(expire=10)
+async def get_my_bookings(user_id: UserIdDep, db: DBDep):
+    return await EventsService(db).get_my_events(user_id)
 
 
 @router.get(

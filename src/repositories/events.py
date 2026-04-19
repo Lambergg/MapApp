@@ -11,6 +11,17 @@ class EventsRepository(BaseRepository):
     model = EventsOrm
     mapper = EventDataMapper
 
+    async def get_events_by_user_id(self, user_id: int) -> list[EventsDTO]:
+        query = (
+            select(self.model)
+            .join(UsersEventsOrm, self.model.id == UsersEventsOrm.event_id)
+            .where(UsersEventsOrm.user_id == user_id)
+            .order_by(self.model.id.asc())
+        )
+        result = await self.session.execute(query)
+        events = result.scalars().all()
+        return [self.mapper.map_to_domain_entity(event) for event in events]
+
     async def get_many_by_ids(self, ids: list[int]) -> list[EventsOrm]:
         query = select(self.model).where(self.model.id.in_(ids))
         result = await self.session.execute(query)
