@@ -187,3 +187,8 @@ class EventNotFoundHTTPException(MapAppHTTPException):
 class EventDataEmptyHTTPException(MapAppHTTPException):
     status_code = 400
     detail = "Нет данных для обновления."
+
+
+class EventMaxUsersHTTPException(MapAppHTTPException):
+    status_code = 404
+    detail = "Событие достигло максимального количества участников"

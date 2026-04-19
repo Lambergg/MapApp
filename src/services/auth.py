@@ -21,7 +21,7 @@ from src.exceptions import (
     ObjectNotFoundException,
     UserNotFoundHTTPException,
     UserIsBannedHTTPException,
-    EventsNotFoundHTTPException,
+    EventsNotFoundHTTPException, EventMaxUsersHTTPException,
 )
 
 from src.schemas.users import UserRequestAddDTO, UserAddDTO, UserLoginDTO, UserPatchDTO, UserDTO
@@ -233,6 +233,11 @@ class AuthService(BaseService):
 
                 if missing_ids:
                     raise EventsNotFoundHTTPException
+
+                for event in existing_events:
+                    participants_count = await self.db.events.get_participants_count(event.id)
+                    if participants_count >= event.max_users:
+                        raise EventMaxUsersHTTPException
 
             await self.db.users_events.set_user_events(user_id, events_ids=events_ids_for_sync)
 

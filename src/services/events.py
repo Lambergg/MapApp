@@ -39,7 +39,7 @@ class EventsService(BaseService):
         try:
             event = await self.db.events.get_one(id=event_id)
         except ObjectNotFoundException:
-            raise EventsNotFoundHTTPException
+            raise EventNotFoundHTTPException
 
         return event
 

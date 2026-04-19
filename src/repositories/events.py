@@ -68,6 +68,14 @@ class EventsRepository(BaseRepository):
 
         return [self.mapper.map_to_domain_entity(event) for event in result.scalars().all()]
 
+    async def get_participants_count(self, event_id: int) -> int:
+        query = (
+            select(func.count(UsersEventsOrm.user_id))
+            .where(UsersEventsOrm.event_id == event_id)
+        )
+        result = await self.session.execute(query)
+        return result.scalar_one()
+
 
 class UsersEventsRepository(BaseRepository):
     model: UsersEventsOrm = UsersEventsOrm
