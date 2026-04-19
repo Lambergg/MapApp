@@ -31,7 +31,10 @@ async def get_events(
     description="<h1>Получаем все события пользователя</h1>",
 )
 @cache(expire=10)
-async def get_my_bookings(user_id: UserIdDep, db: DBDep):
+async def get_my_bookings(user_id: UserIdDep, db: DBDep, role: UserRoleDep,):
+    if role not in ("admin", "user", "guest"):
+        raise WrongUserDataHTTPException
+
     return await EventsService(db).get_my_events(user_id)
 
 
