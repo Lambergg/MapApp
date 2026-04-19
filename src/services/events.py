@@ -33,6 +33,16 @@ class EventsService(BaseService):
 
         return events
 
+    async def get_one_event(self, event_id: int):
+        if event_id <= 0:
+            raise EventIndexWrongHTTPException
+        try:
+            event = await self.db.events.get_one(id=event_id)
+        except ObjectNotFoundException:
+            raise EventsNotFoundHTTPException
+
+        return event
+
     async def get_filtered_by_time(
         self,
         pagination,

@@ -26,6 +26,22 @@ async def get_events(
 
 
 @router.get(
+    "/one/{event_id}",
+    summary="Получить событие",
+    description="<h1>Возвращает событие по его ID</h1>",
+)
+async def get_one_event(
+        db: DBDep,
+        role: UserRoleDep,
+        event_id: int
+):
+    if role not in ("admin", "user", "guest"):
+        raise WrongUserDataHTTPException
+
+    return await EventsService(db).get_one_event(event_id)
+
+
+@router.get(
     "/me",
     summary="Получить все события пользователя",
     description="<h1>Получаем все события пользователя</h1>",
