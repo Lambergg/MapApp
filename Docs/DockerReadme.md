@@ -24,7 +24,17 @@ docker run --name map_cache \
 -d redis:7.4 \
 
 
-5) Запустить docker-compose.yml
+5) #Запуск ngixn в linux на сервере \
+docker run \
+--name map_nginx \
+--volume ./nginx.conf:/etc/nginx/nginx.conf \
+--network=MapNetwork \
+-d \
+-p 80:80 \
+nginx
+
+
+6) Запустить docker-compose.yml
 
 Запуск контейнера с приложением \
 docker run --name map_back \

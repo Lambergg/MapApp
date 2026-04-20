@@ -5,8 +5,8 @@ services:
       context: .
     volumes:
       - static-data:/app/src/static/images
-    ports:
-      - "8000:8000"
+    #ports:
+    #  - "8000:8000"
     networks:
       - MapNetwork
     env_file:
