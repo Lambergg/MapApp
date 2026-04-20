@@ -21,7 +21,7 @@ class RateLimiter:
             redis.call("EXPIRE", KEYS[1], ARGV[4])
             return 0
             """
-            self._lua_sha = await redis_manager._redis.script_load(script)
+            self._lua_sha = await redis_manager._redis.script_load(script)  # type: ignore
 
     async def is_limited(
         self,
@@ -39,14 +39,14 @@ class RateLimiter:
         member_id = f"{current_ms}-{random.randint(0, 100_000)}"
 
         result = await redis_manager._redis.evalsha(
-            self._lua_sha,
-            1,
-            key,
-            current_ms,
-            window_start_ms,
-            max_requests,
-            window_seconds,
-            member_id,
+            self._lua_sha,  # type: ignore
+            1,  # type: ignore
+            key,  # type: ignore
+            current_ms,  # type: ignore
+            window_start_ms,  # type: ignore
+            max_requests,  # type: ignore
+            window_seconds,  # type: ignore
+            member_id,  # type: ignore
         )
 
         return result == 1
@@ -63,7 +63,7 @@ def rate_limiter_factory(
     async def dependency(
         request: Request,
     ):
-        ip_address = request.client.host
+        ip_address = request.client.host  # type: ignore
 
         limited = await _rate_limiter.is_limited(
             ip_address,

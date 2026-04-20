@@ -23,9 +23,9 @@ class AdminRepository(UsersRepository):
                 func.lower(UsersOrm.email).contains(email.strip().lower())
             ).order_by(UsersOrm.id.asc())
         if name:
-            query = query.filter(func.lower(UsersOrm.name).contains(name.strip().lower())).order_by(
-                UsersOrm.id.asc()
-            )
+            query = query.filter(
+                func.lower(UsersOrm.name).contains(name.strip().lower())
+            ).order_by(UsersOrm.id.asc())
         if sname:
             query = query.filter(
                 func.lower(UsersOrm.sname).contains(sname.strip().lower())
@@ -37,4 +37,7 @@ class AdminRepository(UsersRepository):
         print(query.compile(compile_kwargs={"literal_binds": True}))
         result = await self.session.execute(query)
 
-        return [self.mapper.map_to_domain_entity(user) for user in result.scalars().all()]
+        return [
+            self.mapper.map_to_domain_entity(user)
+            for user in result.scalars().all()
+        ]

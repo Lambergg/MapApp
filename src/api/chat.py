@@ -7,8 +7,16 @@ logger = logging.getLogger("chat")
 
 router = APIRouter(prefix="/chat", tags=["Чат пользователей"])
 
+
 @router.websocket("/ws/{username}")
 async def websocket_endpoint(websocket: WebSocket, username: str):
+    """
+    Обработчик WebSocket-подключения для чата.
+
+    :param websocket: Объект соединения.
+    :param username: Имя пользователя (из пути).
+    :return: None
+    """
     logger.info(f"Подключение чата: {username}")
     await manager.connect(websocket)
     await manager.broadcast(f"{username} зашёл в чат")

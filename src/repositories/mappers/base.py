@@ -13,7 +13,9 @@ class DataMapper:
     schema: Type[SchemaType]
 
     @classmethod
-    def map_to_domain_entity(cls, data: Base | dict | Row | RowMapping) -> SchemaType:
+    def map_to_domain_entity(
+        cls, data: Base | dict | Row | RowMapping
+    ) -> SchemaType:
         return cls.schema.model_validate(data, from_attributes=True)
 
     @classmethod

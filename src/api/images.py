@@ -7,7 +7,11 @@ from src.services.images import ImagesService
 router = APIRouter(prefix="/images", tags=["Изображения отелей"])
 
 
-@router.post("", summary="Загрузка изображения", description="<h1>Загрузите ваше изображение</h1>")
+@router.post(
+    "",
+    summary="Загрузка изображения",
+    description="<h1>Загрузите ваше изображение</h1>",
+)
 def upload_image(role: UserRoleDep, file: UploadFile):
     if role not in ("admin", "manager", "user"):
         raise AdminOrModeratorOrUserOnlyAccessHTTPException

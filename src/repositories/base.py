@@ -33,7 +33,10 @@ class BaseRepository:
         query = select(self.model).filter(*filter).filter_by(**filter_by)
         result = await self.session.execute(query)
 
-        return [self.mapper.map_to_domain_entity(model) for model in result.scalars().all()]
+        return [
+            self.mapper.map_to_domain_entity(model)
+            for model in result.scalars().all()
+        ]
 
     async def get_all(self, *args, **kwargs) -> list[BaseModel | Any]:
         return await self.get_filtered()
@@ -58,7 +61,11 @@ class BaseRepository:
 
     async def add(self, data: BaseModel) -> BaseModel | Any:
         try:
-            add_data_stmt = insert(self.model).values(**data.model_dump()).returning(self.model)
+            add_data_stmt = (
+                insert(self.model)
+                .values(**data.model_dump())
+                .returning(self.model)
+            )
             result = await self.session.execute(add_data_stmt)
             model = result.scalars().one()
             return self.mapper.map_to_domain_entity(model)
@@ -75,10 +82,14 @@ class BaseRepository:
                 raise ex
 
     async def add_bulk(self, data: Sequence[BaseModel]):
-        add_data_stmt = insert(self.model).values([item.model_dump() for item in data])
+        add_data_stmt = insert(self.model).values(
+            [item.model_dump() for item in data]
+        )
         await self.session.execute(add_data_stmt)
 
-    async def edit(self, data: BaseModel, exclude_unset: bool = False, **filter_by) -> None:
+    async def edit(
+        self, data: BaseModel, exclude_unset: bool = False, **filter_by
+    ) -> None:
         try:
             if isinstance(data, BaseModel):
                 values = data.model_dump(exclude_unset=exclude_unset)
@@ -91,7 +102,9 @@ class BaseRepository:
             else:
                 raise ObjectTypeErrorException
 
-            update_stmt = update(self.model).filter_by(**filter_by).values(**values)
+            update_stmt = (
+                update(self.model).filter_by(**filter_by).values(**values)
+            )
             result = await self.session.execute(update_stmt)
 
             if result.rowcount == 0:
@@ -104,7 +117,9 @@ class BaseRepository:
             if isinstance(ex.orig.__cause__, UniqueViolationError):
                 raise ObjectAlreadyExistsException from ex
             elif "not-null" in str(ex.orig):
-                raise ObjectNotNullException("Обязательные поля не могут быть пустыми") from ex
+                raise ObjectNotNullException(
+                    "Обязательные поля не могут быть пустыми"
+                ) from ex
             else:
                 logging.error(
                     f"Незнакомая ошибка. Входные данные: {data=}, тип ошибки: {type(ex.orig.__cause__)=}"

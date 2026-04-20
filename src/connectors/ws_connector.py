@@ -4,6 +4,7 @@ import logging
 
 logger = logging.getLogger("websocket")
 
+
 class ConnectionManager:
     def __init__(self):
         self.active_connections: List[WebSocket] = []
@@ -16,11 +17,15 @@ class ConnectionManager:
     def disconnect(self, websocket: WebSocket) -> None:
         try:
             self.active_connections.remove(websocket)
-            logger.info(f"Соединение закрыто. Оставшиеся: {len(self.active_connections)}")
+            logger.info(
+                f"Соединение закрыто. Оставшиеся: {len(self.active_connections)}"
+            )
         except ValueError:
             pass
 
-    async def send_personal_message(self, message: str, websocket: WebSocket) -> None:
+    async def send_personal_message(
+        self, message: str, websocket: WebSocket
+    ) -> None:
         """Отправка личного сообщения одному клиенту."""
         try:
             await websocket.send_text(message)
@@ -40,5 +45,6 @@ class ConnectionManager:
 
         for conn in disconnected:
             self.disconnect(conn)
+
 
 manager = ConnectionManager()

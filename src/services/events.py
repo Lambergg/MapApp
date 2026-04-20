@@ -63,7 +63,9 @@ class EventsService(BaseService):
             max_users=max_users,
         )
 
-    async def edit_event(self, event_id: int, data: EventsUpdateDTO, exclude_unset: bool = False):
+    async def edit_event(
+        self, event_id: int, data: EventsUpdateDTO, exclude_unset: bool = False
+    ):
         if event_id <= 0:
             raise EventIndexWrongHTTPException
         try:
@@ -73,7 +75,9 @@ class EventsService(BaseService):
 
         update_data = data.model_dump(exclude_unset=exclude_unset)
         try:
-            await self.db.events.edit(update_data, id=event_id, exclude_unset=exclude_unset)
+            await self.db.events.edit(
+                update_data, id=event_id, exclude_unset=exclude_unset
+            )
         except ObjectEmptyDataException:
             raise EventDataEmptyHTTPException
 

@@ -45,7 +45,9 @@ class EventsRepository(BaseRepository):
             ).order_by(EventsOrm.id.asc())
         if category:
             query = query.filter(
-                func.lower(EventsOrm.category).contains(category.strip().lower())
+                func.lower(EventsOrm.category).contains(
+                    category.strip().lower()
+                )
             ).order_by(EventsOrm.id.asc())
         if address:
             query = query.filter(
@@ -53,12 +55,14 @@ class EventsRepository(BaseRepository):
             ).order_by(EventsOrm.id.asc())
         if date:
             query = query.filter(
-                func.to_char(EventsOrm.date, "YYYY-MM-DD").contains(date.strip())
+                func.to_char(EventsOrm.date, "YYYY-MM-DD").contains(
+                    date.strip()
+                )
             ).order_by(EventsOrm.id.asc())
         if max_users:
-            query = query.filter(
-                EventsOrm.max_users == max_users
-            ).order_by(EventsOrm.id.asc())
+            query = query.filter(EventsOrm.max_users == max_users).order_by(
+                EventsOrm.id.asc()
+            )
 
         query = query.limit(limit).offset(offset).order_by(EventsOrm.id.asc())
 
@@ -66,12 +70,14 @@ class EventsRepository(BaseRepository):
         print(query.compile(compile_kwargs={"literal_binds": True}))
         result = await self.session.execute(query)
 
-        return [self.mapper.map_to_domain_entity(event) for event in result.scalars().all()]
+        return [
+            self.mapper.map_to_domain_entity(event)
+            for event in result.scalars().all()
+        ]
 
     async def get_participants_count(self, event_id: int) -> int:
-        query = (
-            select(func.count(UsersEventsOrm.user_id))
-            .where(UsersEventsOrm.event_id == event_id)
+        query = select(func.count(UsersEventsOrm.user_id)).where(
+            UsersEventsOrm.event_id == event_id
         )
         result = await self.session.execute(query)
         return result.scalar_one()
@@ -81,14 +87,22 @@ class UsersEventsRepository(BaseRepository):
     model: UsersEventsOrm = UsersEventsOrm
     schema = UsersEventsDTO
 
-    async def set_user_events(self, user_id: int, events_ids: list[int]) -> None:
+    async def set_user_events(
+        self, user_id: int, events_ids: list[int]
+    ) -> None:
         # Получаем текущие ID
-        get_current_events_ids_query = select(self.model.event_id).filter_by(user_id=user_id)
+        get_current_events_ids_query = select(self.model.event_id).filter_by(
+            user_id=user_id
+        )
         res = await self.session.execute(get_current_events_ids_query)
         current_events_ids: Sequence[int] = res.scalars().all()
         # Определяем, что удалять и что добавлять
-        ids_to_delete: list[int] = list(set(current_events_ids) - set(events_ids))
-        ids_to_insert: list[int] = list(set(events_ids) - set(current_events_ids))
+        ids_to_delete: list[int] = list(
+            set(current_events_ids) - set(events_ids)
+        )
+        ids_to_insert: list[int] = list(
+            set(events_ids) - set(current_events_ids)
+        )
 
         # Удаляем лишние связи
         if ids_to_delete:
@@ -101,6 +115,9 @@ class UsersEventsRepository(BaseRepository):
         # Добавляем новые связи
         if ids_to_insert:
             insert_m2m_events_stmt = insert(self.model).values(  # type: ignore
-                [{"user_id": user_id, "event_id": e_id} for e_id in ids_to_insert]
+                [
+                    {"user_id": user_id, "event_id": e_id}
+                    for e_id in ids_to_insert
+                ]
             )
             await self.session.execute(insert_m2m_events_stmt)

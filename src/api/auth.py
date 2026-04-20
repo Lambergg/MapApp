@@ -1,11 +1,17 @@
 from fastapi import APIRouter, Response, Request, Body, status, Depends, Path
 
 from src.api.dependencies import UserIdDep, DBDep, UserRoleDep
-from src.exceptions import UserDeleteTokenHTTPException, WrongUserDataHTTPException
+from src.exceptions import (
+    UserDeleteTokenHTTPException,
+    WrongUserDataHTTPException,
+)
 from src.schemas.users import UserRequestAddDTO, UserLoginDTO, UserPatchDTO
 from src.services.auth import AuthService
 from src.tasks.tasks import test_task
-from src.utils.ratelimitter import rate_limit_auth_refresh, rate_limit_auth_get_me
+from src.utils.ratelimitter import (
+    rate_limit_auth_refresh,
+    rate_limit_auth_get_me,
+)
 from src.utils.redis_utils import delete_refresh_token
 
 router = APIRouter(prefix="/auth", tags=["Авторизация и аутентификация"])
@@ -34,6 +40,13 @@ async def register_user(
         }
     ),
 ):
+    """
+    Регистрирует нового пользователя.
+
+    :param db: Сессия базы данных (DI).
+    :param data: Данные пользователя для регистрации.
+    :return: HTTP 201 Created.
+    """
     await AuthService(db).register_user(data)
     return status.HTTP_201_CREATED
 
@@ -58,6 +71,14 @@ async def login_user(
         }
     ),
 ):
+    """
+    Авторизует пользователя по email и паролю.
+
+    :param response: HTTP-ответ (для установки cookies).
+    :param db: Сессия БД.
+    :param data: Логин и пароль.
+    :return: Словарь с сообщением об успехе.
+    """
     return await AuthService(db).login_user(data, response)
 
 
@@ -66,7 +87,17 @@ async def login_user(
     summary="Получение информации о пользователе",
     description="<h1>Для получения информации о пользователе он должен быть аутентифицирован</h1>",
 )
-async def get_me(user_id: UserIdDep, db: DBDep, _: None = Depends(rate_limit_auth_get_me)):
+async def get_me(
+    user_id: UserIdDep, db: DBDep, _: None = Depends(rate_limit_auth_get_me)
+):
+    """
+    Возвращает данные текущего пользователя по ID из токена.
+
+    :param user_id: ID пользователя из JWT (DI).
+    :param db: Сессия БД.
+    :param _: Ограничение по частоте запросов.
+    :return: Объект UserDTO.
+    """
     test_task.delay()  # type: ignore
 
     return await AuthService(db).get_me(user_id)
@@ -83,6 +114,14 @@ async def logout_user(
     response: Response,
     request: Request,
 ):
+    """
+    Выполняет выход: удаляет токены из cookies и Redis.
+
+    :param user_id: ID пользователя (DI).
+    :param response: Для удаления cookies.
+    :param request: Для получения access-токена из cookie.
+    :return: HTTP 200 OK.
+    """
     access_token = request.cookies.get("access_token") or None
     if not access_token:
         raise UserDeleteTokenHTTPException
@@ -118,9 +157,20 @@ async def edit_user_profile(
         }
     ),
 ):
+    """
+    Обновляет профиль пользователя. Только для владельца или админа.
+
+    :param db: Сессия БД.
+    :param role: Роль текущего пользователя.
+    :param user_id: ID профиля для редактирования.
+    :param user_data: Новые данные (частичные).
+    :return: HTTP 200 OK.
+    """
     if role not in ("admin", "user", "guest"):
         raise WrongUserDataHTTPException
-    await AuthService(db).edit_user_profile(user_id, user_data, exclude_unset=True)
+    await AuthService(db).edit_user_profile(
+        user_id, user_data, exclude_unset=True
+    )
     return status.HTTP_200_OK
 
 
@@ -130,6 +180,18 @@ async def edit_user_profile(
     description="<h1>Обновляет аксесс ключ на основе рефреша. При этом обновляется кука с аксесс токеном.</h1>",
 )
 async def refresh(
-    request: Request, response: Response, db: DBDep, _: None = Depends(rate_limit_auth_refresh)
+    request: Request,
+    response: Response,
+    db: DBDep,
+    _: None = Depends(rate_limit_auth_refresh),
 ):
+    """
+    Обновляет пару токенов, используя refresh-токен.
+
+    :param request: Для получения refresh-токена из cookie.
+    :param response: Для установки нового access-токена.
+    :param db: Сессия БД.
+    :param _: Ограничение по частоте.
+    :return: Сообщение об успехе.
+    """
     return await AuthService(db).refresh_tokens(request, response)

@@ -39,7 +39,8 @@ def resize_image(image_path: str):
     for size in sizes:
         # Сжимаем изображение
         img_resized = img.resize(
-            (size, int(img.height * (size / img.width))), Image.Resampling.LANCZOS
+            (size, int(img.height * (size / img.width))),
+            Image.Resampling.LANCZOS,
         )
 
         # Формируем имя нового файла
@@ -51,4 +52,6 @@ def resize_image(image_path: str):
         # Сохраняем изображение
         img_resized.save(output_path)
 
-    logging.info(f"Изображение сохранено в следующих размерах: {sizes} в папке {output_folder}")
+    logging.info(
+        f"Изображение сохранено в следующих размерах: {sizes} в папке {output_folder}"
+    )

@@ -33,7 +33,9 @@ async def lifespan(app: FastAPI):
     await redis_manager.connect()
     await redis_manager_auth.connect()
     await redis_manager.ping()
-    FastAPICache.init(RedisBackend(redis_manager._redis), prefix="fastapi-cache")
+    FastAPICache.init(
+        RedisBackend(redis_manager._redis), prefix="fastapi-cache"
+    )
     logging.info("FastApiCache инициирован")
     yield
     # При выключении/перезагрузке приложения
@@ -76,7 +78,9 @@ async def custom_swagger_ui_html():
 
 
 @app.exception_handler(RequestValidationError)
-async def validation_exception_handler(request: Request, exc: RequestValidationError):
+async def validation_exception_handler(
+    request: Request, exc: RequestValidationError
+):
     # Берём первое сообщение
     error_msg = exc.errors()[0]["msg"]
 
@@ -87,7 +91,10 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
         localized_msg = "Некорректный email"
     elif "JSON decode error" in error_msg:
         localized_msg = "Неполные данные"
-    elif "Input should be a valid datetime or date, input is too short" in error_msg:
+    elif (
+        "Input should be a valid datetime or date, input is too short"
+        in error_msg
+    ):
         localized_msg = "Некорректная дата"
     elif "String should have at least 1 character" in error_msg:
         localized_msg = "Строка слишком короткая"

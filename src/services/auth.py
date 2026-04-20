@@ -21,10 +21,17 @@ from src.exceptions import (
     ObjectNotFoundException,
     UserNotFoundHTTPException,
     UserIsBannedHTTPException,
-    EventsNotFoundHTTPException, EventMaxUsersHTTPException,
+    EventsNotFoundHTTPException,
+    EventMaxUsersHTTPException,
 )
 
-from src.schemas.users import UserRequestAddDTO, UserAddDTO, UserLoginDTO, UserPatchDTO, UserDTO
+from src.schemas.users import (
+    UserRequestAddDTO,
+    UserAddDTO,
+    UserLoginDTO,
+    UserPatchDTO,
+    UserDTO,
+)
 from src.services.base import BaseService
 from src.init import redis_manager_auth
 
@@ -32,12 +39,20 @@ from src.init import redis_manager_auth
 class AuthService(BaseService):
     pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-    def create_access_token(self, user_id: int, user_role: str) -> str:
+    def create_access_token(self, user_id: int, user_role: str, username: str) -> str:
         expire = datetime.now(timezone.utc) + timedelta(
             minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES
         )
-        to_encode = {"type": "access", "user_id": user_id, "user_role": user_role, "exp": expire}
-        return jwt.encode(to_encode, settings.JWT_SECRET_KEY, algorithm=settings.JWT_ALGORITHM)
+        to_encode = {
+            "type": "access",
+            "user_id": user_id,
+            "user_role": user_role,
+            "username": username,
+            "exp": expire,
+        }
+        return jwt.encode(
+            to_encode, settings.JWT_SECRET_KEY, algorithm=settings.JWT_ALGORITHM
+        )
 
     def create_refresh_token(self) -> str:
         token = str(uuid.uuid4())
@@ -47,10 +62,14 @@ class AuthService(BaseService):
         key = f"refresh_token:{user_id}"
         rt_key = f"rt:{refresh_token}"
         await redis_manager_auth.set(
-            key, refresh_token, expire=timedelta(days=settings.REFRESH_TOKEN_EXPIRES_DAYS)
+            key,
+            refresh_token,
+            expire=timedelta(days=settings.REFRESH_TOKEN_EXPIRES_DAYS),
         )
         await redis_manager_auth.set(
-            rt_key, str(user_id), expire=timedelta(days=settings.REFRESH_TOKEN_EXPIRES_DAYS)
+            rt_key,
+            str(user_id),
+            expire=timedelta(days=settings.REFRESH_TOKEN_EXPIRES_DAYS),
         )
 
     async def get_refresh_token(self, user_id: int) -> str | None:
@@ -64,13 +83,17 @@ class AuthService(BaseService):
     def hash_password(self, password: str) -> str:
         return self.pwd_context.hash(password)
 
-    def verify_password(self, plain_password: str, hashed_password: str) -> bool:
+    def verify_password(
+        self, plain_password: str, hashed_password: str
+    ) -> bool:
         return self.pwd_context.verify(plain_password, hashed_password)
 
     def decode_access_token(self, token: str) -> dict:
         try:
             payload = jwt.decode(
-                token, settings.JWT_SECRET_KEY, algorithms=[settings.JWT_ALGORITHM]
+                token,
+                settings.JWT_SECRET_KEY,
+                algorithms=[settings.JWT_ALGORITHM],
             )
             if payload.get("type") != "access":
                 raise TokenWrongTypeHTTPException
@@ -98,7 +121,9 @@ class AuthService(BaseService):
             raise UserAllReadyExistsHTTPException
 
     async def login_user(self, data: UserLoginDTO, response: Response):
-        user = await self.db.users.get_user_with_hashed_password(email=data.email)
+        user = await self.db.users.get_user_with_hashed_password(
+            email=data.email
+        )
         if not user.is_active:
             raise UserIsBannedHTTPException
 
@@ -107,7 +132,7 @@ class AuthService(BaseService):
         if not self.verify_password(data.password, user.hashed_password):
             raise WrongPasswordHTTPException
 
-        access_token = self.create_access_token(user.id, user.role)
+        access_token = self.create_access_token(user.id, user.role, user.name)
         refresh_token = self.create_refresh_token()
 
         await self.store_refresh_token(user.id, refresh_token)
@@ -132,7 +157,11 @@ class AuthService(BaseService):
             httponly=True,
             secure=False,
             samesite="lax",
-            max_age=int(timedelta(days=settings.REFRESH_TOKEN_EXPIRES_DAYS).total_seconds()),
+            max_age=int(
+                timedelta(
+                    days=settings.REFRESH_TOKEN_EXPIRES_DAYS
+                ).total_seconds()
+            ),
         )
 
         return {
@@ -143,6 +172,7 @@ class AuthService(BaseService):
 
     async def refresh_tokens(self, request: Request, response: Response):
         refresh_token = request.cookies.get("refresh_token")
+        token = request.cookies.get("access_token")
         if not refresh_token:
             raise RefreshTokenRequiredHTTPException
 
@@ -152,11 +182,14 @@ class AuthService(BaseService):
 
         user_id = int(user_id_str)
 
+        payload = self.decode_access_token(token)
+        username = payload["username"]
+
         user_role = await redis_manager_auth.get(f"user_role:{user_id}")
         if not user_role:
             raise WrongUserDataHTTPException
 
-        new_access_token = self.create_access_token(user_id, user_role)
+        new_access_token = self.create_access_token(user_id, user_role, username)
         new_refresh_token = self.create_refresh_token()
 
         await self.delete_refresh_token(user_id)
@@ -183,7 +216,11 @@ class AuthService(BaseService):
             httponly=True,
             secure=False,
             samesite="lax",
-            max_age=int(timedelta(days=settings.REFRESH_TOKEN_EXPIRES_DAYS).total_seconds()),
+            max_age=int(
+                timedelta(
+                    days=settings.REFRESH_TOKEN_EXPIRES_DAYS
+                ).total_seconds()
+            ),
         )
 
         return {
@@ -227,7 +264,9 @@ class AuthService(BaseService):
 
         if events_ids_for_sync is not None:
             if events_ids_for_sync:
-                existing_events = await self.db.events.get_many_by_ids(data.events_ids)  # type: ignore
+                existing_events = await self.db.events.get_many_by_ids(
+                    data.events_ids
+                )  # type: ignore
                 existing_ids = {e.id for e in existing_events}
                 missing_ids = set(data.events_ids) - existing_ids
 
@@ -235,15 +274,21 @@ class AuthService(BaseService):
                     raise EventsNotFoundHTTPException
 
                 for event in existing_events:
-                    participants_count = await self.db.events.get_participants_count(event.id)
+                    participants_count = (
+                        await self.db.events.get_participants_count(event.id)
+                    )
                     if participants_count >= event.max_users:
                         raise EventMaxUsersHTTPException
 
-            await self.db.users_events.set_user_events(user_id, events_ids=events_ids_for_sync)
+            await self.db.users_events.set_user_events(
+                user_id, events_ids=events_ids_for_sync
+            )
 
             await self.get_user_with_check(user_id)  # type: ignore
 
-        await self.db.users.edit(update_data, id=user_id, exclude_unset=exclude_unset)
+        await self.db.users.edit(
+            update_data, id=user_id, exclude_unset=exclude_unset
+        )
 
         await self.db.commit()
 

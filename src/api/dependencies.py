@@ -10,7 +10,10 @@ from src.utils.db_manager import DBManager
 
 class PaginationParams(BaseModel):
     page: Annotated[int, Query(1, ge=1, description="Текущая страница")]
-    per_page: Annotated[int | None, Query(None, ge=1, le=30, description="Элементов на странице")]
+    per_page: Annotated[
+        int | None,
+        Query(None, ge=1, le=30, description="Элементов на странице"),
+    ]
 
 
 PaginationDep = Annotated[PaginationParams, Depends()]
@@ -19,7 +22,9 @@ PaginationDep = Annotated[PaginationParams, Depends()]
 def get_token(request: Request) -> str:
     token = request.cookies.get("access_token") or None
     if not token:
-        raise HTTPException(status_code=401, detail="Вы не предоставили токен доступа")
+        raise HTTPException(
+            status_code=401, detail="Вы не предоставили токен доступа"
+        )
     return token
 
 
@@ -31,10 +36,14 @@ def get_current_user_id(token: str = Depends(get_token)) -> int:
 UserIdDep = Annotated[int, Depends(get_current_user_id)]
 
 
-async def get_current_user_role(user_id: int = Depends(get_current_user_id)) -> str:
+async def get_current_user_role(
+    user_id: int = Depends(get_current_user_id),
+) -> str:
     user_role = await redis_manager_auth.get(f"user_role:{user_id}")
     if not user_role:
-        raise HTTPException(status_code=401, detail="Не удалось получить данные пользователя")
+        raise HTTPException(
+            status_code=401, detail="Не удалось получить данные пользователя"
+        )
     return user_role
 
 

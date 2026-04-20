@@ -29,6 +29,15 @@ async def get_users(
     name: str | None = Query(None, description="Имя пользователя"),
     sname: str | None = Query(None, description="Фамилия пользователя"),
 ):
+    """
+    :param db: Сессия БД через зависимость
+    :param pagination: Пагинация: page, per_page
+    :param role: Роль текущего пользователя (из JWT)
+    :param email: Фильтр по email
+    :param name: Фильтр по имени
+    :param sname: Фильтр по фамилии
+    :return: List[UserDTO] — список пользователей.
+    """
     if role != "admin":
         raise AdminOnlyAccessHTTPException
 
@@ -51,6 +60,12 @@ async def get_user(
     role: UserRoleDep,
     user_id: int = Path(..., le=2147483647),
 ):
+    """
+    :param db: ЗСессия БД через зависимость
+    :param role: Роль текущего пользователя (из JWT)
+    :param user_id: query-параметр ID пользователя (до 2147483647)
+    :return: Возврат UserDTO — данные пользователя. По его id.
+    """
     try:
         if role != "admin":
             raise AdminOnlyAccessHTTPException
@@ -81,9 +96,18 @@ async def edit_user_role(
         }
     ),
 ):
+    """
+    :param db: ЗСессия БД через зависимость
+    :param role: Роль текущего пользователя (из JWT)
+    :param user_id: query-параметр ID пользователя (до 2147483647)
+    :param data: Схема UserPutDTO
+    :return: 200 OK при успехе.
+    """
     if role != "admin":
         raise AdminOnlyAccessHTTPException
-    await AdminService(db).edit_user_role(user_id, user_data, exclude_unset=False)
+    await AdminService(db).edit_user_role(
+        user_id, user_data, exclude_unset=False
+    )
     return status.HTTP_200_OK
 
 
@@ -98,6 +122,12 @@ async def delete_user(
     role: UserRoleDep,
     user_id: int = Path(..., le=2147483647),
 ):
+    """
+    :param db: ЗСессия БД через зависимость
+    :param role: Роль текущего пользователя (из JWT)
+    :param user_id: query-параметр ID пользователя (до 2147483647)
+    :return: 204 No Content
+    """
     if role != "admin":
         raise AdminOnlyAccessHTTPException
     await AdminService(db).delete_user(user_id)
@@ -115,6 +145,12 @@ async def delete_account(
     role: UserRoleDep,
     user_id: int = Path(..., le=2147483647),
 ):
+    """
+    :param db: ЗСессия БД через зависимость
+    :param role: Роль текущего пользователя (из JWT)
+    :param user_id: query-параметр ID пользователя (до 2147483647)
+    :return: message: "Аккаунт успешно деактивирован (Забанен)", status: 200
+    """
     if role != "admin":
         raise AdminOnlyAccessHTTPException
     if user_id <= 0:
@@ -125,4 +161,7 @@ async def delete_account(
         raise UserNotFoundHTTPException
     await AdminService(db).soft_delete_user(user_id)
     await delete_refresh_token(user_id)
-    return {"message": "Аккаунт успешно деактивирован (Забанен)", "status": status.HTTP_200_OK}
+    return {
+        "message": "Аккаунт успешно деактивирован (Забанен)",
+        "status": status.HTTP_200_OK,
+    }

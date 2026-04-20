@@ -6,7 +6,10 @@ from sqlalchemy.exc import NoResultFound
 from src.exceptions import UserBanExistsHTTPException, UserNotFoundException
 from src.repositories.base import BaseRepository
 from src.models.users import UsersOrm
-from src.repositories.mappers.mappers import UserDataMapper, UserDataWithEventMapper
+from src.repositories.mappers.mappers import (
+    UserDataMapper,
+    UserDataWithEventMapper,
+)
 from src.schemas.users import UserWithHashedPassword
 
 
@@ -34,13 +37,19 @@ class UsersRepository(BaseRepository):
         if not user.is_active:
             raise UserBanExistsHTTPException
 
-        stmt = update(self.model).where(self.model.id == user_id).values(is_active=False)
+        stmt = (
+            update(self.model)
+            .where(self.model.id == user_id)
+            .values(is_active=False)
+        )
         await self.session.execute(stmt)
         await self.session.commit()
 
     async def get_one_with_events(self, **filter_by):
         query = (
-            select(self.model).options(selectinload(self.model.events)).filter_by(**filter_by)  # type: ignore
+            select(self.model)
+            .options(selectinload(self.model.events))
+            .filter_by(**filter_by)  # type: ignore
         )
         result = await self.session.execute(query)
         try:
