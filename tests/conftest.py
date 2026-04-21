@@ -61,7 +61,13 @@ async def ac() -> AsyncGenerator[AsyncClient, None]:
 
 @pytest.fixture(scope="session", autouse=True)
 async def register_user(ac: AsyncClient, setup_database):
-    await ac.post("/auth/register", json={"email": "test@test.com", "password": "test1234"})
+    await ac.post("/auth/register", json={
+        "name": "test_user",
+        "sname": "User",
+        "age": 25,
+        "email": "test@test.com",
+        "password": "test1234"
+    })
 
 
 @pytest.fixture(scope="session")
