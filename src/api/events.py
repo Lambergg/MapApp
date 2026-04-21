@@ -30,6 +30,7 @@ async def get_events(
     summary="Получить событие",
     description="<h1>Возвращает событие по его ID</h1>",
 )
+@cache(expire=10)
 async def get_one_event(db: DBDep, role: UserRoleDep, event_id: int):
     if role not in ("admin", "user", "guest"):
         raise WrongUserDataHTTPException
@@ -43,7 +44,7 @@ async def get_one_event(db: DBDep, role: UserRoleDep, event_id: int):
     description="<h1>Получаем все события пользователя</h1>",
 )
 @cache(expire=10)
-async def get_my_bookings(
+async def get_my_events(
     user_id: UserIdDep,
     db: DBDep,
     role: UserRoleDep,

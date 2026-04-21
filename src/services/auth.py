@@ -286,11 +286,14 @@ class AuthService(BaseService):
 
             await self.get_user_with_check(user_id)  # type: ignore
 
-        await self.db.users.edit(
-            update_data, id=user_id, exclude_unset=exclude_unset
-        )
+        try:
+            await self.db.users.edit(
+                update_data, id=user_id, exclude_unset=exclude_unset
+            )
 
-        await self.db.commit()
+            await self.db.commit()
+        except ObjectAlreadyExistsException:
+            raise UserAllReadyExistsHTTPException
 
     async def get_user_with_check(self, user_id: int) -> UserDTO:
         try:

@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Response, Request, Body, status, Depends, Path
+from fastapi_cache.decorator import cache
 
 from src.api.dependencies import UserIdDep, DBDep, UserRoleDep
 from src.exceptions import (
@@ -87,6 +88,7 @@ async def login_user(
     summary="Получение информации о пользователе",
     description="<h1>Для получения информации о пользователе он должен быть аутентифицирован</h1>",
 )
+@cache(expire=10)
 async def get_me(
     user_id: UserIdDep, db: DBDep, _: None = Depends(rate_limit_auth_get_me)
 ):
