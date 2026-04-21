@@ -6,7 +6,9 @@ def test_decode_and_encode_access_token():
     user_role = "admin"
     username = "test_user"
 
-    jwt_token = AuthService().create_access_token(user_id, user_role=user_role, username=username)
+    jwt_token = AuthService().create_access_token(
+        user_id, user_role=user_role, username=username
+    )
     refresh_token = AuthService().create_refresh_token()
 
     assert jwt_token is not None
@@ -15,7 +17,6 @@ def test_decode_and_encode_access_token():
     assert len(jwt_token) > 0
     assert isinstance(refresh_token, str)
     assert len(refresh_token) > 0
-
 
     payload = AuthService().decode_access_token(jwt_token)
     assert payload

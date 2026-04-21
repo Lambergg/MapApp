@@ -1,6 +1,3 @@
-import jwt
-
-from src.config import settings
 from src.services.auth import AuthService
 
 
@@ -9,7 +6,9 @@ def test_create_access_token():
     user_role = "admin"
     username = "test_user"
 
-    jwt_token = AuthService().create_access_token(user_id, user_role=user_role, username=username)
+    jwt_token = AuthService().create_access_token(
+        user_id, user_role=user_role, username=username
+    )
     refresh_token = AuthService().create_refresh_token()
     payload = AuthService().decode_access_token(jwt_token)
 

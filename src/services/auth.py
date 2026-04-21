@@ -39,7 +39,9 @@ from src.init import redis_manager_auth
 class AuthService(BaseService):
     pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-    def create_access_token(self, user_id: int, user_role: str, username: str) -> str:
+    def create_access_token(
+        self, user_id: int, user_role: str, username: str
+    ) -> str:
         expire = datetime.now(timezone.utc) + timedelta(
             minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES
         )
@@ -189,7 +191,9 @@ class AuthService(BaseService):
         if not user_role:
             raise WrongUserDataHTTPException
 
-        new_access_token = self.create_access_token(user_id, user_role, username)
+        new_access_token = self.create_access_token(
+            user_id, user_role, username
+        )
         new_refresh_token = self.create_refresh_token()
 
         await self.delete_refresh_token(user_id)

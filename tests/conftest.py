@@ -3,7 +3,9 @@ import json
 from typing import AsyncGenerator
 from unittest import mock
 
-mock.patch("fastapi_cache.decorator.cache", lambda *args, **kwargs: lambda f: f).start()
+mock.patch(
+    "fastapi_cache.decorator.cache", lambda *args, **kwargs: lambda f: f
+).start()
 
 import pytest
 from httpx import AsyncClient, ASGITransport
@@ -45,7 +47,6 @@ async def setup_database(check_test_mode):
     with open("tests/mock_events.json", encoding="utf-8") as file_events:
         events = json.load(file_events)
 
-
     events = [EventsAddDTO.model_validate(event) for event in events]
 
     async with DBManager(session_factory=async_session_maker_null_pool) as db_:
@@ -55,23 +56,31 @@ async def setup_database(check_test_mode):
 
 @pytest.fixture(scope="session")
 async def ac() -> AsyncGenerator[AsyncClient, None]:
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test",) as ac:
+    async with AsyncClient(
+        transport=ASGITransport(app=app),
+        base_url="http://test",
+    ) as ac:
         yield ac
 
 
 @pytest.fixture(scope="session", autouse=True)
 async def register_user(ac: AsyncClient, setup_database):
-    await ac.post("/auth/register", json={
-        "name": "test_user",
-        "sname": "User",
-        "age": 25,
-        "email": "test@test.com",
-        "password": "test1234"
-    })
+    await ac.post(
+        "/auth/register",
+        json={
+            "name": "test_user",
+            "sname": "User",
+            "age": 25,
+            "email": "test@test.com",
+            "password": "test1234",
+        },
+    )
 
 
 @pytest.fixture(scope="session")
 async def authenticated_ac(register_user, ac: AsyncClient):
-    await ac.post("/auth/login", json={"email": "test@test.com", "password": "test1234"})
+    await ac.post(
+        "/auth/login", json={"email": "test@test.com", "password": "test1234"}
+    )
     assert ac.cookies["access_token"]
     yield ac
