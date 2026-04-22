@@ -8,7 +8,7 @@ router = APIRouter(prefix="/images", tags=["Изображения отелей"
 
 
 @router.post(
-    "",
+    "/upload",
     summary="Загрузка изображения",
     description="<h1>Загрузите ваше изображение</h1>",
 )

@@ -10,7 +10,7 @@ router = APIRouter(prefix="/events", tags=["События"])
 
 
 @router.get(
-    "",
+    "/all",
     summary="Получить список всех событиий",
     description="<h1>Возвращает список всех событий</h1>",
 )
@@ -87,7 +87,7 @@ async def get_search_events(
 
 
 @router.post(
-    "",
+    "/create",
     summary="Добавить событие",
     description="<h1>Добавляет событие</h1>",
     status_code=status.HTTP_200_OK,
@@ -119,7 +119,7 @@ async def create_events(
 
 
 @router.put(
-    "/edit_events/{event_id}",
+    "/edit/{event_id}",
     summary="Обновление события",
     description="<h1>Обновляем событие. Нужно передать ID и новые данные.</h1>",
     status_code=status.HTTP_200_OK,
@@ -151,7 +151,7 @@ async def edit_event(
 
 
 @router.delete(
-    "/{event_id}",
+    "/delete/{event_id}",
     summary="Удаление выбранного события",
     description="<h1>Удалем выбранное событие: нужно отправить id события.</h1>",
     status_code=status.HTTP_204_NO_CONTENT,

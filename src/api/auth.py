@@ -88,7 +88,6 @@ async def login_user(
     summary="Получение информации о пользователе",
     description="<h1>Для получения информации о пользователе он должен быть аутентифицирован</h1>",
 )
-@cache(expire=10)
 async def get_me(
     user_id: UserIdDep, db: DBDep, _: None = Depends(rate_limit_auth_get_me)
 ):

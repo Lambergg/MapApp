@@ -1,6 +1,7 @@
-from fastapi import APIRouter, status
+from fastapi import APIRouter, status, Depends
 
 from src.init import redis_manager, redis_manager_auth
+from src.utils.ratelimitter import rate_limit_auth_get_me
 
 router = APIRouter(prefix="/health", tags=["Health"])
 
@@ -23,7 +24,7 @@ async def redis_set():
 
 
 @router.get("/get_redis", summary="Получение значений из редиса")
-async def get_data_from_redis():
+async def get_data_from_redis(_: None = Depends(rate_limit_auth_get_me)):
     value_db0 = await redis_manager.get("A")
     value_db1 = await redis_manager_auth.get("B")
     return {"value_db0": value_db0, "value_db1": value_db1}
