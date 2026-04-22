@@ -16,6 +16,7 @@ from src.config import settings
 from src.database import Base, engine_null_pool, async_session_maker_null_pool
 from src.models import *
 from src.schemas.events import EventsAddDTO
+from src.schemas.users import UserAddDTO
 from src.utils.db_manager import DBManager
 
 
@@ -46,11 +47,15 @@ async def setup_database(check_test_mode):
 
     with open("tests/mock_events.json", encoding="utf-8") as file_events:
         events = json.load(file_events)
+    with open("tests/mock_users.json", encoding="utf-8") as file_users:
+        users = json.load(file_users)
 
     events = [EventsAddDTO.model_validate(event) for event in events]
+    users = [UserAddDTO.model_validate(user) for user in users]
 
     async with DBManager(session_factory=async_session_maker_null_pool) as db_:
         await db_.events.add_bulk(events)
+        await db_.users.add_bulk(users)
         await db_.commit()
 
 
