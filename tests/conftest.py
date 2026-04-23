@@ -24,6 +24,23 @@ from src.utils.db_manager import DBManager
 def check_test_mode():
     assert settings.mode == "TEST"
 
+@pytest.fixture(scope="function", autouse=True)
+async def setup_redis():
+    """
+    Подключаемся к реальному Redis перед тестами.
+    Очищаем БД 1 (для auth).
+    """
+    from src.init import redis_manager_auth
+    from src.init import redis_manager
+
+    await redis_manager_auth.connect()
+    await redis_manager.connect()
+
+    await redis_manager_auth._redis.flushdb()
+    await redis_manager._redis.flushdb()
+    yield
+    await redis_manager_auth.close()
+    await redis_manager.close()
 
 async def get_db_null_pool():
     async with DBManager(session_factory=async_session_maker_null_pool) as db:
