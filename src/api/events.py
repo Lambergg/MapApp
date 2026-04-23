@@ -90,7 +90,7 @@ async def get_search_events(
     "/create",
     summary="Добавить событие",
     description="<h1>Добавляет событие</h1>",
-    status_code=status.HTTP_200_OK,
+    status_code=status.HTTP_201_CREATED,
 )
 async def create_events(
     db: DBDep,
@@ -115,7 +115,7 @@ async def create_events(
         raise WrongUserDataHTTPException
 
     events = await EventsService(db).create_events(data)
-    return {"Status": status.HTTP_200_OK, "data": events}
+    return {"Status": status.HTTP_201_CREATED, "data": events}
 
 
 @router.put(

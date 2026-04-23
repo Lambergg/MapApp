@@ -55,6 +55,7 @@ async def test_auth_flow(
     assert resp_login.status_code == 200
     assert ac.cookies["access_token"]
     assert "access_token" in resp_login.json()
+    assert "refresh_token" in resp_login.json()
 
     # /auth/me
     resp_me = await ac.get("/auth/me")
@@ -69,3 +70,4 @@ async def test_auth_flow(
     resp_logout = await ac.post("/auth/logout")
     assert resp_logout.status_code == 200
     assert "access_token" not in ac.cookies
+    assert "refresh_token" not in ac.cookies
