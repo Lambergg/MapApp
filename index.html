@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>📍 Сошлись</title>
+
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: Arial, sans-serif; background: #f4f4f4; }
+    header {
+      background: #333; color: white; padding: 1rem; text-align: center;
+      position: relative; height: 60px; display: flex; align-items: center; justify-content: center;
+    }
+    header h1 { margin: 0; font-size: 1.5rem; }
+
+    .auth-btns {
+      position: absolute; left: 10px; top: 10px; z-index: 1000; display: flex; gap: 8px;
+    }
+    .btn {
+      background: #0078d4; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 14px;
+    }
+    .btn-danger { background: #d9534f; }
+    .btn-sm { padding: 4px 8px; font-size: 12px; }
+
+    .form-container {
+      display: none; position: fixed; top: 20%; left: 50%; transform: translateX(-50%);
+      width: 320px; background: white; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      padding: 16px; z-index: 1000; max-height: 80vh; overflow-y: auto;
+    }
+    .form-container h3 { margin: 0 0 12px 0; text-align: center; }
+    .form-container input, .form-container select, .form-container textarea {
+      width: 100%; margin: 8px 0; padding: 8px; border: 1px solid #ddd; border-radius: 4px;
+    }
+    .form-container button {
+      background: #0078d4; color: white; border: none; padding: 8px 16px; cursor: pointer; border-radius: 4px; width: 100%;
+    }
+    .close-btn { background: #d9534f; }
+
+    .profile-info p, .event-item {
+      margin: 8px 0; padding: 8px; background: #f9f9f9; border-radius: 4px; font-size: 14px;
+    }
+    .event-item b { font-size: 15px; }
+
+    #map { height: calc(100vh - 60px); width: 100%; border-top: 1px solid #ccc; }
+
+    .loader { text-align: center; padding: 20px; color: #666; }
+  </style>
+</head>
+<body>
+  <header><h1>📍 Сошлись</h1></header>
+
+  <!-- Кнопки авторизации -->
+  <div class="auth-btns">
+    <button id="loginBtn" onclick="showLogin()" class="btn">Войти</button>
+    <button id="registerBtn" onclick="showRegister()" class="btn btn-sm">Регистрация</button>
+    <button id="profileBtn" onclick="showProfile()" class="btn" style="display: none;">Профиль</button>
+    <button id="logoutBtn" onclick="logout()" class="btn btn-danger" style="display: none;">Выйти</button>
+  </div>
+
+  <!-- Форма входа -->
+  <div class="form-container" id="loginForm">
+    <h3>Вход</h3>
+    <form id="loginFormInner">
+      <input type="email" id="loginEmail" placeholder="Email" required />
+      <input type="password" id="loginPassword" placeholder="Пароль" required />
+      <button type="submit">Войти</button>
+    </form>
+    <p style="margin-top: 10px; font-size: 14px;">
+      Нет аккаунта? <a href="#" onclick="showRegister(); return false;">Зарегистрироваться</a>
+    </p>
+  </div>
+
+  <!-- Форма регистрации -->
+  <div class="form-container" id="registerForm">
+    <h3>Регистрация</h3>
+    <form id="registerFormInner">
+      <input type="text" id="regName" placeholder="Имя" required />
+      <input type="text" id="regSname" placeholder="Фамилия" required />
+      <input type="number" id="regAge" placeholder="Возраст" min="1" max="120" required />
+      <input type="email" id="regEmail" placeholder="Email" required />
+      <input type="password" id="regPassword" placeholder="Пароль (мин. 8)" required />
+      <button type="submit">Зарегистрироваться</button>
+    </form>
+    <p style="margin-top: 10px; font-size: 14px;">
+      Уже есть аккаунт? <a href="#" onclick="showLogin(); return false;">Войти</a>
+    </p>
+  </div>
+
+  <!-- Профиль пользователя -->
+  <div class="form-container" id="profileForm">
+    <h3>Профиль</h3>
+    <div class="profile-info">
+      <p><strong>Имя:</strong> <span id="profileName"></span></p>
+      <p><strong>Фамилия:</strong> <span id="profileSname"></span></p>
+      <p><strong>Возраст:</strong> <span id="profileAge"></span></p>
+      <p><strong>Email:</strong> <span id="profileEmail"></span></p>
+    </div>
+    <div class="user-events">
+      <h4>Участие в событиях</h4>
+      <div id="participatingEvents"><p><small>Загрузка...</small></p></div>
+    </div>
+    <button onclick="hideProfile()">Закрыть</button>
+  </div>
+
+  <!-- Детали события -->
+  <div class="form-container" id="eventDetails">
+    <h3 id="eventTitle"></h3>
+    <p><strong>Адрес:</strong> <span id="eventAddress"></span></p>
+    <p><strong>Дата:</strong> <span id="eventDate"></span></p>
+    <p><strong>Описание:</strong> <span id="eventDescription"></span></p>
+    <p><strong>Участников:</strong> <span id="eventUsers"></span></p>
+    <div style="margin-top: 10px;">
+      <button id="joinEventBtn">Участвовать</button>
+      <button type="button" class="close-btn" onclick="hideEventDetails()">Закрыть</button>
+    </div>
+  </div>
+
+  <!-- Форма добавления события -->
+  <div class="form-container" id="eventForm">
+    <h3>Создать событие</h3>
+    <form id="addEventForm">
+      <input type="text" id="title" placeholder="Название" required />
+      <select id="category" required>
+        <option value="">Категория</option>
+        <option value="Музыка">Музыка</option>
+        <option value="Спорт">Спорт</option>
+        <option value="Образование">Образование</option>
+        <option value="Технологии">Технологии</option>
+        <option value="Развлечения">Развлечения</option>
+        <option value="Досуг">Досуг</option>
+      </select>
+      <input type="text" id="address" placeholder="Адрес" readonly required />
+      <input type="number" id="maxUsers" placeholder="Макс. участников" min="1" required />
+      <input type="datetime-local" id="date" required />
+      <textarea id="descriptions" placeholder="Описание" rows="2"></textarea>
+      <div style="margin-top: 10px;">
+        <button type="submit">Создать</button>
+        <button type="button" class="close-btn" onclick="hideForm()">Отмена</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Карта -->
+  <div id="map"></div>
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+
+  <script>
+    const API_URL = 'http://localhost:8000';
+    const map = L.map('map').setView([59.938676, 30.314494], 10);
+    let tempMarker = null;
+    let currentUser = null;
+    let userPassword = null; // 🔐 Сохраняем пароль после входа
+    let allEvents = [];
+    let currentPopupEvent = null;
+    const addressCache = new Map();
+
+    // Подложка карты
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a>'
+    }).addTo(map);
+
+    // Обратное геокодирование
+    async function reverseGeocode(lat, lon) {
+      try {
+        const res = await fetch(
+          `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&accept-language=ru`
+        );
+        const data = await res.json();
+        return data.display_name || `${lat.toFixed(6)}, ${lon.toFixed(6)}`;
+      } catch (err) {
+        console.error("Геокодирование не удалось", err);
+        return `${lat.toFixed(6)}, ${lon.toFixed(6)}`;
+      }
+    }
+
+    // Прямое геокодирование
+    async function geocodeAddress(address) {
+      if (!address) return null;
+      if (addressCache.has(address)) return addressCache.get(address);
+
+      try {
+        const res = await fetch(
+          `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&accept-language=ru`
+        );
+        const data = await res.json();
+        if (data.length > 0) {
+          const coords = [parseFloat(data[0].lat), parseFloat(data[0].lon)];
+          addressCache.set(address, coords);
+          return coords;
+        }
+      } catch (err) {
+        console.error("Не удалось найти адрес:", address, err);
+      }
+      return null;
+    }
+
+    // Загрузка событий
+    async function loadEvents() {
+      try {
+        const res = await fetch(`${API_URL}/events/all`, { credentials: 'include' });
+        if (res.ok) {
+          allEvents = await res.json();
+          renderEvents(allEvents);
+        } else {
+          console.warn('Ошибка загрузки событий:', res.status);
+        }
+      } catch (err) {
+        console.error('Ошибка сети:', err);
+      }
+    }
+
+    // Отображение событий
+    async function renderEvents(events) {
+      map.eachLayer(layer => { if (layer.options?.isEventMarker) map.removeLayer(layer); });
+
+      if (!Array.isArray(events)) return;
+
+      for (const event of events) {
+        if (!event.address) continue;
+
+        const coords = await geocodeAddress(event.address);
+        if (coords) {
+          const marker = L.marker(coords).addTo(map);
+          marker.bindPopup(`<b>${event.title}</b><br/>${event.address}`);
+          marker.on('click', () => showEventDetails(event));
+          marker.options.isEventMarker = true;
+        }
+      }
+    }
+
+    // Показать детали события
+    function showEventDetails(event) {
+      currentPopupEvent = event;
+      document.getElementById('eventTitle').textContent = event.title;
+      document.getElementById('eventAddress').textContent = event.address;
+      document.getElementById('eventDate').textContent = new Date(event.date).toLocaleString();
+      document.getElementById('eventDescription').textContent = event.descriptions || '—';
+      document.getElementById('eventUsers').textContent = `${event.users_count || 0} / ${event.max_users}`;
+
+      const joinBtn = document.getElementById('joinEventBtn');
+      joinBtn.onclick = null; // 🔥 Удаляем предыдущий обработчик
+      joinBtn.onclick = () => joinEvent(event.id);
+
+      document.getElementById('eventDetails').style.display = 'block';
+    }
+
+    function hideEventDetails() {
+      document.getElementById('eventDetails').style.display = 'none';
+    }
+
+    // Участие в событии — с защитой от дублей
+    async function joinEvent(eventId) {
+      if (!currentUser) return alert('Войдите, чтобы участвовать');
+      if (!userPassword) return alert('Сессия истекла. Войдите снова.');
+
+      const joinBtn = document.getElementById('joinEventBtn');
+
+      // Блокировка кнопки на время запроса
+      if (joinBtn.disabled) return;
+      joinBtn.disabled = true;
+      joinBtn.textContent = 'Участвуем...';
+
+      try {
+        // Гарантируем, что events_ids — массив
+        if (!Array.isArray(currentUser.events_ids)) {
+          currentUser.events_ids = [];
+        }
+
+        // Проверяем, нет ли уже этого события
+        if (currentUser.events_ids.includes(eventId)) {
+          alert('Вы уже участвуете в этом событии');
+          hideEventDetails();
+          return;
+        }
+
+        // Добавляем eventId
+        currentUser.events_ids.push(eventId);
+
+        const profileUpdate = {
+          name: currentUser.name,
+          sname: currentUser.sname,
+          age: currentUser.age,
+          email: currentUser.email,
+          password: userPassword,
+          events_ids: currentUser.events_ids.map(Number) // гарантируем числа
+        };
+
+        const profileRes = await fetch(`${API_URL}/auth/edit_profile/${currentUser.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(profileUpdate),
+          credentials: 'include'
+        });
+
+        if (profileRes.ok) {
+          alert('Вы успешно участвуете в событии!');
+          hideEventDetails();
+          updateProfile(currentUser);
+          loadEvents();
+        } else {
+          const errText = await profileRes.text();
+          console.warn("Ошибка при обновлении профиля:", errText);
+
+          // Проверяем, если это сообщение о лимите
+          if (errText.includes("максимального количества участников")) {
+            alert("❌ Событие уже заполнено — нельзя добавиться.");
+          } else if (errText.includes("уже участвуете")) {
+            alert("Вы уже участвуете в этом событии");
+          } else {
+            alert("Не удалось сохранить участие. Проверьте соединение.");
+          }
+
+          // Удаляем eventId из фронтенда, так как не сохранился
+          currentUser.events_ids.pop();
+        }
+      } catch (err) {
+        console.error('Сетевая ошибка:', err);
+        alert('Сетевая ошибка при участии');
+      } finally {
+        // Разблокируем кнопку
+        joinBtn.disabled = false;
+        joinBtn.textContent = 'Участвовать';
+      }
+    }
+
+    // Клик на карте → создание события
+    map.on('click', async e => {
+      if (!currentUser || !userPassword || document.getElementById('logoutBtn').style.display === 'none') return;
+
+      const { lat, lng } = e.latlng;
+      if (tempMarker) map.removeLayer(tempMarker);
+
+      const address = await reverseGeocode(lat, lng);
+      tempMarker = L.marker([lat, lng]).addTo(map);
+
+      document.getElementById('address').value = address;
+      window.eventCoords = { lat, lng };
+      document.getElementById('eventForm').style.display = 'block';
+    });
+
+    function hideForm() {
+      document.getElementById('eventForm').style.display = 'none';
+      if (tempMarker) map.removeLayer(tempMarker);
+      tempMarker = null;
+    }
+
+    // Создание события — с использованием сохранённого пароля
+    document.getElementById('addEventForm').onsubmit = async function(e) {
+      e.preventDefault();
+
+      const data = {
+        title: document.getElementById('title').value,
+        category: document.getElementById('category').value,
+        address: document.getElementById('address').value,
+        max_users: parseInt(document.getElementById('maxUsers').value),
+        date: new Date(document.getElementById('date').value).toISOString(),
+        descriptions: document.getElementById('descriptions').value || null,
+        lat: window.eventCoords.lat,
+        lon: window.eventCoords.lon
+      };
+
+      try {
+        const res = await fetch(`${API_URL}/events/create`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data),
+          credentials: 'include'
+        });
+
+        if (!res.ok) {
+          const err = await res.text();
+          alert(`Ошибка создания: ${err}`);
+          return;
+        }
+
+        const newEvent = await res.json();
+
+        if (currentUser && newEvent.id && userPassword) {
+          if (!Array.isArray(currentUser.events_ids)) {
+            currentUser.events_ids = [];
+          }
+          currentUser.events_ids.push(newEvent.id);
+
+          currentUser.events = currentUser.events || [];
+          currentUser.events.push(newEvent);
+
+          const profileUpdate = {
+            name: currentUser.name,
+            sname: currentUser.sname,
+            age: currentUser.age,
+            email: currentUser.email,
+            password: userPassword,
+            events_ids: currentUser.events_ids.map(Number)
+          };
+
+          const profileRes = await fetch(`${API_URL}/auth/edit_profile/${currentUser.id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(profileUpdate),
+            credentials: 'include'
+          });
+
+          if (!profileRes.ok) {
+            const err = await profileRes.text();
+            console.warn("Не удалось обновить профиль:", err);
+            alert("Событие создано, но не добавлено в профиль. Повторите позже.");
+          }
+        }
+
+        await loadEvents();
+        hideForm();
+        this.reset();
+
+        if (document.getElementById('profileForm').style.display !== 'none') {
+          updateProfile(currentUser);
+        }
+
+        alert("✅ Событие успешно создано и добавлено в профиль!");
+
+      } catch (err) {
+        console.error('Ошибка:', err);
+        alert('Сетевая ошибка при создании события');
+      }
+    };
+
+    // Проверка авторизации
+    async function checkAuth() {
+      try {
+        const res = await fetch(`${API_URL}/auth/me`, { credentials: 'include' });
+        if (res.ok) {
+          const userData = await res.json();
+
+          // ✅ Исправленная безопасная обработка events и events_ids
+          if (Array.isArray(userData.events)) {
+            userData.events_ids = userData.events.map(e => e.id);
+          } else {
+            userData.events_ids = [];
+          }
+
+          currentUser = userData;
+
+          updateProfile(currentUser);
+          document.getElementById('loginBtn').style.display = 'none';
+          document.getElementById('registerBtn').style.display = 'none';
+          document.getElementById('profileBtn').style.display = 'block';
+          document.getElementById('logoutBtn').style.display = 'block';
+          await loadEvents();
+        } else {
+          document.getElementById('loginBtn').style.display = 'block';
+          document.getElementById('registerBtn').style.display = 'block';
+          document.getElementById('profileBtn').style.display = 'none';
+          document.getElementById('logoutBtn').style.display = 'none';
+        }
+      } catch (err) {
+        console.error('Ошибка авторизации:', err);
+      }
+    }
+
+    function updateProfile(user) {
+      document.getElementById('profileName').textContent = user.name;
+      document.getElementById('profileSname').textContent = user.sname;
+      document.getElementById('profileAge').textContent = user.age;
+      document.getElementById('profileEmail').textContent = user.email;
+
+      const participating = user.events?.filter(ev => ev.creator_id !== user.id) || [];
+
+      const partEl = document.getElementById('participatingEvents');
+
+      partEl.innerHTML = participating.length ? '' : '<p><em>Нет</em></p>';
+      participating.forEach(ev => {
+        const div = document.createElement('div');
+        div.className = 'event-item';
+        div.textContent = `${ev.title} (${ev.category})`;
+        partEl.appendChild(div);
+      });
+    }
+
+    // Формы
+    function showLogin() { hideAllForms(); document.getElementById('loginForm').style.display = 'block'; }
+    function showRegister() { hideAllForms(); document.getElementById('registerForm').style.display = 'block'; }
+    function showProfile() { if (currentUser) { updateProfile(currentUser); hideAllForms(); document.getElementById('profileForm').style.display = 'block'; } }
+    function hideProfile() { document.getElementById('profileForm').style.display = 'none'; }
+    function hideAllForms() {
+      document.getElementById('loginForm').style.display = 'none';
+      document.getElementById('registerForm').style.display = 'none';
+      document.getElementById('profileForm').style.display = 'none';
+      document.getElementById('eventDetails').style.display = 'none';
+    }
+
+    // Вход — сохраняем пароль
+    document.getElementById('loginFormInner').onsubmit = async function(e) {
+      e.preventDefault();
+      const btn = this.querySelector('button[type="submit"]');
+      btn.disabled = true;
+      btn.textContent = 'Вход...';
+
+      const email = document.getElementById('loginEmail').value;
+      const password = document.getElementById('loginPassword').value;
+
+      try {
+        const res = await fetch(`${API_URL}/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password }),
+          credentials: 'include'
+        });
+
+        if (res.ok) {
+          alert('Добро пожаловать!');
+          userPassword = password;
+          document.getElementById('loginForm').style.display = 'none';
+          checkAuth();
+        } else {
+          alert('Ошибка входа');
+        }
+      } catch (err) {
+        alert('Сетевая ошибка');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Войти';
+      }
+    };
+
+    // Регистрация
+    document.getElementById('registerFormInner').onsubmit = async function(e) {
+      e.preventDefault();
+      const data = {
+        name: document.getElementById('regName').value,
+        sname: document.getElementById('regSname').value,
+        age: parseInt(document.getElementById('regAge').value),
+        email: document.getElementById('regEmail').value,
+        password: document.getElementById('regPassword').value,
+        events_ids: []
+      };
+
+      if (data.password.length < 8) return alert('Пароль ≥8 символов');
+
+      try {
+        const res = await fetch(`${API_URL}/auth/register`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data),
+          credentials: 'include'
+        });
+
+        if (res.ok) {
+          alert('Регистрация успешна! Войдите под своим аккаунтом.');
+          document.getElementById('registerForm').style.display = 'none';
+          showLogin();
+        } else {
+          alert('Ошибка регистрации');
+        }
+      } catch (err) {
+        alert('Сетевая ошибка');
+      }
+    };
+
+    // Выход — очищаем пароль
+    function logout() {
+      fetch(`${API_URL}/auth/logout`, { method: 'POST', credentials: 'include' })
+        .finally(() => {
+          currentUser = null;
+          userPassword = null;
+          document.getElementById('loginBtn').style.display = 'block';
+          document.getElementById('registerBtn').style.display = 'block';
+          document.getElementById('profileBtn').style.display = 'none';
+          document.getElementById('logoutBtn').style.display = 'none';
+          map.eachLayer(l => { if (l.options?.isEventMarker) map.removeLayer(l); });
+        });
+    }
+
+    // Инициализация
+    document.addEventListener('DOMContentLoaded', () => {
+      const now = new Date();
+      now.setHours(now.getHours() + 1);
+      now.setMinutes(Math.round(now.getMinutes() / 15) * 15);
+      document.getElementById('date').value = now.toISOString().slice(0, 16);
+      checkAuth();
+    });
+
+    setInterval(checkAuth, 30000);
+  </script>
+</body>
+</html>
