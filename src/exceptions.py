@@ -190,5 +190,5 @@ class EventDataEmptyHTTPException(MapAppHTTPException):
 
 
 class EventMaxUsersHTTPException(MapAppHTTPException):
-    status_code = 404
+    status_code = 403
     detail = "Событие достигло максимального количества участников"

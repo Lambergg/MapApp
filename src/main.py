@@ -45,7 +45,7 @@ async def lifespan(app: FastAPI):
     logging.info("Приложение остановлено")
 
 
-app = FastAPI(docs_url=None, lifespan=lifespan)
+app = FastAPI(docs_url=None, lifespan=lifespan, title="Приложение Сошлись")
 
 app.mount("/static", StaticFiles(directory="src/static"), name="static")
 
@@ -59,7 +59,7 @@ app.include_router(chat)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["http://localhost:5500"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -109,4 +109,4 @@ async def validation_exception_handler(
 
 
 if __name__ == "__main__":
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
+    uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)

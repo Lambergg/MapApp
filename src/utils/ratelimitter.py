@@ -82,5 +82,5 @@ def rate_limiter_factory(
 
 
 rate_limit_auth_refresh = rate_limiter_factory("/auth/refresh", 1, 3)
-rate_limit_auth_get_me = rate_limiter_factory("/auth/me", 1, 3)
+rate_limit_auth_get_me = rate_limiter_factory("/auth/me", 5, 10)
 rate_limit_health_get = rate_limiter_factory("/health/get_redis", 1, 3)
