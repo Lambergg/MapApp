@@ -10,6 +10,13 @@ from src.database import Base
 
 
 class UsersOrm(Base):
+    """
+    Модель пользователя в базе данных.
+
+    Хранит основную информацию о пользователе: имя, фамилию, возраст, email, хэшированный пароль, роль и статус активности.
+    Связана со списком событий через ассоциативную таблицу `users_events`.
+    """
+
     __tablename__ = "users"
 
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -26,3 +33,9 @@ class UsersOrm(Base):
         back_populates="users",
         secondary="users_events",
     )
+    """
+    Список событий, в которых участвует пользователь.
+
+    Связь many-to-many через таблицу `users_events`.
+    Обратная связь: `EventsOrm.users`.
+    """

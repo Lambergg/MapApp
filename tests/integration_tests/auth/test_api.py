@@ -46,11 +46,7 @@ async def test_auth_flow(
 
     # /auth/login
     resp_login = await ac.post(
-        "/auth/login",
-        json={
-            "email": email,
-            "password": password
-        }
+        "/auth/login", json={"email": email, "password": password}
     )
     assert resp_login.status_code == 200
     assert ac.cookies["access_token"]

@@ -1,5 +1,4 @@
 from fastapi import APIRouter, Response, Request, Body, status, Depends, Path
-from fastapi_cache.decorator import cache
 
 from src.api.dependencies import UserIdDep, DBDep, UserRoleDep
 from src.exceptions import (

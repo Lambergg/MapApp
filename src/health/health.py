@@ -13,6 +13,13 @@ router = APIRouter(prefix="/health", tags=["Health"])
     description="<h1>Проверка установки данных в Redis, устанавливает ключи A и B со значениями 1234 и 3421</h1>",
 )
 async def redis_set():
+    """
+    Устанавливает тестовые значения в два разных экземпляра Redis (db0 и db1).
+    Используется для проверки работоспособности подключения к Redis.
+
+    :return: HTTP статус 201 при успешной записи.
+    :rtype: int
+    """
     key1 = "A"
     value1 = "1234"
     key2 = "B"
@@ -25,6 +32,17 @@ async def redis_set():
 
 @router.get("/get_redis", summary="Получение значений из редиса")
 async def get_data_from_redis(_: None = Depends(rate_limit_auth_get_me)):
+    """
+    Получает тестовые значения из двух экземпляров Redis:
+    - `A` из основной базы (db0)
+    - `B` из базы аутентификации (db1)
+    Используется для проверки чтения данных из Redis.
+
+    :param _: Применяется зависимость лимита запросов (игнорируется).
+    :type _: None
+    :return: Словарь с полученными значениями.
+    :rtype: dict[str, str | None]
+    """
     value_db0 = await redis_manager.get("A")
     value_db1 = await redis_manager_auth.get("B")
     return {"value_db0": value_db0, "value_db1": value_db1}

@@ -13,7 +13,24 @@ from src.services.base import BaseService
 
 
 class EventsService(BaseService):
+    """
+    Сервис для управления событиями.
+    Предоставляет методы для:
+    - Создания, получения, редактирования и удаления событий
+    - Поиска с фильтрацией и пагинацией
+    - Получения событий пользователя
+    """
+
     async def create_events(self, data: EventsAddDTO):
+        """
+        Создаёт новое событие.
+
+        :param data: Данные для создания события.
+        :type data: EventsAddDTO
+        :return: Созданное событие.
+        :rtype: EventsDTO
+        :raises EventsAlreadyExistsHTTPException: Если событие с таким названием уже существует.
+        """
         try:
             events = await self.db.events.add(data)
             await self.db.commit()
@@ -23,9 +40,24 @@ class EventsService(BaseService):
         return events
 
     async def get_events(self):
+        """
+        Возвращает список всех событий.
+
+        :return: Список событий.
+        :rtype: list[EventsDTO]
+        """
         return await self.db.events.get_all()
 
     async def get_my_events(self, user_id: int):
+        """
+        Возвращает все события, связанные с пользователем (участие или создание).
+
+        :param user_id: ID текущего пользователя.
+        :type user_id: int
+        :return: Список событий пользователя.
+        :rtype: list[EventsDTO]
+        :raises EventsNotFoundHTTPException: Если у пользователя нет событий.
+        """
         events = await self.db.events.get_events_by_user_id(user_id=user_id)
 
         if not events:
@@ -34,6 +66,16 @@ class EventsService(BaseService):
         return events
 
     async def get_one_event(self, event_id: int):
+        """
+        Возвращает одно событие по ID.
+
+        :param event_id: Уникальный идентификатор события.
+        :type event_id: int
+        :return: Данные события.
+        :rtype: EventsDTO
+        :raises EventIndexWrongHTTPException: Если ID ≤ 0.
+        :raises EventNotFoundHTTPException: Если событие не найдено.
+        """
         if event_id <= 0:
             raise EventIndexWrongHTTPException
         try:
@@ -52,6 +94,25 @@ class EventsService(BaseService):
         date,
         max_users,
     ):
+        """
+        Возвращает отфильтрованный и постраничный список событий.
+        Поддерживает поиск по подстрокам (регистронезависимо) и точному совпадению даты/max_users.
+
+        :param pagination: Параметры пагинации (page, per_page).
+        :type pagination: PaginationParams
+        :param title: Фильтр по названию (опционально).
+        :type title: str | None
+        :param category: Фильтр по категории (опционально).
+        :type category: str | None
+        :param address: Фильтр по адресу (опционально).
+        :type address: str | None
+        :param date: Фильтр по дате (в формате YYYY-MM-DD, опционально).
+        :type date: str | None
+        :param max_users: Фильтр по максимальному числу участников (опционально).
+        :type max_users: int | None
+        :return: Список событий, соответствующих фильтрам.
+        :rtype: PaginatedResponse[EventsDTO]
+        """
         per_page = pagination.per_page or 5
         return await self.db.events.get_filtered_by_time(
             limit=per_page,
@@ -66,6 +127,19 @@ class EventsService(BaseService):
     async def edit_event(
         self, event_id: int, data: EventsUpdateDTO, exclude_unset: bool = False
     ):
+        """
+        Обновляет существующее событие.
+
+        :param event_id: ID события для редактирования.
+        :type event_id: int
+        :param data: Новые данные события.
+        :type data: EventsUpdateDTO
+        :param exclude_unset: Игнорировать неустановленные поля.
+        :type exclude_unset: bool
+        :raises EventIndexWrongHTTPException: Если ID ≤ 0.
+        :raises EventsNotFoundHTTPException: Если событие не найдено.
+        :raises EventDataEmptyHTTPException: Если переданы пустые данные.
+        """
         if event_id <= 0:
             raise EventIndexWrongHTTPException
         try:
@@ -84,6 +158,14 @@ class EventsService(BaseService):
         await self.db.commit()
 
     async def delete_event(self, event_id: int):
+        """
+        Удаляет событие по ID.
+
+        :param event_id: ID события для удаления.
+        :type event_id: int
+        :raises EventIndexWrongHTTPException: Если ID ≤ 0.
+        :raises EventNotFoundHTTPException: Если событие не найдено.
+        """
         if event_id <= 0:
             raise EventIndexWrongHTTPException
 

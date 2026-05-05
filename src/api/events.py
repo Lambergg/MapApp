@@ -19,6 +19,17 @@ async def get_events(
     db: DBDep,
     role: UserRoleDep,
 ):
+    """
+    Получает список всех событий.
+
+    :param db: Зависимость для работы с базой данных.
+    :type db: DBDep
+    :param role: Роль текущего пользователя (admin/user/guest).
+    :type role: str
+    :return: Список событий.
+    :rtype: list[EventDTO]
+    :raises WrongUserDataHTTPException: Если роль не в списке допустимых.
+    """
     if role not in ("admin", "user", "guest"):
         raise WrongUserDataHTTPException
 
@@ -32,6 +43,19 @@ async def get_events(
 )
 @cache(expire=10)
 async def get_one_event(db: DBDep, role: UserRoleDep, event_id: int):
+    """
+    Возвращает одно событие по ID.
+
+    :param db: Сессия базы данных.
+    :type db: DBDep
+    :param role: Роль пользователя.
+    :type role: str
+    :param event_id: Уникальный идентификатор события. Должен быть > 0.
+    :type event_id: int
+    :return: Данные события.
+    :rtype: EventDTO
+    :raises HTTPException 404: Если событие не найдено.
+    """
     if role not in ("admin", "user", "guest"):
         raise WrongUserDataHTTPException
 
@@ -49,6 +73,18 @@ async def get_my_events(
     db: DBDep,
     role: UserRoleDep,
 ):
+    """
+    Возвращает все события, созданные или в которых участвует пользователь.
+
+    :param user_id: ID текущего пользователя (из JWT).
+    :type user_id: int
+    :param db: Сессия базы данных.
+    :type db: DBDep
+    :param role: Роль пользователя.
+    :type role: str
+    :return: Список событий пользователя.
+    :rtype: list[EventDTO]
+    """
     if role not in ("admin", "user", "guest"):
         raise WrongUserDataHTTPException
 
@@ -73,6 +109,28 @@ async def get_search_events(
         None, description="Максимальное количество участников события"
     ),
 ):
+    """
+    Поиск событий по заданным фильтрам с пагинацией.
+
+    :param db: Сессия базы данных.
+    :type db: DBDep
+    :param pagination: Параметры пагинации (page, per_page).
+    :type pagination: PaginationParams
+    :param role: Роль пользователя.
+    :type role: str
+    :param title: Фильтр по названию.
+    :type title: str | None
+    :param category: Фильтр по категории.
+    :type category: str | None
+    :param address: Фильтр по адресу.
+    :type address: str | None
+    :param date: Фильтр по дате (ISO формат).
+    :type date: str | None
+    :param max_users: Фильтр по максимальному числу участников.
+    :type max_users: int | None
+    :return: Отфильтрованный список событий.
+    :rtype: PaginatedResponse[EventDTO]
+    """
     if role not in ("admin", "user", "guest"):
         raise WrongUserDataHTTPException
 
@@ -111,6 +169,19 @@ async def create_events(
         }
     ),
 ):
+    """
+    Создаёт новое событие.
+
+    :param db: Сессия базы данных.
+    :type db: DBDep
+    :param role: Роль пользователя.
+    :type role: str
+    :param data: Данные для создания события.
+    :type data: EventsAddDTO
+    :return: Информация о созданном событии.
+    :rtype: dict
+    :status 201: Событие успешно создано.
+    """
     if role not in ("admin", "user", "guest"):
         raise WrongUserDataHTTPException
 
@@ -144,6 +215,22 @@ async def edit_event(
         }
     ),
 ):
+    """
+    Обновляет существующее событие по ID.
+
+    :param role: Роль пользователя.
+    :type role: str
+    :param db: Сессия базы данных.
+    :type db: DBDep
+    :param event_id: ID события для обновления.
+    :type event_id: int
+    :param event_data: Новые данные события.
+    :type event_data: EventsUpdateDTO
+    :return: Статус 200 при успехе.
+    :rtype: int
+    :status 200: Успешно обновлено.
+    :raises HTTPException 404: Если событие не найдено.
+    """
     if role not in ("admin", "user", "guest"):
         raise WrongUserDataHTTPException
     await EventsService(db).edit_event(event_id, event_data, exclude_unset=True)
@@ -161,6 +248,20 @@ async def delete_event(
     role: UserRoleDep,
     event_id: int = Path(..., le=2147483647),
 ):
+    """
+    Удаляет событие по ID.
+
+    :param db: Сессия базы данных.
+    :type db: DBDep
+    :param role: Роль пользователя.
+    :type role: str
+    :param event_id: ID события для удаления.
+    :type event_id: int
+    :return: Пустой ответ при успехе.
+    :rtype: None
+    :status 204: Событие успешно удалено.
+    :raises HTTPException 404: Если событие не найдено.
+    """
     if role not in ("admin", "user", "guest"):
         raise WrongUserDataHTTPException
     await EventsService(db).delete_event(event_id)

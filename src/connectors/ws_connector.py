@@ -6,15 +6,34 @@ logger = logging.getLogger("websocket")
 
 
 class ConnectionManager:
+    """
+    Менеджер WebSocket-соединений для управления активными клиентами.
+
+    Предоставляет методы подключения, отключения и отправки сообщений
+    как отдельным клиентам, так и рассылки всем подключённым.
+    """
+
     def __init__(self):
         self.active_connections: List[WebSocket] = []
 
     async def connect(self, websocket: WebSocket) -> None:
+        """
+        Принимает новое WebSocket-соединение и добавляет его в список активных.
+
+        :param websocket: Объект WebSocket.
+        :type websocket: WebSocket
+        """
         await websocket.accept()
         self.active_connections.append(websocket)
         logger.info(f"Новое соединение. Всего: {len(self.active_connections)}")
 
     def disconnect(self, websocket: WebSocket) -> None:
+        """
+        Удаляет соединение из списка активных.
+
+        :param websocket: Объект WebSocket для отключения.
+        :type websocket: WebSocket
+        """
         try:
             self.active_connections.remove(websocket)
             logger.info(
@@ -26,7 +45,14 @@ class ConnectionManager:
     async def send_personal_message(
         self, message: str, websocket: WebSocket
     ) -> None:
-        """Отправка личного сообщения одному клиенту."""
+        """
+        Отправляет личное сообщение конкретному клиенту.
+
+        :param message: Текст сообщения.
+        :type message: str
+        :param websocket: Целевой WebSocket.
+        :type websocket: WebSocket
+        """
         try:
             await websocket.send_text(message)
         except Exception as e:
@@ -34,7 +60,13 @@ class ConnectionManager:
             self.disconnect(websocket)
 
     async def broadcast(self, message: str) -> None:
-        """Рассылка всем активным клиентам."""
+        """
+        Рассылает сообщение всем активным клиентам.
+        Автоматически удаляет соединения, при отправке в которые произошла ошибка.
+
+        :param message: Текст сообщения для рассылки.
+        :type message: str
+        """
         disconnected = []
         for connection in self.active_connections:
             try:

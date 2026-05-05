@@ -4,6 +4,12 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
+    """
+    Конфигурационный класс для хранения настроек приложения.
+    Значения загружаются из переменных окружения и файла `.env`.
+    Поддерживает четыре режима работы: DEV, TEST, PROD, LOCAL.
+    """
+
     mode: Literal["DEV", "TEST", "PROD", "LOCAL"]
 
     DB_HOST: str
@@ -17,10 +23,22 @@ class Settings(BaseSettings):
 
     @property
     def REDIS_URL(self):
+        """
+        Формирует URL для подключения к Redis.
+
+        :return: Строка подключения вида `redis://host:port`.
+        :rtype: str
+        """
         return f"redis://{self.REDIS_HOST}:{self.REDIS_PORT}"
 
     @property
     def DB_URL(self):
+        """
+        Формирует URL для асинхронного подключения к PostgreSQL через asyncpg.
+
+        :return: Строка подключения вида `postgresql+asyncpg://user:pass@host:port/dbname`.
+        :rtype: str
+        """
         return f"postgresql+asyncpg://{self.DB_USER}:{self.DB_PASS}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
 
     JWT_SECRET_KEY: str

@@ -13,6 +13,17 @@ router = APIRouter(prefix="/images", tags=["Изображения отелей"
     description="<h1>Загрузите ваше изображение</h1>",
 )
 def upload_image(role: UserRoleDep, file: UploadFile):
+    """
+    Загружает изображение на сервер.
+
+    :param role: Роль текущего пользователя (для проверки прав доступа).
+    :type role: str
+    :param file: Файл изображения, отправленный в формате multipart/form-data.
+    :type file: UploadFile
+    :return: URL загруженного изображения.
+    :rtype: dict[str, str]
+    :raises AdminOrModeratorOrUserOnlyAccessHTTPException: Если роль не 'admin', 'manager' или 'user'.
+    """
     if role not in ("admin", "manager", "user"):
         raise AdminOrModeratorOrUserOnlyAccessHTTPException
     image_path = ImagesService().upload_image(file)

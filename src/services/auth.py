@@ -37,11 +37,32 @@ from src.init import redis_manager_auth
 
 
 class AuthService(BaseService):
+    """
+    Сервис аутентификации и управления пользователями.
+    Отвечает за:
+    - Регистрацию и вход
+    - Генерацию и проверку JWT-токенов
+    - Управление refresh-токенами в Redis
+    - Обновление профиля с проверкой участия в событиях
+    """
+
     pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
     def create_access_token(
         self, user_id: int, user_role: str, username: str
     ) -> str:
+        """
+        Создаёт JWT access-токен с заданным сроком действия.
+
+        :param user_id: ID пользователя.
+        :type user_id: int
+        :param user_role: Роль пользователя (например, 'user', 'admin').
+        :type user_role: str
+        :param username: Имя пользователя.
+        :type username: str
+        :return: Закодированный JWT-токен.
+        :rtype: str
+        """
         expire = datetime.now(timezone.utc) + timedelta(
             minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES
         )
@@ -57,10 +78,27 @@ class AuthService(BaseService):
         )
 
     def create_refresh_token(self) -> str:
+        """
+        Генерирует уникальный refresh-токен.
+
+        :return: Случайная строка UUID.
+        :rtype: str
+        """
         token = str(uuid.uuid4())
         return token
 
     async def store_refresh_token(self, user_id: int, refresh_token: str):
+        """
+        Сохраняет refresh-токен в Redis с временем жизни.
+        Использует два ключа:
+        - `refresh_token:{user_id}` → сам токен
+        - `rt:{refresh_token}` → обратная ссылка на user_id
+
+        :param user_id: ID пользователя.
+        :type user_id: int
+        :param refresh_token: Сгенерированный refresh-токен.
+        :type refresh_token: str
+        """
         key = f"refresh_token:{user_id}"
         rt_key = f"rt:{refresh_token}"
         await redis_manager_auth.set(
@@ -75,22 +113,65 @@ class AuthService(BaseService):
         )
 
     async def get_refresh_token(self, user_id: int) -> str | None:
+        """
+        Получает сохранённый refresh-токен по ID пользователя.
+
+        :param user_id: ID пользователя.
+        :type user_id: int
+        :return: Токен или None, если не найден.
+        :rtype: str | None
+        """
         key = f"refresh_token:{user_id}"
         return await redis_manager_auth.get(key)
 
     async def delete_refresh_token(self, user_id: int):
+        """
+        Удаляет refresh-токен из Redis.
+
+        :param user_id: ID пользователя.
+        :type user_id: int
+        """
         key = f"refresh_token:{user_id}"
         await redis_manager_auth.delete(key)
 
     def hash_password(self, password: str) -> str:
+        """
+        Хэширует пароль с помощью bcrypt.
+
+        :param password: Открытый пароль.
+        :type password: str
+        :return: Хэшированная строка.
+        :rtype: str
+        """
         return self.pwd_context.hash(password)
 
     def verify_password(
         self, plain_password: str, hashed_password: str
     ) -> bool:
+        """
+        Проверяет соответствие открытого пароля хэшированному.
+
+        :param plain_password: Введённый пользователем пароль.
+        :type plain_password: str
+        :param hashed_password: Хэш из базы данных.
+        :type hashed_password: str
+        :return: True, если пароли совпадают.
+        :rtype: bool
+        """
         return self.pwd_context.verify(plain_password, hashed_password)
 
     def decode_access_token(self, token: str) -> dict:
+        """
+        Декодирует JWT access-токен.
+
+        :param token: JWT-строка.
+        :type token: str
+        :return: Payload токена.
+        :rtype: dict
+        :raises TokenWrongTypeHTTPException: Если тип токена не 'access'.
+        :raises ExpiredSignatureErrorHTTPException: Если токен просрочен.
+        :raises PyJWTErrorHTTPException: При других ошибках JWT.
+        """
         try:
             payload = jwt.decode(
                 token,
@@ -106,6 +187,14 @@ class AuthService(BaseService):
             raise PyJWTErrorHTTPException
 
     async def register_user(self, data: UserRequestAddDTO):
+        """
+        Регистрирует нового пользователя.
+
+        :param data: Данные для регистрации.
+        :type data: UserRequestAddDTO
+        :raises UserPasswordToShortHTTPException: Если пароль < 8 символов.
+        :raises UserAllReadyExistsHTTPException: Если email уже занят.
+        """
         if len(data.password) < 8:
             raise UserPasswordToShortHTTPException
         hashed_password = self.hash_password(data.password)
@@ -123,6 +212,19 @@ class AuthService(BaseService):
             raise UserAllReadyExistsHTTPException
 
     async def login_user(self, data: UserLoginDTO, response: Response):
+        """
+        Аутентифицирует пользователя и выдаёт токены.
+
+        :param data: Логин и пароль.
+        :type data: UserLoginDTO
+        :param response: HTTP-ответ для установки cookies.
+        :type response: Response
+        :return: Access и refresh токены.
+        :rtype: dict[str, str]
+        :raises UserNotRegisterHTTPException: Если пользователь не найден.
+        :raises WrongPasswordHTTPException: Если пароль неверный.
+        :raises UserIsBannedHTTPException: Если пользователь деактивирован.
+        """
         user = await self.db.users.get_user_with_hashed_password(
             email=data.email
         )
@@ -173,6 +275,19 @@ class AuthService(BaseService):
         }
 
     async def refresh_tokens(self, request: Request, response: Response):
+        """
+        Обновляет access и refresh токены по текущему refresh-токену.
+
+        :param request: HTTP-запрос с куками.
+        :type request: Request
+        :param response: HTTP-ответ для новых кук.
+        :type response: Response
+        :return: Новые токены.
+        :rtype: dict[str, str]
+        :raises RefreshTokenRequiredHTTPException: Если refresh-токен отсутствует.
+        :raises WrongRefreshTokenHTTPException: Если токен недействителен.
+        :raises WrongUserDataHTTPException: Если роль не найдена.
+        """
         refresh_token = request.cookies.get("refresh_token")
         token = request.cookies.get("access_token")
         if not refresh_token:
@@ -237,6 +352,15 @@ class AuthService(BaseService):
         self,
         user_id: int,
     ):
+        """
+        Возвращает профиль текущего пользователя со списком событий.
+
+        :param user_id: ID пользователя.
+        :type user_id: int
+        :return: Профиль с событиями.
+        :rtype: UserWithEvents
+        :raises UserIsBannedHTTPException: Если пользователь забанен.
+        """
         user = await self.db.users.get_one_with_events(id=user_id)
         if not user.is_active:
             raise UserIsBannedHTTPException
@@ -245,6 +369,27 @@ class AuthService(BaseService):
     async def edit_user_profile(
         self, user_id: int, data: UserPatchDTO, exclude_unset: bool = False
     ):
+        """
+        Обновляет профиль пользователя, включая участие в событиях.
+        Проверяет:
+        - Существование пользователя
+        - Активность аккаунта
+        - Существование событий по ID
+        - Доступность мест в событиях
+
+        :param user_id: ID пользователя.
+        :type user_id: int
+        :param data: Новые данные профиля.
+        :type data: UserPatchDTO
+        :param exclude_unset: Игнорировать неустановленные поля.
+        :type exclude_unset: bool
+        :raises UserIndexWrongHTTPException: Если ID ≤ 0.
+        :raises UserNotFoundHTTPException: Если пользователь не найден.
+        :raises UserIsBannedHTTPException: Если аккаунт неактивен.
+        :raises EventsNotFoundHTTPException: Если одно из событий не существует.
+        :raises EventMaxUsersHTTPException: Если событие заполнено.
+        :raises UserAllReadyExistsHTTPException: Если email уже занят.
+        """
         if user_id <= 0:
             raise UserIndexWrongHTTPException
         try:
@@ -300,6 +445,15 @@ class AuthService(BaseService):
             raise UserAllReadyExistsHTTPException
 
     async def get_user_with_check(self, user_id: int) -> UserDTO:
+        """
+        Получает пользователя по ID с проверкой существования.
+
+        :param user_id: ID пользователя.
+        :type user_id: int
+        :return: Данные пользователя.
+        :rtype: UserDTO
+        :raises UserNotFoundHTTPException: Если пользователь не найден.
+        """
         try:
             return await self.db.users.get_one(id=user_id)  # type: ignore
         except ObjectNotFoundException:

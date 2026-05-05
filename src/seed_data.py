@@ -18,6 +18,16 @@ AsyncSessionLocal = async_session_maker
 
 
 async def seed_data():
+    """
+    Асинхронно заполняет базу данных тестовыми пользователями.
+    Удаляет всех существующих пользователей и добавляет 4 новых:
+    - Админ (admin)
+    - Менеджер (user)
+    - Обычный пользователь (user)
+    - Гость (guest)
+
+    Пароли хэшируются с помощью bcrypt.
+    """
     async with AsyncSessionLocal() as session:
         async with session.begin():
             await session.execute(text("DELETE FROM users"))

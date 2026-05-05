@@ -10,11 +10,9 @@ from src.tasks.celery_app import celery_instance
 def test_task():
     """
     Пример фоновой задачи, имитирующей долгую операцию.
-
     Выполняет:
     - Паузу на 5 секунд.
     - Логирование завершения.
-
     Используется для демонстрации работы Celery.
     """
     logging.info("Я начал")
@@ -24,6 +22,14 @@ def test_task():
 
 @celery_instance.task
 def resize_image(image_path: str):
+    """
+    Изменяет размер изображения до заданной ширины (90px) и сохраняет в static.
+
+    :param image_path: Полный путь к исходному изображению.
+    :type image_path: str
+    :raises FileNotFoundError: Если файл изображения не найден.
+    :raises Exception: При ошибках обработки изображения.
+    """
     logging.debug(f"Вызываеться resize_image с аргументом {image_path=}")
     sizes = [90]
     output_folder = "src/static/images"

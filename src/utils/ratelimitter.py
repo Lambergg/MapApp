@@ -6,10 +6,26 @@ from src.init import redis_manager
 
 
 class RateLimiter:
+    """
+    Класс для реализации rate limiting (ограничения частоты запросов) с использованием Redis.
+    Использует алгоритм "sliding window" через Lua-скрипт в Redis.
+    Гарантирует, что клиент не может выполнить более `max_requests` за `window_seconds`.
+    """
+
     def __init__(self):
         self._lua_sha = None
 
     async def _load_script(self):
+        """
+        Асинхронно загружает Lua-скрипт в Redis и кэширует его SHA1-хэш.
+        Скрипт выполняет:
+        1. Удаление устаревших записей (за пределами окна)
+        2. Подсчёт текущих запросов
+        3. Добавление нового запроса, если лимит не превышен
+        4. Установка TTL для ключа
+
+        :return: None
+        """
         if self._lua_sha is None:
             script = """
             redis.call("ZREMRANGEBYSCORE", KEYS[1], 0, ARGV[2])
@@ -30,6 +46,20 @@ class RateLimiter:
         max_requests: int,
         window_seconds: int,
     ) -> bool:
+        """
+        Проверяет, превысил ли клиент лимит запросов к эндпоинту.
+
+        :param ip_address: IP-адрес клиента.
+        :type ip_address: str
+        :param endpoint: URL-путь эндпоинта (например, '/auth/me').
+        :type endpoint: str
+        :param max_requests: Максимальное количество разрешённых запросов.
+        :type max_requests: int
+        :param window_seconds: Временное окно в секундах.
+        :type window_seconds: int
+        :return: True, если лимит превышен, иначе False.
+        :rtype: bool
+        """
         await self._load_script()
 
         key = f"rate_limiter:{endpoint}:{ip_address}"
@@ -60,6 +90,19 @@ def rate_limiter_factory(
     max_requests: int,
     window_seconds: int,
 ):
+    """
+    Фабрика зависимостей для создания rate limit-ограничений под конкретный эндпоинт.
+
+    :param endpoint: Путь эндпоинта (например, '/auth/me').
+    :type endpoint: str
+    :param max_requests: Максимальное количество запросов.
+    :type max_requests: int
+    :param window_seconds: Длительность окна в секундах.
+    :type window_seconds: int
+    :return: Зависимость FastAPI, которую можно внедрить в роут.
+    :rtype: Callable[[Request], Awaitable[None]]
+    """
+
     async def dependency(
         request: Request,
     ):

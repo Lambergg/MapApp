@@ -10,6 +10,13 @@ if typing.TYPE_CHECKING:
 
 
 class EventsOrm(Base):
+    """
+    Модель события в базе данных.
+
+    Хранит информацию о событии: название, категорию, описание, адрес, дату и максимальное количество участников.
+    Связана со списком пользователей через ассоциативную таблицу `users_events`.
+    """
+
     __tablename__ = "events"
 
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -25,9 +32,22 @@ class EventsOrm(Base):
         secondary="users_events",
         back_populates="events",
     )
+    """
+    Список пользователей, участвующих в событии.
+
+    Связь many-to-many через таблицу `users_events`.
+    Обратная связь: `UsersOrm.events`.
+    """
 
 
 class UsersEventsOrm(Base):
+    """
+    Ассоциативная таблица для связи пользователей и событий (many-to-many).
+
+    Составной первичный ключ из `user_id` и `event_id`.
+    При удалении пользователя или события — соответствующие записи удаляются каскадно.
+    """
+
     __tablename__ = "users_events"
 
     user_id: Mapped[int] = mapped_column(

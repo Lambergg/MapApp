@@ -1,16 +1,10 @@
-from unicodedata import category
-
 from httpx import AsyncClient
 
 
 async def test_event_flow(ac: AsyncClient):
     # /auth/login
     resp_login = await ac.post(
-        "/auth/login",
-        json={
-            "email": "test@test.com",
-            "password": "test1234"
-        }
+        "/auth/login", json={"email": "test@test.com", "password": "test1234"}
     )
     assert resp_login.status_code == 200
     assert ac.cookies["access_token"]
@@ -29,7 +23,7 @@ async def test_event_flow(ac: AsyncClient):
 
     # /events/create
     title = "Фестиваль"
-    description="Крутой фестиваль в Москве"
+    description = "Крутой фестиваль в Москве"
     category = "Досуг"
     address = "Красная площадь"
     date = "2026-01-01T17:00:00"
@@ -42,8 +36,9 @@ async def test_event_flow(ac: AsyncClient):
             "category": category,
             "address": address,
             "date": date,
-            "max_users": max_users
-        })
+            "max_users": max_users,
+        },
+    )
     assert response.status_code == 201
     res = response.json()
     assert isinstance(res, dict)

@@ -24,6 +24,7 @@ from src.utils.db_manager import DBManager
 def check_test_mode():
     assert settings.mode == "TEST"
 
+
 @pytest.fixture(scope="function", autouse=True)
 async def setup_redis():
     """
@@ -42,6 +43,7 @@ async def setup_redis():
     await redis_manager_auth.close()
     await redis_manager.close()
 
+
 async def get_db_null_pool():
     async with DBManager(session_factory=async_session_maker_null_pool) as db:
         yield db
@@ -58,6 +60,12 @@ app.dependency_overrides[get_db] = get_db_null_pool
 
 @pytest.fixture(scope="session", autouse=True)
 async def setup_database(check_test_mode):
+    """
+    Подготавливает базу данных перед запуском тестов.
+    - Удаляет старую схему
+    - Создаёт новые таблицы
+    - Запускается один раз за сессию
+    """
     async with engine_null_pool.begin() as conn:
         await conn.run_sync(Base.metadata.drop_all)
         await conn.run_sync(Base.metadata.create_all)
@@ -78,6 +86,13 @@ async def setup_database(check_test_mode):
 
 @pytest.fixture(scope="session")
 async def ac() -> AsyncGenerator[AsyncClient, None]:
+    """
+    Возвращает тестовый клиент FastAPI.
+    Каждый тест получает чистый экземпляр клиента.
+    Использует `ac` для синхронных вызовов.
+
+    :yield: Тестовый клиент.
+    """
     async with AsyncClient(
         transport=ASGITransport(app=app),
         base_url="http://test",

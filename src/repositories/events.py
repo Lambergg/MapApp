@@ -8,10 +8,28 @@ from src.schemas.events import UsersEventsDTO, EventsDTO
 
 
 class EventsRepository(BaseRepository):
+    """
+    Репозиторий для работы с событиями.
+
+    Предоставляет методы для:
+    - Получения событий по пользователю
+    - Поиска с фильтрацией и пагинацией
+    - Подсчёта участников
+    - Массового получения по ID
+    """
+
     model = EventsOrm
     mapper = EventDataMapper
 
     async def get_events_by_user_id(self, user_id: int) -> list[EventsDTO]:
+        """
+        Возвращает все события, в которых участвует пользователь.
+
+        :param user_id: ID пользователя.
+        :type user_id: int
+        :return: Список событий пользователя.
+        :rtype: list[EventsDTO]
+        """
         query = (
             select(self.model)
             .join(UsersEventsOrm, self.model.id == UsersEventsOrm.event_id)
@@ -23,6 +41,14 @@ class EventsRepository(BaseRepository):
         return [self.mapper.map_to_domain_entity(event) for event in events]
 
     async def get_many_by_ids(self, ids: list[int]) -> list[EventsOrm]:
+        """
+        Возвращает список событий по их ID.
+
+        :param ids: Список ID событий.
+        :type ids: list[int]
+        :return: Список ORM-объектов событий.
+        :rtype: list[EventsOrm]
+        """
         query = select(self.model).where(self.model.id.in_(ids))
         result = await self.session.execute(query)
         return list(result.scalars().all())
@@ -37,6 +63,27 @@ class EventsRepository(BaseRepository):
         date,
         max_users,
     ) -> list[EventsDTO]:
+        """
+        Возвращает отфильтрованный и постраничный список событий.
+        Поддерживает поиск по подстрокам (регистронезависимо) и точному совпадению даты/max_users.
+
+        :param limit: Максимальное количество записей.
+        :type limit: int
+        :param offset: Смещение для пагинации.
+        :type offset: int
+        :param title: Фильтр по названию (опционально).
+        :type title: str | None
+        :param category: Фильтр по категории (опционально).
+        :type category: str | None
+        :param address: Фильтр по адресу (опционально).
+        :type address: str | None
+        :param date: Фильтр по дате (в формате YYYY-MM-DD, опционально).
+        :type date: str | None
+        :param max_users: Фильтр по максимальному числу участников (опционально).
+        :type max_users: int | None
+        :return: Список событий, соответствующих фильтрам.
+        :rtype: list[EventsDTO]
+        """
         query = select(EventsOrm)
 
         if title:
@@ -67,7 +114,7 @@ class EventsRepository(BaseRepository):
         query = query.limit(limit).offset(offset).order_by(EventsOrm.id.asc())
 
         # Логирование SQL (для отладки — раскомментировать при необходимости)
-        print(query.compile(compile_kwargs={"literal_binds": True}))
+        # print(query.compile(compile_kwargs={"literal_binds": True}))
         result = await self.session.execute(query)
 
         return [
@@ -76,6 +123,14 @@ class EventsRepository(BaseRepository):
         ]
 
     async def get_participants_count(self, event_id: int) -> int:
+        """
+        Возвращает количество участников события.
+
+        :param event_id: ID события.
+        :type event_id: int
+        :return: Число участников.
+        :rtype: int
+        """
         query = select(func.count(UsersEventsOrm.user_id)).where(
             UsersEventsOrm.event_id == event_id
         )
@@ -84,12 +139,26 @@ class EventsRepository(BaseRepository):
 
 
 class UsersEventsRepository(BaseRepository):
+    """
+    Репозиторий для управления связями «пользователь ↔ событие» (many-to-many).
+    Используется для обновления списка событий пользователя через синхронизацию.
+    """
+
     model: UsersEventsOrm = UsersEventsOrm
     schema = UsersEventsDTO
 
     async def set_user_events(
         self, user_id: int, events_ids: list[int]
     ) -> None:
+        """
+        Синхронизирует связи пользователя с событиями.
+        Удаляет старые связи, которых нет в `events_ids`, и добавляет новые.
+
+        :param user_id: ID пользователя.
+        :type user_id: int
+        :param events_ids: Новый список ID событий, в которых участвует пользователь.
+        :type events_ids: list[int]
+        """
         # Получаем текущие ID
         get_current_events_ids_query = select(self.model.event_id).filter_by(
             user_id=user_id

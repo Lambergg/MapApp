@@ -4,6 +4,11 @@ from src.schemas.events import EventsDTO
 
 
 class UserRequestAddDTO(BaseModel):
+    """
+    Схема для регистрации нового пользователя.
+    Используется при POST-запросе к `/auth/register`.
+    """
+
     name: str
     sname: str
     age: int
@@ -13,12 +18,26 @@ class UserRequestAddDTO(BaseModel):
 
     @field_validator("password")
     def validate_email(cls, v) -> str:
+        """
+        Проверяет длину пароля.
+
+        :param v: Введённый пароль.
+        :type v: str
+        :return: Пароль, если прошёл проверку.
+        :rtype: str
+        :raises ValueError: Если пароль короче 8 символов.
+        """
         if len(v) < 8:
             raise ValueError("Пароль должен быть больше восьми символов")
         return v
 
 
 class UserLoginDTO(BaseModel):
+    """
+    Схема для входа пользователя в систему.
+    Используется при POST-запросе к `/auth/login`.
+    """
+
     email: EmailStr
     password: str
 
@@ -30,6 +49,11 @@ class UserLoginDTO(BaseModel):
 
 
 class UserAddDTO(BaseModel):
+    """
+    Схема для добавления пользователя в БД.
+    Отличается от `UserRequestAddDTO` тем, что принимает `hashed_password`.
+    """
+
     name: str
     sname: str
     age: int
@@ -38,6 +62,11 @@ class UserAddDTO(BaseModel):
 
 
 class UserDTO(BaseModel):
+    """
+    Основная схема для возврата данных пользователя через API.
+    Не включает пароль.
+    """
+
     id: int
     name: str
     sname: str
@@ -50,15 +79,30 @@ class UserDTO(BaseModel):
 
 
 class UserWithEvents(UserDTO):
+    """
+    Схема для возврата пользователя со списком его событий.
+    Используется в эндпоинтах, где нужно показать профиль с событиями.
+    """
+
     events: list[EventsDTO]
 
 
 class UserPutDTO(BaseModel):
+    """
+    Схема для полного обновления роли и статуса (админка).
+    Используется только администраторами.
+    """
+
     role: str = Field(..., min_length=1)
     is_active: bool = Field(...)
 
 
 class UserPatchDTO(BaseModel):
+    """
+    Схема для полного обновления профиля пользователя.
+    Используется при PUT-запросе к `/auth/edit_profile/{id}`.
+    """
+
     name: str = Field(..., min_length=1)
     sname: str = Field(..., min_length=1)
     age: int = Field(..., ge=1)
@@ -76,4 +120,9 @@ class UserPatchDTO(BaseModel):
 
 
 class UserWithHashedPassword(UserDTO):
+    """
+    Схема для внутреннего использования — содержит хэшированный пароль.
+    Используется при аутентификации, никогда не возвращается клиенту.
+    """
+
     hashed_password: str
