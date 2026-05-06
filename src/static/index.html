@@ -111,7 +111,7 @@
     <p><strong>Адрес:</strong> <span id="eventAddress"></span></p>
     <p><strong>Дата:</strong> <span id="eventDate"></span></p>
     <p><strong>Описание:</strong> <span id="eventDescription"></span></p>
-    <p><strong>Участников:</strong> <span id="eventUsers"></span></p>
+    <p><strong>Кол-во участников:</strong> <span id="eventUsers"></span></p>
     <div style="margin-top: 10px;">
       <button id="joinEventBtn">Участвовать</button>
       <button type="button" class="close-btn" onclick="hideEventDetails()">Закрыть</button>
@@ -150,7 +150,7 @@
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
 
   <script>
-    const API_URL = 'http://localhost:8000';
+    const API_URL = '/api';
     const map = L.map('map').setView([59.938676, 30.314494], 10);
     let tempMarker = null;
     let currentUser = null;
@@ -240,7 +240,7 @@
       document.getElementById('eventAddress').textContent = event.address;
       document.getElementById('eventDate').textContent = new Date(event.date).toLocaleString();
       document.getElementById('eventDescription').textContent = event.descriptions || '—';
-      document.getElementById('eventUsers').textContent = `${event.users_count || 0} / ${event.max_users}`;
+      document.getElementById('eventUsers').textContent = `${event.max_users}`;
 
       const joinBtn = document.getElementById('joinEventBtn');
       joinBtn.onclick = null; // 🔥 Удаляем предыдущий обработчик
