@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 import logging
 
 from src.exceptions import (
@@ -8,7 +9,7 @@ from src.exceptions import (
     EventNotFoundHTTPException,
     EventsNotFoundHTTPException,
     ObjectEmptyDataException,
-    EventDataEmptyHTTPException, WrongUserDataHTTPException,
+    EventDataEmptyHTTPException, WrongUserDataHTTPException, EventsDeletePastException, EventsDeletePastHTTPEException,
 )
 from src.schemas.events import EventsAddDTO, EventsUpdateDTO
 from src.services.base import BaseService
@@ -58,7 +59,18 @@ class EventsService(BaseService):
             logging.error(f"WrongUserData. Route: /events/all. Role: {role}")
             raise WrongUserDataHTTPException
 
-        return await self.db.events.get_all()
+        # Удаляем прошедшие события
+        try:
+            now = datetime.now()
+            await self.db.events.delete_past_events(before=now)
+            await self.db.commit()
+            logging.info(f"Устаревшие события удалены!!!")
+        except EventsDeletePastException:
+            logging.error(f"Произошла ошибка при попытке удалить устаревшие мероприятия")
+            raise EventsDeletePastHTTPEException
+
+        events = await self.db.events.get_all()
+        return events
 
     async def get_my_events(self, user_id: int, role):
         """

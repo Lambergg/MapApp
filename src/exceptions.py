@@ -44,6 +44,10 @@ class UserDeleteTokenException(MapAppException):
     detail = "Вы уже вышли из аккаунта"
 
 
+class EventsDeletePastException(MapAppException):
+    detail = "Ошибка удаления прошедших мероприятий"
+
+
 class UserAllReadyExistsException(MapAppException):
     detail = "Пользователь с таким email уже зарегистрирован"
 
@@ -192,3 +196,8 @@ class EventDataEmptyHTTPException(MapAppHTTPException):
 class EventMaxUsersHTTPException(MapAppHTTPException):
     status_code = 403
     detail = "Событие достигло максимального количества участников"
+
+
+class EventsDeletePastHTTPEException(MapAppHTTPException):
+    status_code = 404
+    detail = "Ошибка удаления прошедших мероприятий"

@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Sequence
 from sqlalchemy import select, delete, insert, func
 
@@ -20,6 +21,13 @@ class EventsRepository(BaseRepository):
 
     model = EventsOrm
     mapper = EventDataMapper
+
+    async def delete_past_events(self, before: datetime):
+        """
+        Удаляет все события, которые произошли до указанной даты.
+        """
+        stmt = delete(self.model).where(self.model.date < before)
+        await self.session.execute(stmt)
 
     async def get_events_by_user_id(self, user_id: int) -> list[EventsDTO]:
         """
