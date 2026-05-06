@@ -1,3 +1,5 @@
+import logging
+
 from src.exceptions import (
     ObjectAlreadyExistsException,
     EventsAlreadyExistsHTTPException,
@@ -6,7 +8,7 @@ from src.exceptions import (
     EventNotFoundHTTPException,
     EventsNotFoundHTTPException,
     ObjectEmptyDataException,
-    EventDataEmptyHTTPException,
+    EventDataEmptyHTTPException, WrongUserDataHTTPException,
 )
 from src.schemas.events import EventsAddDTO, EventsUpdateDTO
 from src.services.base import BaseService
@@ -21,16 +23,21 @@ class EventsService(BaseService):
     - Получения событий пользователя
     """
 
-    async def create_events(self, data: EventsAddDTO):
+    async def create_events(self, data: EventsAddDTO, role):
         """
         Создаёт новое событие.
 
         :param data: Данные для создания события.
+        :param role: Роль авторизованного юзера
         :type data: EventsAddDTO
         :return: Созданное событие.
         :rtype: EventsDTO
         :raises EventsAlreadyExistsHTTPException: Если событие с таким названием уже существует.
         """
+        if role not in ("admin", "user", "guest"):
+            logging.error(f"WrongUserData. Route: /events/create. Role: {role}")
+            raise WrongUserDataHTTPException
+
         try:
             events = await self.db.events.add(data)
             await self.db.commit()
@@ -39,25 +46,35 @@ class EventsService(BaseService):
 
         return events
 
-    async def get_events(self):
+    async def get_events(self, role):
         """
         Возвращает список всех событий.
 
+        :param role: Роль авторизованного юзера
         :return: Список событий.
-        :rtype: list[EventsDTO]
+        :rtype: List[EventsDTO]
         """
+        if role not in ("admin", "user", "guest"):
+            logging.error(f"WrongUserData. Route: /events/all. Role: {role}")
+            raise WrongUserDataHTTPException
+
         return await self.db.events.get_all()
 
-    async def get_my_events(self, user_id: int):
+    async def get_my_events(self, user_id: int, role):
         """
         Возвращает все события, связанные с пользователем (участие или создание).
 
         :param user_id: ID текущего пользователя.
-        :type user_id: int
+        :type user_id: Int
+        :param role: Роль авторизованного юзера
         :return: Список событий пользователя.
-        :rtype: list[EventsDTO]
+        :rtype: List[EventsDTO]
         :raises EventsNotFoundHTTPException: Если у пользователя нет событий.
         """
+        if role not in ("admin", "user", "guest"):
+            logging.error(f"WrongUserData. Route: /events/me. Role: {role}")
+            raise WrongUserDataHTTPException
+
         events = await self.db.events.get_events_by_user_id(user_id=user_id)
 
         if not events:
@@ -65,19 +82,23 @@ class EventsService(BaseService):
 
         return events
 
-    async def get_one_event(self, event_id: int):
+    async def get_one_event(self, event_id: int, role):
         """
         Возвращает одно событие по ID.
 
         :param event_id: Уникальный идентификатор события.
-        :type event_id: int
+        :type event_id: Int
         :return: Данные события.
         :rtype: EventsDTO
+        :param role: Роль авторизованного юзера
         :raises EventIndexWrongHTTPException: Если ID ≤ 0.
         :raises EventNotFoundHTTPException: Если событие не найдено.
         """
         if event_id <= 0:
             raise EventIndexWrongHTTPException
+        if role not in ("admin", "user", "guest"):
+            logging.error(f"WrongUserData. Route: /events/one/{event_id}. Role: {role}")
+            raise WrongUserDataHTTPException
         try:
             event = await self.db.events.get_one(id=event_id)
         except ObjectNotFoundException:
@@ -93,6 +114,7 @@ class EventsService(BaseService):
         address,
         date,
         max_users,
+        role
     ):
         """
         Возвращает отфильтрованный и постраничный список событий.
@@ -110,9 +132,14 @@ class EventsService(BaseService):
         :type date: str | None
         :param max_users: Фильтр по максимальному числу участников (опционально).
         :type max_users: int | None
+        :param role: Роль авторизованного юзера
         :return: Список событий, соответствующих фильтрам.
         :rtype: PaginatedResponse[EventsDTO]
         """
+        if role not in ("admin", "user", "guest"):
+            logging.error(f"WrongUserData. Route: /events/search. Role: {role}")
+            raise WrongUserDataHTTPException
+
         per_page = pagination.per_page or 5
         return await self.db.events.get_filtered_by_time(
             limit=per_page,
@@ -125,23 +152,27 @@ class EventsService(BaseService):
         )
 
     async def edit_event(
-        self, event_id: int, data: EventsUpdateDTO, exclude_unset: bool = False
+        self, event_id: int, data: EventsUpdateDTO, role, exclude_unset: bool = False
     ):
         """
         Обновляет существующее событие.
 
         :param event_id: ID события для редактирования.
-        :type event_id: int
+        :type event_id: Int
         :param data: Новые данные события.
         :type data: EventsUpdateDTO
         :param exclude_unset: Игнорировать неустановленные поля.
-        :type exclude_unset: bool
+        :type exclude_unset: Bool
+        :param role: Роль авторизованного юзера
         :raises EventIndexWrongHTTPException: Если ID ≤ 0.
         :raises EventsNotFoundHTTPException: Если событие не найдено.
         :raises EventDataEmptyHTTPException: Если переданы пустые данные.
         """
         if event_id <= 0:
             raise EventIndexWrongHTTPException
+        if role not in ("admin", "user", "guest"):
+            logging.error(f"WrongUserData. Route: /events/edit/{event_id}. Role: {role}")
+            raise WrongUserDataHTTPException
         try:
             await self.db.events.get_one(id=event_id)
         except ObjectNotFoundException:
@@ -157,17 +188,21 @@ class EventsService(BaseService):
 
         await self.db.commit()
 
-    async def delete_event(self, event_id: int):
+    async def delete_event(self, event_id: int, role):
         """
         Удаляет событие по ID.
 
         :param event_id: ID события для удаления.
-        :type event_id: int
+        :type event_id: Int
+        :param role: Роль авторизованного юзера
         :raises EventIndexWrongHTTPException: Если ID ≤ 0.
         :raises EventNotFoundHTTPException: Если событие не найдено.
         """
         if event_id <= 0:
             raise EventIndexWrongHTTPException
+        if role not in ("admin", "user", "guest"):
+            logging.error(f"WrongUserData. Route: /events/delete/{event_id}. Role: {role}")
+            raise WrongUserDataHTTPException
 
         try:
             await self.db.events.get_one(id=event_id)

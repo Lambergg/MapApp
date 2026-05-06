@@ -3,7 +3,6 @@ from fastapi import APIRouter, Response, Request, Body, status, Depends, Path
 from src.api.dependencies import UserIdDep, DBDep, UserRoleDep
 from src.exceptions import (
     UserDeleteTokenHTTPException,
-    WrongUserDataHTTPException,
 )
 from src.schemas.users import UserRequestAddDTO, UserLoginDTO, UserPatchDTO
 from src.services.auth import AuthService
@@ -166,10 +165,9 @@ async def edit_user_profile(
     :param user_data: Новые данные (частичные).
     :return: HTTP 200 OK.
     """
-    if role not in ("admin", "user", "guest"):
-        raise WrongUserDataHTTPException
+
     await AuthService(db).edit_user_profile(
-        user_id, user_data, exclude_unset=True
+        user_id, user_data, role, exclude_unset=True
     )
     return status.HTTP_200_OK
 

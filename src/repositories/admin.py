@@ -28,17 +28,17 @@ class AdminRepository(UsersRepository):
         Поиск регистронезависимый (через `LOWER()` в SQL).
 
         :param limit: Максимальное количество возвращаемых записей.
-        :type limit: int
+        :type limit: Int
         :param offset: Смещение для пагинации.
-        :type offset: int
+        :type offset: Int
         :param email: Фильтр по подстроке email (опционально).
-        :type email: str | None
+        :type email: Str | None
         :param name: Фильтр по подстроке имени (опционально).
-        :type name: str | None
+        :type name: Str | None
         :param sname: Фильтр по подстроке фамилии (опционально).
-        :type sname: str | None
+        :type sname: Str | None
         :return: Список пользователей, соответствующих фильтрам.
-        :rtype: list[UserDTO]
+        :rtype: List[UserDTO]
         """
         query = select(UsersOrm)
 

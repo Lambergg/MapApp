@@ -15,7 +15,7 @@ import uvicorn
 
 sys.path.append(str(Path(__file__).parent.parent))
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 
 from src.init import redis_manager, redis_manager_auth
 from src.health.health import router as heals_router

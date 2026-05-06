@@ -3,10 +3,8 @@ from fastapi_cache.decorator import cache
 
 from src.api.dependencies import DBDep, UserRoleDep, PaginationDep
 from src.exceptions import (
-    AdminOnlyAccessHTTPException,
     ObjectNotFoundException,
     UserNotFoundHTTPException,
-    UserIndexWrongHTTPException,
 )
 from src.schemas.users import UserPutDTO
 from src.services.admin import AdminService
@@ -38,14 +36,13 @@ async def get_users(
     :param sname: Фильтр по фамилии
     :return: List[UserDTO] — список пользователей.
     """
-    if role != "admin":
-        raise AdminOnlyAccessHTTPException
 
     return await AdminService(db).get_filtered_by_time(
         pagination,
         email,
         name,
         sname,
+        role
     )
 
 
@@ -67,9 +64,7 @@ async def get_user(
     :return: Возврат UserDTO — данные пользователя. По его id.
     """
     try:
-        if role != "admin":
-            raise AdminOnlyAccessHTTPException
-        return await AdminService(db).get_user(user_id)
+        return await AdminService(db).get_user(user_id, role)
     except ObjectNotFoundException:
         raise UserNotFoundHTTPException
 
@@ -103,10 +98,9 @@ async def edit_user_role(
     :param data: Схема UserPutDTO
     :return: 200 OK при успехе.
     """
-    if role != "admin":
-        raise AdminOnlyAccessHTTPException
+
     await AdminService(db).edit_user_role(
-        user_id, user_data, exclude_unset=False
+        user_id, user_data, role, exclude_unset=False
     )
     return status.HTTP_200_OK
 
@@ -128,9 +122,8 @@ async def delete_user(
     :param user_id: query-параметр ID пользователя (до 2147483647)
     :return: 204 No Content
     """
-    if role != "admin":
-        raise AdminOnlyAccessHTTPException
-    await AdminService(db).delete_user(user_id)
+
+    await AdminService(db).delete_user(user_id, role)
     return status.HTTP_204_NO_CONTENT
 
 
@@ -151,15 +144,8 @@ async def delete_account(
     :param user_id: query-параметр ID пользователя (до 2147483647)
     :return: message: "Аккаунт успешно деактивирован (Забанен)", status: 200
     """
-    if role != "admin":
-        raise AdminOnlyAccessHTTPException
-    if user_id <= 0:
-        raise UserIndexWrongHTTPException
-    try:
-        await db.users.get_one(id=user_id)
-    except ObjectNotFoundException:
-        raise UserNotFoundHTTPException
-    await AdminService(db).soft_delete_user(user_id)
+
+    await AdminService(db).soft_delete_user(user_id, role)
     await delete_refresh_token(user_id)
     return {
         "message": "Аккаунт успешно деактивирован (Забанен)",

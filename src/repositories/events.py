@@ -26,9 +26,9 @@ class EventsRepository(BaseRepository):
         Возвращает все события, в которых участвует пользователь.
 
         :param user_id: ID пользователя.
-        :type user_id: int
+        :type user_id: Int
         :return: Список событий пользователя.
-        :rtype: list[EventsDTO]
+        :rtype: List[EventsDTO]
         """
         query = (
             select(self.model)
@@ -45,9 +45,9 @@ class EventsRepository(BaseRepository):
         Возвращает список событий по их ID.
 
         :param ids: Список ID событий.
-        :type ids: list[int]
+        :type ids: List[int]
         :return: Список ORM-объектов событий.
-        :rtype: list[EventsOrm]
+        :rtype: List[EventsOrm]
         """
         query = select(self.model).where(self.model.id.in_(ids))
         result = await self.session.execute(query)
@@ -68,21 +68,21 @@ class EventsRepository(BaseRepository):
         Поддерживает поиск по подстрокам (регистронезависимо) и точному совпадению даты/max_users.
 
         :param limit: Максимальное количество записей.
-        :type limit: int
+        :type limit: Int
         :param offset: Смещение для пагинации.
-        :type offset: int
+        :type offset: Int
         :param title: Фильтр по названию (опционально).
-        :type title: str | None
+        :type title: Str | None
         :param category: Фильтр по категории (опционально).
-        :type category: str | None
+        :type category: Str | None
         :param address: Фильтр по адресу (опционально).
-        :type address: str | None
+        :type address: Str | None
         :param date: Фильтр по дате (в формате YYYY-MM-DD, опционально).
-        :type date: str | None
+        :type date: Str | None
         :param max_users: Фильтр по максимальному числу участников (опционально).
-        :type max_users: int | None
+        :type max_users: Int | None
         :return: Список событий, соответствующих фильтрам.
-        :rtype: list[EventsDTO]
+        :rtype: List[EventsDTO]
         """
         query = select(EventsOrm)
 
@@ -127,9 +127,9 @@ class EventsRepository(BaseRepository):
         Возвращает количество участников события.
 
         :param event_id: ID события.
-        :type event_id: int
+        :type event_id: Int
         :return: Число участников.
-        :rtype: int
+        :rtype: Int
         """
         query = select(func.count(UsersEventsOrm.user_id)).where(
             UsersEventsOrm.event_id == event_id
@@ -155,9 +155,9 @@ class UsersEventsRepository(BaseRepository):
         Удаляет старые связи, которых нет в `events_ids`, и добавляет новые.
 
         :param user_id: ID пользователя.
-        :type user_id: int
+        :type user_id: Int
         :param events_ids: Новый список ID событий, в которых участвует пользователь.
-        :type events_ids: list[int]
+        :type events_ids: List[int]
         """
         # Получаем текущие ID
         get_current_events_ids_query = select(self.model.event_id).filter_by(

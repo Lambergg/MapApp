@@ -53,7 +53,7 @@ class UsersRepository(BaseRepository):
         Если пользователь уже неактивен — выбрасывает исключение.
 
         :param user_id: ID пользователя.
-        :type user_id: int
+        :type user_id: Int
         :raises UserBanExistsHTTPException: Если пользователь уже забанен.
         """
         query = select(self.model).filter_by(id=user_id)
@@ -78,7 +78,7 @@ class UsersRepository(BaseRepository):
         Использует `selectinload` для избежания проблемы N+1.
 
         :param filter_by: Условия фильтрации (например, `id=5`).
-        :type filter_by: dict
+        :type filter_by: Dict
         :return: Пользователь с событиями в формате UserWithEvents.
         :rtype: UserWithEvents
         :raises UserNotFoundException: Если пользователь не найден.

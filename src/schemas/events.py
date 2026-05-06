@@ -23,9 +23,9 @@ class EventsAddDTO(BaseModel):
         Убирает информацию о временной зоне, если она есть.
 
         :param v: Входная дата.
-        :type v: datetime | None
+        :type v: Datetime | None
         :return: Очищенная дата.
-        :rtype: datetime | None
+        :rtype: Datetime | None
         """
         if v is None:
             return v
@@ -66,9 +66,9 @@ class EventsUpdateDTO(BaseModel):
         Убирает информацию о временной зоне, если она есть.
 
         :param v: Входная дата.
-        :type v: datetime | None
+        :type v: Datetime | None
         :return: Очищенная дата.
-        :rtype: datetime | None
+        :rtype: Datetime | None
         """
         if v is None:
             return v

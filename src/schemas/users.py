@@ -22,9 +22,9 @@ class UserRequestAddDTO(BaseModel):
         Проверяет длину пароля.
 
         :param v: Введённый пароль.
-        :type v: str
+        :type v: Str
         :return: Пароль, если прошёл проверку.
-        :rtype: str
+        :rtype: Str
         :raises ValueError: Если пароль короче 8 символов.
         """
         if len(v) < 8:

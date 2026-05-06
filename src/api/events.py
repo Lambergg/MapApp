@@ -2,7 +2,6 @@ from fastapi import APIRouter, Body, status, Path, Query
 from fastapi_cache.decorator import cache
 
 from src.api.dependencies import DBDep, UserRoleDep, PaginationDep, UserIdDep
-from src.exceptions import WrongUserDataHTTPException
 from src.schemas.events import EventsAddDTO, EventsUpdateDTO
 from src.services.events import EventsService
 
@@ -25,15 +24,13 @@ async def get_events(
     :param db: Зависимость для работы с базой данных.
     :type db: DBDep
     :param role: Роль текущего пользователя (admin/user/guest).
-    :type role: str
+    :type role: Str
     :return: Список событий.
-    :rtype: list[EventDTO]
+    :rtype: List[EventDTO]
     :raises WrongUserDataHTTPException: Если роль не в списке допустимых.
     """
-    if role not in ("admin", "user", "guest"):
-        raise WrongUserDataHTTPException
 
-    return await EventsService(db).get_events()
+    return await EventsService(db).get_events(role)
 
 
 @router.get(
@@ -49,17 +46,15 @@ async def get_one_event(db: DBDep, role: UserRoleDep, event_id: int):
     :param db: Сессия базы данных.
     :type db: DBDep
     :param role: Роль пользователя.
-    :type role: str
+    :type role: Str
     :param event_id: Уникальный идентификатор события. Должен быть > 0.
     :type event_id: int
     :return: Данные события.
     :rtype: EventDTO
     :raises HTTPException 404: Если событие не найдено.
     """
-    if role not in ("admin", "user", "guest"):
-        raise WrongUserDataHTTPException
 
-    return await EventsService(db).get_one_event(event_id)
+    return await EventsService(db).get_one_event(event_id, role)
 
 
 @router.get(
@@ -77,18 +72,16 @@ async def get_my_events(
     Возвращает все события, созданные или в которых участвует пользователь.
 
     :param user_id: ID текущего пользователя (из JWT).
-    :type user_id: int
+    :type user_id: Int
     :param db: Сессия базы данных.
     :type db: DBDep
     :param role: Роль пользователя.
-    :type role: str
+    :type role: Str
     :return: Список событий пользователя.
-    :rtype: list[EventDTO]
+    :rtype: List[EventDTO]
     """
-    if role not in ("admin", "user", "guest"):
-        raise WrongUserDataHTTPException
 
-    return await EventsService(db).get_my_events(user_id)
+    return await EventsService(db).get_my_events(user_id, role)
 
 
 @router.get(
@@ -131,8 +124,6 @@ async def get_search_events(
     :return: Отфильтрованный список событий.
     :rtype: PaginatedResponse[EventDTO]
     """
-    if role not in ("admin", "user", "guest"):
-        raise WrongUserDataHTTPException
 
     return await EventsService(db).get_filtered_by_time(
         pagination,
@@ -141,6 +132,7 @@ async def get_search_events(
         address,
         date,
         max_users,
+        role
     )
 
 
@@ -175,17 +167,15 @@ async def create_events(
     :param db: Сессия базы данных.
     :type db: DBDep
     :param role: Роль пользователя.
-    :type role: str
+    :type role: Str
     :param data: Данные для создания события.
     :type data: EventsAddDTO
     :return: Информация о созданном событии.
-    :rtype: dict
+    :rtype: Dict
     :status 201: Событие успешно создано.
     """
-    if role not in ("admin", "user", "guest"):
-        raise WrongUserDataHTTPException
 
-    events = await EventsService(db).create_events(data)
+    events = await EventsService(db).create_events(data, role)
     return {"Status": status.HTTP_201_CREATED, "data": events}
 
 
@@ -219,21 +209,20 @@ async def edit_event(
     Обновляет существующее событие по ID.
 
     :param role: Роль пользователя.
-    :type role: str
+    :type role: Str
     :param db: Сессия базы данных.
     :type db: DBDep
     :param event_id: ID события для обновления.
-    :type event_id: int
+    :type event_id: Int
     :param event_data: Новые данные события.
     :type event_data: EventsUpdateDTO
     :return: Статус 200 при успехе.
-    :rtype: int
+    :rtype: Int
     :status 200: Успешно обновлено.
     :raises HTTPException 404: Если событие не найдено.
     """
-    if role not in ("admin", "user", "guest"):
-        raise WrongUserDataHTTPException
-    await EventsService(db).edit_event(event_id, event_data, exclude_unset=True)
+
+    await EventsService(db).edit_event(event_id, event_data, role, exclude_unset=True)
     return status.HTTP_200_OK
 
 
@@ -254,15 +243,14 @@ async def delete_event(
     :param db: Сессия базы данных.
     :type db: DBDep
     :param role: Роль пользователя.
-    :type role: str
+    :type role: Str
     :param event_id: ID события для удаления.
-    :type event_id: int
+    :type event_id: Int
     :return: Пустой ответ при успехе.
     :rtype: None
     :status 204: Событие успешно удалено.
     :raises HTTPException 404: Если событие не найдено.
     """
-    if role not in ("admin", "user", "guest"):
-        raise WrongUserDataHTTPException
-    await EventsService(db).delete_event(event_id)
+
+    await EventsService(db).delete_event(event_id, role)
     return status.HTTP_204_NO_CONTENT

@@ -11,7 +11,7 @@ class DBManager:
     автоматического открытия и закрытия сессии SQLAlchemy.
 
     :param session_factory: Фабрика асинхронных сессий SQLAlchemy.
-    :type session_factory: async_sessionmaker
+    :type session_factory: Async_sessionmaker
     """
 
     def __init__(self, session_factory):
@@ -44,7 +44,7 @@ class DBManager:
     async def __aexit__(self, *args):
         """
         Асинхронный выход из контекста.
-        Выполняет откат при ошибках и закрывает сессию.
+        Выполняет откат при ошибках и закрывает сессии.
 
         :param args: Исключение (если есть): тип, значение, трассировка.
         """

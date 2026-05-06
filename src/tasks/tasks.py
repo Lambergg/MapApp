@@ -26,7 +26,7 @@ def resize_image(image_path: str):
     Изменяет размер изображения до заданной ширины (90px) и сохраняет в static.
 
     :param image_path: Полный путь к исходному изображению.
-    :type image_path: str
+    :type image_path: Str
     :raises FileNotFoundError: Если файл изображения не найден.
     :raises Exception: При ошибках обработки изображения.
     """

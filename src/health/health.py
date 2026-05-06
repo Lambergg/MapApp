@@ -18,7 +18,7 @@ async def redis_set():
     Используется для проверки работоспособности подключения к Redis.
 
     :return: HTTP статус 201 при успешной записи.
-    :rtype: int
+    :rtype: Int
     """
     key1 = "A"
     value1 = "1234"
@@ -41,7 +41,7 @@ async def get_data_from_redis(_: None = Depends(rate_limit_auth_get_me)):
     :param _: Применяется зависимость лимита запросов (игнорируется).
     :type _: None
     :return: Словарь с полученными значениями.
-    :rtype: dict[str, str | None]
+    :rtype: Dict[str, str | None]
     """
     value_db0 = await redis_manager.get("A")
     value_db1 = await redis_manager_auth.get("B")

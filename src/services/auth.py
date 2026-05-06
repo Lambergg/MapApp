@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime, timezone, timedelta
 import jwt
 import uuid
@@ -139,9 +140,9 @@ class AuthService(BaseService):
         Хэширует пароль с помощью bcrypt.
 
         :param password: Открытый пароль.
-        :type password: str
+        :type password: Str
         :return: Хэшированная строка.
-        :rtype: str
+        :rtype: Str
         """
         return self.pwd_context.hash(password)
 
@@ -152,11 +153,11 @@ class AuthService(BaseService):
         Проверяет соответствие открытого пароля хэшированному.
 
         :param plain_password: Введённый пользователем пароль.
-        :type plain_password: str
+        :type plain_password: Str
         :param hashed_password: Хэш из базы данных.
-        :type hashed_password: str
+        :type hashed_password: Str
         :return: True, если пароли совпадают.
-        :rtype: bool
+        :rtype: Bool
         """
         return self.pwd_context.verify(plain_password, hashed_password)
 
@@ -220,7 +221,7 @@ class AuthService(BaseService):
         :param response: HTTP-ответ для установки cookies.
         :type response: Response
         :return: Access и refresh токены.
-        :rtype: dict[str, str]
+        :rtype: Dict[str, str]
         :raises UserNotRegisterHTTPException: Если пользователь не найден.
         :raises WrongPasswordHTTPException: Если пароль неверный.
         :raises UserIsBannedHTTPException: Если пользователь деактивирован.
@@ -356,7 +357,7 @@ class AuthService(BaseService):
         Возвращает профиль текущего пользователя со списком событий.
 
         :param user_id: ID пользователя.
-        :type user_id: int
+        :type user_id: Int
         :return: Профиль с событиями.
         :rtype: UserWithEvents
         :raises UserIsBannedHTTPException: Если пользователь забанен.
@@ -367,7 +368,7 @@ class AuthService(BaseService):
         return user
 
     async def edit_user_profile(
-        self, user_id: int, data: UserPatchDTO, exclude_unset: bool = False
+        self, user_id: int, data: UserPatchDTO, role, exclude_unset: bool = False
     ):
         """
         Обновляет профиль пользователя, включая участие в событиях.
@@ -378,11 +379,12 @@ class AuthService(BaseService):
         - Доступность мест в событиях
 
         :param user_id: ID пользователя.
-        :type user_id: int
+        :type user_id: Int
         :param data: Новые данные профиля.
         :type data: UserPatchDTO
         :param exclude_unset: Игнорировать неустановленные поля.
-        :type exclude_unset: bool
+        :type exclude_unset: Bool
+        :param role: Роли пользователей.
         :raises UserIndexWrongHTTPException: Если ID ≤ 0.
         :raises UserNotFoundHTTPException: Если пользователь не найден.
         :raises UserIsBannedHTTPException: Если аккаунт неактивен.
@@ -392,6 +394,9 @@ class AuthService(BaseService):
         """
         if user_id <= 0:
             raise UserIndexWrongHTTPException
+        if role not in ("admin", "user", "guest"):
+            logging.error(f"WrongUserData. Route: /auth/edit_profile/{user_id}. Role: {role}")
+            raise WrongUserDataHTTPException
         try:
             user = await self.db.users.get_one(id=user_id)
         except ObjectNotFoundException:
@@ -449,7 +454,7 @@ class AuthService(BaseService):
         Получает пользователя по ID с проверкой существования.
 
         :param user_id: ID пользователя.
-        :type user_id: int
+        :type user_id: Int
         :return: Данные пользователя.
         :rtype: UserDTO
         :raises UserNotFoundHTTPException: Если пользователь не найден.

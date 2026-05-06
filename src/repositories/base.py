@@ -28,9 +28,9 @@ class BaseRepository:
     Все операции используют асинхронную сессию SQLAlchemy и маппинг через `DataMapper`.
 
     :cvar model: ORM-модель SQLAlchemy (например, `UsersOrm`, `EventsOrm`).
-    :type model: type[Base]
+    :type model: Type[Base]
     :cvar mapper: Класс маппера для преобразования между ORM и Pydantic.
-    :type mapper: type[DataMapper]
+    :type mapper: Type[DataMapper]
     """
 
     model: type[Base]
@@ -72,7 +72,7 @@ class BaseRepository:
         По умолчанию вызывает `get_filtered()` без фильтров.
 
         :return: Список всех объектов.
-        :rtype: list[BaseModel | Any]
+        :rtype: List[BaseModel | Any]
         """
         return await self.get_filtered()
 
@@ -81,7 +81,7 @@ class BaseRepository:
         Возвращает один объект по фильтру или `None`, если не найден.
 
         :param filter_by: Поля для поиска (например, `id=1`).
-        :type filter_by: dict
+        :type filter_by: Dict
         :return: Объект в формате Pydantic или `None`.
         :rtype: BaseModel | None | Any
         """
@@ -98,7 +98,7 @@ class BaseRepository:
         Возвращает один объект по фильтру. Выбрасывает исключение, если не найден.
 
         :param filter_by: Поля для поиска.
-        :type filter_by: dict
+        :type filter_by: Dict
         :return: Объект в формате Pydantic.
         :rtype: BaseModel
         :raises ObjectNotFoundException: Если объект не найден.
@@ -164,9 +164,9 @@ class BaseRepository:
         :param data: Pydantic-схема с новыми данными.
         :type data: BaseModel
         :param exclude_unset: Игнорировать поля, которые не были установлены.
-        :type exclude_unset: bool
+        :type exclude_unset: Bool
         :param filter_by: Условия для поиска обновляемого объекта.
-        :type filter_by: dict
+        :type filter_by: Dict
         :raises ObjectNotFoundException: Если объект не найден.
         :raises ObjectAlreadyExistsException: При нарушении уникальности.
         :raises ObjectNotNullException: При попытке установить NULL в NOT NULL поле.
@@ -212,7 +212,7 @@ class BaseRepository:
         Удаляет объекты по фильтру.
 
         :param filter_by: Условия для удаления (например, `id=5`).
-        :type filter_by: dict
+        :type filter_by: Dict
         """
         delete_stmt = delete(self.model).filter_by(**filter_by)
         await self.session.execute(delete_stmt)

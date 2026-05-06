@@ -1,7 +1,6 @@
 from fastapi import APIRouter, UploadFile
 
 from src.api.dependencies import UserRoleDep
-from src.exceptions import AdminOrModeratorOrUserOnlyAccessHTTPException
 from src.services.images import ImagesService
 
 router = APIRouter(prefix="/images", tags=["Изображения отелей"])
@@ -17,16 +16,15 @@ def upload_image(role: UserRoleDep, file: UploadFile):
     Загружает изображение на сервер.
 
     :param role: Роль текущего пользователя (для проверки прав доступа).
-    :type role: str
+    :type role: Str
     :param file: Файл изображения, отправленный в формате multipart/form-data.
     :type file: UploadFile
     :return: URL загруженного изображения.
-    :rtype: dict[str, str]
-    :raises AdminOrModeratorOrUserOnlyAccessHTTPException: Если роль не 'admin', 'manager' или 'user'.
+    :rtype: Dict[str, str]
+    :raises AdminOrModeratorOrUserOnlyAccessHTTPException: Если роль не 'admin', 'moderator' или 'user'.
     """
-    if role not in ("admin", "manager", "user"):
-        raise AdminOrModeratorOrUserOnlyAccessHTTPException
-    image_path = ImagesService().upload_image(file)
+
+    image_path = ImagesService().upload_image(file, role)
     image_url = image_path.replace("src/", "/")
 
     return {"image_url": image_url}

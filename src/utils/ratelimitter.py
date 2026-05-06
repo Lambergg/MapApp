@@ -50,15 +50,15 @@ class RateLimiter:
         Проверяет, превысил ли клиент лимит запросов к эндпоинту.
 
         :param ip_address: IP-адрес клиента.
-        :type ip_address: str
+        :type ip_address: Str
         :param endpoint: URL-путь эндпоинта (например, '/auth/me').
-        :type endpoint: str
+        :type endpoint: Str
         :param max_requests: Максимальное количество разрешённых запросов.
-        :type max_requests: int
+        :type max_requests: Int
         :param window_seconds: Временное окно в секундах.
-        :type window_seconds: int
+        :type window_seconds: Int
         :return: True, если лимит превышен, иначе False.
-        :rtype: bool
+        :rtype: Bool
         """
         await self._load_script()
 
