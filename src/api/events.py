@@ -1,7 +1,9 @@
-from fastapi import APIRouter, Body, status, Path, Query
+from typing import Annotated
+
+from fastapi import APIRouter, Body, Path, Query, status, Depends
 from fastapi_cache.decorator import cache
 
-from src.api.dependencies import DBDep, UserRoleDep, PaginationDep, UserIdDep
+from src.api.dependencies import UserIdDep, UserRoleDep, PaginationParams, get_db_manager, get_db
 from src.schemas.events import EventsAddDTO, EventsUpdateDTO
 from src.services.events import EventsService
 
@@ -15,7 +17,7 @@ router = APIRouter(prefix="/events", tags=["События"])
 )
 @cache(expire=10)
 async def get_events(
-    db: DBDep,
+    db: Annotated[get_db_manager, Depends(get_db)],
     role: UserRoleDep,
 ):
     """
@@ -39,7 +41,10 @@ async def get_events(
     description="<h1>Возвращает событие по его ID</h1>",
 )
 @cache(expire=10)
-async def get_one_event(db: DBDep, role: UserRoleDep, event_id: int):
+async def get_one_event(
+    db: Annotated[get_db_manager, Depends(get_db)],
+    role: UserRoleDep, event_id: int
+):
     """
     Возвращает одно событие по ID.
 
@@ -65,7 +70,7 @@ async def get_one_event(db: DBDep, role: UserRoleDep, event_id: int):
 @cache(expire=10)
 async def get_my_events(
     user_id: UserIdDep,
-    db: DBDep,
+    db: Annotated[get_db_manager, Depends(get_db)],
     role: UserRoleDep,
 ):
     """
@@ -91,8 +96,8 @@ async def get_my_events(
 )
 @cache(expire=10)
 async def get_search_events(
-    db: DBDep,
-    pagination: PaginationDep,
+    db: Annotated[get_db_manager, Depends(get_db)],
+    pagination: Annotated[PaginationParams, Depends()],
     role: UserRoleDep,
     title: str | None = Query(None, description="Название события"),
     category: str | None = Query(None, description="Категория события"),
@@ -143,7 +148,7 @@ async def get_search_events(
     status_code=status.HTTP_201_CREATED,
 )
 async def create_events(
-    db: DBDep,
+    db: Annotated[get_db_manager, Depends(get_db)],
     role: UserRoleDep,
     data: EventsAddDTO = Body(
         openapi_examples={
@@ -187,7 +192,7 @@ async def create_events(
 )
 async def edit_event(
     role: UserRoleDep,
-    db: DBDep,
+    db: Annotated[get_db_manager, Depends(get_db)],
     event_id: int = Path(..., le=2147483647),
     event_data: EventsUpdateDTO = Body(
         openapi_examples={
@@ -233,7 +238,7 @@ async def edit_event(
     status_code=status.HTTP_204_NO_CONTENT,
 )
 async def delete_event(
-    db: DBDep,
+    db: Annotated[get_db_manager, Depends(get_db)],
     role: UserRoleDep,
     event_id: int = Path(..., le=2147483647),
 ):

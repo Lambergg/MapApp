@@ -1,5 +1,5 @@
 from src.repositories.admin import AdminRepository
-from src.repositories.events import UsersEventsRepository, EventsRepository
+from src.repositories.events import EventsRepository, UsersEventsRepository
 from src.repositories.users import UsersRepository
 
 

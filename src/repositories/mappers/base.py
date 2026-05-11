@@ -1,4 +1,4 @@
-from typing import TypeVar, Type
+from typing import Type, TypeVar
 
 from pydantic import BaseModel
 from sqlalchemy import Row, RowMapping

@@ -1,14 +1,14 @@
-from fastapi import APIRouter, Path, Body, status, Query
+from typing import Annotated
+
+from fastapi import APIRouter, Body, Path, Query, status, Depends
 from fastapi_cache.decorator import cache
 
-from src.api.dependencies import DBDep, UserRoleDep, PaginationDep
-from src.exceptions import (
-    ObjectNotFoundException,
-    UserNotFoundHTTPException,
-)
+from src.api.dependencies import UserRoleDep, PaginationParams, get_db, get_db_manager
+from src.exceptions import ObjectNotFoundException, UserNotFoundHTTPException
 from src.schemas.users import UserPutDTO
 from src.services.admin import AdminService
 from src.utils.redis_utils import delete_refresh_token
+
 
 router = APIRouter(prefix="/admin", tags=["Администрирование"])
 
@@ -20,8 +20,8 @@ router = APIRouter(prefix="/admin", tags=["Администрирование"])
 )
 @cache(expire=10)
 async def get_users(
-    db: DBDep,
-    pagination: PaginationDep,
+    db: Annotated[get_db_manager, Depends(get_db)],
+    pagination: Annotated[PaginationParams, Depends()],
     role: UserRoleDep,
     email: str | None = Query(None, description="Email пользователя"),
     name: str | None = Query(None, description="Имя пользователя"),
@@ -53,7 +53,7 @@ async def get_users(
 )
 @cache(expire=10)
 async def get_user(
-    db: DBDep,
+    db: Annotated[get_db_manager, Depends(get_db)],
     role: UserRoleDep,
     user_id: int = Path(..., le=2147483647),
 ):
@@ -76,7 +76,7 @@ async def get_user(
     status_code=status.HTTP_200_OK,
 )
 async def edit_user_role(
-    db: DBDep,
+    db: Annotated[get_db_manager, Depends(get_db)],
     role: UserRoleDep,
     user_id: int = Path(..., le=2147483647),
     user_data: UserPutDTO = Body(
@@ -112,7 +112,7 @@ async def edit_user_role(
     status_code=status.HTTP_204_NO_CONTENT,
 )
 async def delete_user(
-    db: DBDep,
+    db: Annotated[get_db_manager, Depends(get_db)],
     role: UserRoleDep,
     user_id: int = Path(..., le=2147483647),
 ):
@@ -134,7 +134,7 @@ async def delete_user(
     status_code=status.HTTP_200_OK,
 )
 async def delete_account(
-    db: DBDep,
+    db: Annotated[get_db_manager, Depends(get_db)],
     role: UserRoleDep,
     user_id: int = Path(..., le=2147483647),
 ):

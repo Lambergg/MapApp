@@ -1,5 +1,6 @@
 from typing import Annotated
-from fastapi import Depends, Query, HTTPException, Request
+
+from fastapi import Depends, HTTPException, Query, Request
 from pydantic import BaseModel
 
 from src.database import async_session_maker
@@ -30,9 +31,6 @@ class PaginationParams(BaseModel):
     Ограничения: от 1 до 30.
     Если не указано — используется значение по умолчанию из сервиса.
     """
-
-
-PaginationDep = Annotated[PaginationParams, Depends()]
 
 
 def get_token(request: Request) -> str:
@@ -103,6 +101,3 @@ async def get_db():
     """
     async with get_db_manager() as db:
         yield db
-
-
-DBDep = Annotated[DBManager, Depends(get_db)]

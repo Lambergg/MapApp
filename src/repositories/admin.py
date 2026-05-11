@@ -1,4 +1,4 @@
-from sqlalchemy import select, func
+from sqlalchemy import func, select
 
 from src.models import UsersOrm
 from src.repositories.users import UsersRepository

@@ -1,5 +1,6 @@
-from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 import logging
+
+from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 
 from src.connectors.ws_connector import manager
 

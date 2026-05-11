@@ -1,15 +1,12 @@
 # ruff: noqa F403 F401
 from logging.config import fileConfig
 
-from sqlalchemy import engine_from_config
-from sqlalchemy import pool
-
 from alembic import context
+from sqlalchemy import engine_from_config, pool
 
 from src.config import settings
 from src.database import Base
 from src.models import *
-
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

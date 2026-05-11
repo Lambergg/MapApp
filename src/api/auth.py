@@ -1,16 +1,14 @@
-from fastapi import APIRouter, Response, Request, Body, status, Depends, Path
+from typing import Annotated
 
-from src.api.dependencies import UserIdDep, DBDep, UserRoleDep
-from src.exceptions import (
-    UserDeleteTokenHTTPException,
-)
-from src.schemas.users import UserRequestAddDTO, UserLoginDTO, UserPatchDTO
+from fastapi import APIRouter, Body, Depends, Path, Request, Response, status
+
+from src.api.dependencies import UserIdDep, UserRoleDep, get_db_manager, get_db
+from src.exceptions import UserDeleteTokenHTTPException
+from src.schemas.users import UserLoginDTO, UserPatchDTO, UserRequestAddDTO
 from src.services.auth import AuthService
 from src.tasks.tasks import test_task
-from src.utils.ratelimitter import (
-    rate_limit_auth_refresh,
-    rate_limit_auth_get_me,
-)
+from src.utils.ratelimitter import (rate_limit_auth_get_me,
+                                    rate_limit_auth_refresh)
 from src.utils.redis_utils import delete_refresh_token
 
 router = APIRouter(prefix="/auth", tags=["Авторизация и аутентификация"])
@@ -23,7 +21,7 @@ router = APIRouter(prefix="/auth", tags=["Авторизация и аутент
     status_code=status.HTTP_201_CREATED,
 )
 async def register_user(
-    db: DBDep,
+    db: Annotated[get_db_manager, Depends(get_db)],
     data: UserRequestAddDTO = Body(
         openapi_examples={
             "1": {
@@ -57,7 +55,7 @@ async def register_user(
 )
 async def login_user(
     response: Response,
-    db: DBDep,
+    db: Annotated[get_db_manager, Depends(get_db)],
     data: UserLoginDTO = Body(
         openapi_examples={
             "1": {
@@ -87,7 +85,9 @@ async def login_user(
     description="<h1>Для получения информации о пользователе он должен быть аутентифицирован</h1>",
 )
 async def get_me(
-    user_id: UserIdDep, db: DBDep, _: None = Depends(rate_limit_auth_get_me)
+    user_id: UserIdDep,
+    db: Annotated[get_db_manager, Depends(get_db)],
+    _: None = Depends(rate_limit_auth_get_me)
 ):
     """
     Возвращает данные текущего пользователя по ID из токена.
@@ -137,7 +137,7 @@ async def logout_user(
     status_code=status.HTTP_200_OK,
 )
 async def edit_user_profile(
-    db: DBDep,
+    db: Annotated[get_db_manager, Depends(get_db)],
     role: UserRoleDep,
     user_id: int = Path(..., le=2147483647),
     user_data: UserPatchDTO = Body(
@@ -180,7 +180,7 @@ async def edit_user_profile(
 async def refresh(
     request: Request,
     response: Response,
-    db: DBDep,
+    db: Annotated[get_db_manager, Depends(get_db)],
     _: None = Depends(rate_limit_auth_refresh),
 ):
     """

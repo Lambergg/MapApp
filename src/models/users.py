@@ -1,7 +1,8 @@
 # ruff: noqa F401
-from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy import String, Boolean, Integer
 from typing import TYPE_CHECKING
+
+from sqlalchemy import Boolean, Integer, String
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 if TYPE_CHECKING:
     from src.models.events import EventsOrm

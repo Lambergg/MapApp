@@ -1,11 +1,12 @@
 from datetime import datetime
 from typing import Sequence
-from sqlalchemy import select, delete, insert, func
 
-from src.repositories.base import BaseRepository
+from sqlalchemy import delete, func, insert, select
+
 from src.models.events import EventsOrm, UsersEventsOrm
+from src.repositories.base import BaseRepository
 from src.repositories.mappers.mappers import EventDataMapper
-from src.schemas.events import UsersEventsDTO, EventsDTO
+from src.schemas.events import EventsDTO, UsersEventsDTO
 
 
 class EventsRepository(BaseRepository):

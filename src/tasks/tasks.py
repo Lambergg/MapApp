@@ -1,7 +1,8 @@
 import logging
-from time import sleep
-from PIL import Image
 import os
+from time import sleep
+
+from PIL import Image
 
 from src.tasks.celery_app import celery_instance
 

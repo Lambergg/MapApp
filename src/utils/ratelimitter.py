@@ -1,6 +1,7 @@
-from time import time
 import random
-from fastapi import HTTPException, status, Request
+from time import time
+
+from fastapi import HTTPException, Request, status
 
 from src.init import redis_manager
 

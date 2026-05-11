@@ -1,23 +1,18 @@
 import logging
 from typing import Any, Sequence
 
-from asyncpg.exceptions import UniqueViolationError
 import sqlalchemy.exc
-from sqlalchemy.exc import IntegrityError
-from sqlalchemy import select, insert, update, delete
+from asyncpg.exceptions import UniqueViolationError
 from pydantic import BaseModel
+from sqlalchemy import delete, insert, select, update
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.database import Base
-from src.exceptions import (
-    ObjectNotFoundException,
-    ObjectAlreadyExistsException,
-    ObjectNotNullException,
-    ObjectNoDataException,
-    ObjectEmptyDataException,
-    ObjectTypeErrorException,
-)
-
+from src.exceptions import (ObjectAlreadyExistsException,
+                            ObjectEmptyDataException, ObjectNoDataException,
+                            ObjectNotFoundException, ObjectNotNullException,
+                            ObjectTypeErrorException)
 from src.repositories.mappers.base import DataMapper
 
 

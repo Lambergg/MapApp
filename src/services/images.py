@@ -1,10 +1,11 @@
 import logging
 import shutil
 from pathlib import Path
+
 from fastapi import UploadFile
 
-from src.exceptions import WrongTypeImageHTTPException,  \
-    AdminOrModeratorOrUserOnlyAccessHTTPException
+from src.exceptions import (AdminOrModeratorOrUserOnlyAccessHTTPException,
+                            WrongTypeImageHTTPException)
 from src.services.base import BaseService
 from src.tasks.tasks import resize_image
 

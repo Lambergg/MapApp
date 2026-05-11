@@ -1,29 +1,29 @@
 # ruff: noqa E402
+import logging
+import sys
 from contextlib import asynccontextmanager
+from pathlib import Path
+
+import uvicorn
 from fastapi import FastAPI, HTTPException, Request
-from fastapi_cache import FastAPICache
-from fastapi_cache.backends.redis import RedisBackend
-from fastapi.middleware.cors import CORSMiddleware
 from fastapi.exceptions import RequestValidationError
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.openapi.docs import get_swagger_ui_html
 from fastapi.staticfiles import StaticFiles
-import logging
-from pathlib import Path
-import sys
-import uvicorn
-
+from fastapi_cache import FastAPICache
+from fastapi_cache.backends.redis import RedisBackend
 
 sys.path.append(str(Path(__file__).parent.parent))
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 
-from src.init import redis_manager, redis_manager_auth
-from src.health.health import router as heals_router
-from src.api.auth import router as auth_router
 from src.api.admin import router as admin_router
-from src.api.images import router as images_router
-from src.api.events import router as events_router
+from src.api.auth import router as auth_router
 from src.api.chat import router as chat
+from src.api.events import router as events_router
+from src.api.images import router as images_router
+from src.health.health import router as heals_router
+from src.init import redis_manager, redis_manager_auth
 
 
 @asynccontextmanager
@@ -109,4 +109,4 @@ async def validation_exception_handler(
 
 
 if __name__ == "__main__":
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
+    uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)

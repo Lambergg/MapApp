@@ -1,40 +1,32 @@
 import logging
-from datetime import datetime, timezone, timedelta
-import jwt
 import uuid
-from fastapi import Response, Request
+from datetime import datetime, timedelta, timezone
+
+import jwt
+from fastapi import Request, Response
 from passlib.context import CryptContext
 
 from src.config import settings
-from src.exceptions import (
-    UserPasswordToShortHTTPException,
-    UserAllReadyExistsHTTPException,
-    ObjectAlreadyExistsException,
-    UserNotRegisterHTTPException,
-    WrongPasswordHTTPException,
-    TokenWrongTypeHTTPException,
-    ExpiredSignatureErrorHTTPException,
-    PyJWTErrorHTTPException,
-    WrongRefreshTokenHTTPException,
-    RefreshTokenRequiredHTTPException,
-    WrongUserDataHTTPException,
-    UserIndexWrongHTTPException,
-    ObjectNotFoundException,
-    UserNotFoundHTTPException,
-    UserIsBannedHTTPException,
-    EventsNotFoundHTTPException,
-    EventMaxUsersHTTPException,
-)
-
-from src.schemas.users import (
-    UserRequestAddDTO,
-    UserAddDTO,
-    UserLoginDTO,
-    UserPatchDTO,
-    UserDTO,
-)
-from src.services.base import BaseService
+from src.exceptions import (EventMaxUsersHTTPException,
+                            EventsNotFoundHTTPException,
+                            ExpiredSignatureErrorHTTPException,
+                            ObjectAlreadyExistsException,
+                            ObjectNotFoundException, PyJWTErrorHTTPException,
+                            RefreshTokenRequiredHTTPException,
+                            TokenWrongTypeHTTPException,
+                            UserAllReadyExistsHTTPException,
+                            UserIndexWrongHTTPException,
+                            UserIsBannedHTTPException,
+                            UserNotFoundHTTPException,
+                            UserNotRegisterHTTPException,
+                            UserPasswordToShortHTTPException,
+                            WrongPasswordHTTPException,
+                            WrongRefreshTokenHTTPException,
+                            WrongUserDataHTTPException)
 from src.init import redis_manager_auth
+from src.schemas.users import (UserAddDTO, UserDTO, UserLoginDTO, UserPatchDTO,
+                               UserRequestAddDTO)
+from src.services.base import BaseService
 
 
 class AuthService(BaseService):

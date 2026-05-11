@@ -1,15 +1,13 @@
-from sqlalchemy import select, update
-from sqlalchemy.orm import selectinload
 from pydantic import EmailStr
+from sqlalchemy import select, update
 from sqlalchemy.exc import NoResultFound
+from sqlalchemy.orm import selectinload
 
 from src.exceptions import UserBanExistsHTTPException, UserNotFoundException
-from src.repositories.base import BaseRepository
 from src.models.users import UsersOrm
-from src.repositories.mappers.mappers import (
-    UserDataMapper,
-    UserDataWithEventMapper,
-)
+from src.repositories.base import BaseRepository
+from src.repositories.mappers.mappers import (UserDataMapper,
+                                              UserDataWithEventMapper)
 from src.schemas.users import UserWithHashedPassword
 
 

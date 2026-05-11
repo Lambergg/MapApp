@@ -1,10 +1,9 @@
 import logging
 
-from src.exceptions import (
-    UserIndexWrongHTTPException,
-    ObjectNotFoundException,
-    UserNotFoundHTTPException, AdminOnlyAccessHTTPException,
-)
+from src.exceptions import (AdminOnlyAccessHTTPException,
+                            ObjectNotFoundException,
+                            UserIndexWrongHTTPException,
+                            UserNotFoundHTTPException)
 from src.schemas.users import UserPutDTO
 from src.services.base import BaseService
 from src.utils.redis_utils import delete_refresh_token

@@ -1,16 +1,16 @@
-from datetime import datetime, timezone
 import logging
+from datetime import datetime, timezone
 
-from src.exceptions import (
-    ObjectAlreadyExistsException,
-    EventsAlreadyExistsHTTPException,
-    EventIndexWrongHTTPException,
-    ObjectNotFoundException,
-    EventNotFoundHTTPException,
-    EventsNotFoundHTTPException,
-    ObjectEmptyDataException,
-    EventDataEmptyHTTPException, WrongUserDataHTTPException, EventsDeletePastException, EventsDeletePastHTTPEException,
-)
+from src.exceptions import (EventDataEmptyHTTPException,
+                            EventIndexWrongHTTPException,
+                            EventNotFoundHTTPException,
+                            EventsAlreadyExistsHTTPException,
+                            EventsDeletePastException,
+                            EventsDeletePastHTTPEException,
+                            EventsNotFoundHTTPException,
+                            ObjectAlreadyExistsException,
+                            ObjectEmptyDataException, ObjectNotFoundException,
+                            WrongUserDataHTTPException)
 from src.schemas.events import EventsAddDTO, EventsUpdateDTO
 from src.services.base import BaseService
 

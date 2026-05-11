@@ -8,12 +8,12 @@ mock.patch(
 ).start()
 
 import pytest
-from httpx import AsyncClient, ASGITransport
+from httpx import ASGITransport, AsyncClient
 
 from src.api.dependencies import get_db
-from src.main import app
 from src.config import settings
-from src.database import Base, engine_null_pool, async_session_maker_null_pool
+from src.database import Base, async_session_maker_null_pool, engine_null_pool
+from src.main import app
 from src.models import *
 from src.schemas.events import EventsAddDTO
 from src.schemas.users import UserAddDTO
@@ -31,8 +31,7 @@ async def setup_redis():
     Подключаемся к реальному Redis перед тестами.
     Очищаем БД 1 (для auth).
     """
-    from src.init import redis_manager_auth
-    from src.init import redis_manager
+    from src.init import redis_manager, redis_manager_auth
 
     await redis_manager_auth.connect()
     await redis_manager.connect()
