@@ -1,5 +1,5 @@
 services:
-  map_back_service:
+  map_back:
     container_name: 'map_back'
     build:
       context: .
@@ -12,16 +12,20 @@ services:
     env_file:
       - .env
     depends_on:
-      map_db_service:
+      map_db:
         condition: service_healthy
-      map_cahe_service:
+      map_cache:
         condition: service_healthy
 
-  map_db_service:
+  map_db:
     image: postgres:16-alpine
     container_name: 'map_db'
     env_file:
       - .env
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASS}
     ports:
       - "6432:5432"
     volumes:
@@ -34,9 +38,9 @@ services:
       timeout: 5s
       retries: 5
 
-  map_cahe_service:
+  map_cache:
     image: redis:7-alpine
-    container_name: 'map_redis'
+    container_name: 'map_cache'
     ports:
       - "7379:6379"
     networks:
@@ -47,7 +51,7 @@ services:
       timeout: 3s
       retries: 3
 
-  map_celery_worker_service:
+  map_celery_worker:
     container_name: 'map_celery_worker'
     build:
       context: .
@@ -59,20 +63,21 @@ services:
       - .env
     command: "celery --app=src.tasks.celery_app:celery_instance worker -l INFO"
     depends_on:
-      - map_db_service
-      - map_cahe_service
+      - map_db
+      - map_cache
 
-  map_nginx_service:
+  map_nginx:
     image: nginx:alpine
     container_name: 'map_nginx'
     ports:
       - "80:80"
     volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
     networks:
       - MapNetwork
     depends_on:
-      - map_back_service
+      map_back:
+        condition: service_started
 
 volumes:
   pg-map-data:
