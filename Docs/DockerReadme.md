@@ -14,14 +14,14 @@ docker run --name map_db \
 -e POSTGRES_DB=MapApp \
 --network=MapNetwork \
 --volume pg-map-data:/var/lib/postgresql/data \
--d postgres:16
+-d postgres:16-alpine
 
 
 4) Создание образа Redis \
 docker run --name map_cache \
 -p 7379:6379 \
 --network=MapNetwork \
--d redis:7.4 \
+-d redis:7.4-alpine
 
 
 5) #Запуск ngixn в linux на сервере \
@@ -34,15 +34,16 @@ docker run \
 nginx
 
 
-6) Запустить docker-compose.yml
-
-Запуск контейнера с приложением \
+6) Запуск контейнера с приложением \
 docker run --name map_back \
 -p 8000:8000 \
 --network=MapNetwork \
 map_image
 
 
+7) Или Запустить docker-compose.yml
+
+
 #### Вставка моковых даннных в БД:
 Выполнить команду:  \
-docker exec -it map_back src/seed_data.py
+docker exec -it map_back python src/seed_data.py

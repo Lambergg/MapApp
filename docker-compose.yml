@@ -11,6 +11,41 @@ services:
       - MapNetwork
     env_file:
       - .env
+    depends_on:
+      map_db_service:
+        condition: service_healthy
+      map_cahe_service:
+        condition: service_healthy
+
+  map_db_service:
+    image: postgres:16-alpine
+    container_name: 'map_db'
+    env_file:
+      - .env
+    ports:
+      - "6432:5432"
+    volumes:
+      - pg-map-data:/var/lib/postgresql/data
+    networks:
+      - MapNetwork
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres -d MapApp" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  map_cahe_service:
+    image: redis:7-alpine
+    container_name: 'map_redis'
+    ports:
+      - "7379:6379"
+    networks:
+      - MapNetwork
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 10s
+      timeout: 3s
+      retries: 3
 
   map_celery_worker_service:
     container_name: 'map_celery_worker'
@@ -23,8 +58,24 @@ services:
     env_file:
       - .env
     command: "celery --app=src.tasks.celery_app:celery_instance worker -l INFO"
+    depends_on:
+      - map_db_service
+      - map_cahe_service
+
+  map_nginx_service:
+    image: nginx:alpine
+    container_name: 'map_nginx'
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+    networks:
+      - MapNetwork
+    depends_on:
+      - map_back_service
 
 volumes:
+  pg-map-data:
   static-data:
 
 networks:
