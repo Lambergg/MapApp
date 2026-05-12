@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Body, Path, Query, status, Depends
+from fastapi import APIRouter, Body, Path, status, Depends
 from fastapi_cache.decorator import cache
 
 from src.api.dependencies import PaginationParams, get_admin_service, get_current_user_role
@@ -49,7 +49,12 @@ async def get_users(
 async def get_user(
     service: Annotated[AdminService, Depends(get_admin_service)],
     role: Annotated[str, Depends(get_current_user_role)],
-    user_id: int = Path(..., ge=1, le=2147483647, description="ID пользователя"),
+    user_id: int = Path(
+        ...,
+        ge=1,
+        le=2147483647,
+        description="user_id: query-параметр ID пользователя (до 2147483647)"
+    ),
 ):
     """
     :param service: Для работы с БД через зависимость
@@ -66,13 +71,17 @@ async def get_user(
 @router.put(
     "/change_role/{user_id}",
     summary="Обновление роли и статуса пользователя",
-    description="<h1>Обновляем роль и статус аккаунта пользователю. Нужно обязательно передать ID, новую роль и статус аккаунта. Требуются права администратора</h1>",
+    description="""
+    <h1>Обновляем роль и статус аккаунта пользователю.
+     Нужно обязательно передать ID, новую роль и статус аккаунта. 
+     Требуются права администратора</h1>
+     """,
     status_code=status.HTTP_200_OK,
 )
 async def edit_user_role(
     service: Annotated[AdminService, Depends(get_admin_service)],
     role: Annotated[str, Depends(get_current_user_role)],
-    user_id: int = Path(..., ge=1, le=2147483647, description="ID пользователя"),
+    user_id: int = Path(..., ge=1, le=2147483647, description="query-параметр ID пользователя (до 2147483647)"),
     user_data: UserPutDTO = Body(
         openapi_examples={
             "1": {
@@ -95,7 +104,7 @@ async def edit_user_role(
     await service.edit_user_role(
         user_id, user_data, role, exclude_unset=False
     )
-    return status.HTTP_200_OK
+    return
 
 
 @router.delete(
@@ -107,7 +116,7 @@ async def edit_user_role(
 async def delete_user(
     service: Annotated[AdminService, Depends(get_admin_service)],
     role: Annotated[str, Depends(get_current_user_role)],
-    user_id: int = Path(..., ge=1, le=2147483647, description="ID пользователя"),
+    user_id: int = Path(..., ge=1, le=2147483647, description="query-параметр ID пользователя (до 2147483647)"),
 ):
     """
     :param service: Для работы с БД через зависимость
@@ -116,19 +125,19 @@ async def delete_user(
     :return: 204 No Content
     """
     await service.delete_user(user_id, role)
-    return status.HTTP_204_NO_CONTENT
+    return
 
 
 @router.post(
     "/delete_account/{user_id}",
     summary="Мягкое удаление аккаунта",
     description="<h1>Пользователь деактивируется (Банится), происходит logout</h1>",
-    status_code=status.HTTP_200_OK,
+    status_code=status.HTTP_204_NO_CONTENT,
 )
 async def delete_account(
     service: Annotated[AdminService, Depends(get_admin_service)],
     role: Annotated[str, Depends(get_current_user_role)],
-    user_id: int = Path(..., ge=1, le=2147483647, description="ID пользователя"),
+    user_id: int = Path(..., ge=1, le=2147483647, description="query-параметр ID пользователя (до 2147483647)"),
 ):
     """
     :param service: Для работы с БД через зависимость
@@ -140,5 +149,5 @@ async def delete_account(
     await delete_refresh_token(user_id)
     return {
         "message": "Аккаунт успешно деактивирован (Забанен)",
-        "status": status.HTTP_200_OK,
+        "status": status.HTTP_204_NO_CONTENT,
     }

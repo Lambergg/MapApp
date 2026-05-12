@@ -29,15 +29,9 @@ class AdminService(BaseService):
         :param filters: Фильры
         :param pagination: Объект с параметрами пагинации (page, per_page).
         :type pagination: PaginationParams
-        :param email: Фильтр по подстроке email (регистронезависимо).
-        :type email: str | None
-        :param name: Фильтр по подстроке имени.
-        :type name: str | None
-        :param sname: Фильтр по подстроке фамилии.
-        :type sname: str | None
         :param role: Роли.
         :return: Список пользователей, соответствующих фильтрам.
-        :rtype: list[UserDTO]
+        :rtype: List[UserDTO]
         """
 
         if role != "admin":

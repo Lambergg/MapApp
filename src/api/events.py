@@ -44,7 +44,7 @@ async def get_events(
 async def get_one_event(
     service: Annotated[EventsService, Depends(get_event_service)],
     role: Annotated[str, Depends(get_current_user_role)],
-    event_id: int = Path(..., ge=1, le=2147483647, description="ID события"),
+    event_id: int = Path(..., ge=1, le=2147483647, description="query-параметр ID (до 2147483647)"),
 ):
     """
     Возвращает одно событие по ID.
@@ -190,7 +190,7 @@ async def create_events(
 async def edit_event(
     role: Annotated[str, Depends(get_current_user_role)],
     service: Annotated[EventsService, Depends(get_event_service)],
-    event_id: int = Path(..., ge=1, le=2147483647, description="ID события"),
+    event_id: int = Path(..., ge=1, le=2147483647, description="query-параметр ID (до 2147483647)"),
     event_data: EventsUpdateDTO = Body(
         openapi_examples={
             "1": {
@@ -236,7 +236,7 @@ async def edit_event(
 async def delete_event(
     service: Annotated[EventsService, Depends(get_event_service)],
     role: Annotated[str, Depends(get_current_user_role)],
-    event_id: int = Path(..., ge=1, le=2147483647, description="ID события"),
+    event_id: int = Path(..., ge=1, le=2147483647, description="query-параметр ID пользователя (до 2147483647)"),
 ):
     """
     Удаляет событие по ID.

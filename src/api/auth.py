@@ -137,7 +137,7 @@ async def logout_user(
 async def edit_user_profile(
     service: Annotated[AuthService, Depends(get_auth_service)],
     role: Annotated[str, Depends(get_current_user_role)],
-    user_id: int = Path(..., ge=1, le=2147483647, description="ID пользователя"),
+    user_id: int = Path(..., ge=1, le=2147483647, description="query-параметр ID пользователя (до 2147483647)"),
     user_data: UserPatchDTO = Body(
         openapi_examples={
             "1": {
