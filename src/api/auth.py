@@ -2,7 +2,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Body, Depends, Path, Request, Response, status
 
-from src.api.dependencies import get_db_manager, get_db, get_current_user_id, get_current_user_role
+from src.api.dependencies import get_current_user_id, get_current_user_role, get_auth_service
 from src.exceptions import UserDeleteTokenHTTPException
 from src.schemas.users import UserLoginDTO, UserPatchDTO, UserRequestAddDTO
 from src.services.auth import AuthService
@@ -21,7 +21,7 @@ router = APIRouter(prefix="/auth", tags=["Авторизация и аутент
     status_code=status.HTTP_201_CREATED,
 )
 async def register_user(
-    db: Annotated[get_db_manager, Depends(get_db)],
+    service: Annotated[AuthService, Depends(get_auth_service)],
     data: UserRequestAddDTO = Body(
         openapi_examples={
             "1": {
@@ -40,11 +40,11 @@ async def register_user(
     """
     Регистрирует нового пользователя.
 
-    :param db: Сессия базы данных (DI).
+    :param service: Сессия базы данных (DI).
     :param data: Данные пользователя для регистрации.
     :return: HTTP 201 Created.
     """
-    await AuthService(db).register_user(data)
+    await service.register_user(data)
     return status.HTTP_201_CREATED
 
 
@@ -55,7 +55,7 @@ async def register_user(
 )
 async def login_user(
     response: Response,
-    db: Annotated[get_db_manager, Depends(get_db)],
+    service: Annotated[AuthService, Depends(get_auth_service)],
     data: UserLoginDTO = Body(
         openapi_examples={
             "1": {
@@ -72,11 +72,11 @@ async def login_user(
     Авторизует пользователя по email и паролю.
 
     :param response: HTTP-ответ (для установки cookies).
-    :param db: Сессия БД.
+    :param service: Сессия БД.
     :param data: Логин и пароль.
     :return: Словарь с сообщением об успехе.
     """
-    return await AuthService(db).login_user(data, response)
+    return await service.login_user(data, response)
 
 
 @router.get(
@@ -86,20 +86,20 @@ async def login_user(
 )
 async def get_me(
     user_id: Annotated[int, Depends(get_current_user_id)],
-    db: Annotated[get_db_manager, Depends(get_db)],
+    service: Annotated[AuthService, Depends(get_auth_service)],
     _: None = Depends(rate_limit_auth_get_me)
 ):
     """
     Возвращает данные текущего пользователя по ID из токена.
 
     :param user_id: ID пользователя из JWT (DI).
-    :param db: Сессия БД.
+    :param service: Сессия БД.
     :param _: Ограничение по частоте запросов.
     :return: Объект UserDTO.
     """
     test_task.delay()  # type: ignore
 
-    return await AuthService(db).get_me(user_id)
+    return await service.get_me(user_id)
 
 
 @router.post(
@@ -137,7 +137,7 @@ async def logout_user(
     status_code=status.HTTP_200_OK,
 )
 async def edit_user_profile(
-    db: Annotated[get_db_manager, Depends(get_db)],
+    service: Annotated[AuthService, Depends(get_auth_service)],
     role: Annotated[str, Depends(get_current_user_role)],
     user_id: int = Path(..., ge=1, le=2147483647, description="ID пользователя"),
     user_data: UserPatchDTO = Body(
@@ -159,14 +159,14 @@ async def edit_user_profile(
     """
     Обновляет профиль пользователя. Только для владельца или админа.
 
-    :param db: Сессия БД.
+    :param service: Сессия БД.
     :param role: Роль текущего пользователя.
     :param user_id: ID профиля для редактирования.
     :param user_data: Новые данные (частичные).
     :return: HTTP 200 OK.
     """
 
-    await AuthService(db).edit_user_profile(
+    await service.edit_user_profile(
         user_id, user_data, role, exclude_unset=True
     )
     return status.HTTP_200_OK
@@ -180,7 +180,7 @@ async def edit_user_profile(
 async def refresh(
     request: Request,
     response: Response,
-    db: Annotated[get_db_manager, Depends(get_db)],
+    service: Annotated[AuthService, Depends(get_auth_service)],
     _: None = Depends(rate_limit_auth_refresh),
 ):
     """
@@ -188,8 +188,8 @@ async def refresh(
 
     :param request: Для получения refresh-токена из cookie.
     :param response: Для установки нового access-токена.
-    :param db: Сессия БД.
+    :param service: Сессия БД.
     :param _: Ограничение по частоте.
     :return: Сообщение об успехе.
     """
-    return await AuthService(db).refresh_tokens(request, response)
+    return await service.refresh_tokens(request, response)

@@ -7,6 +7,7 @@ from src.database import async_session_maker
 from src.init import redis_manager_auth
 from src.services.admin import AdminService
 from src.services.auth import AuthService
+from src.services.events import EventsService
 from src.utils.db_manager import DBManager
 
 
@@ -102,3 +103,15 @@ async def get_admin_service(
     db: Annotated[get_db_manager, Depends(get_db)]
 ) -> AdminService:
     return AdminService(db)
+
+
+async def get_auth_service(
+    db: Annotated[get_db_manager, Depends(get_db)]
+) -> AuthService:
+    return AuthService(db)
+
+
+async def get_event_service(
+    db: Annotated[get_db_manager, Depends(get_db)]
+) -> EventsService:
+    return EventsService(db)

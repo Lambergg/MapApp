@@ -4,7 +4,7 @@ from fastapi import APIRouter, Body, Path, Query, status, Depends
 from fastapi_cache.decorator import cache
 
 from src.api.dependencies import PaginationParams, get_db_manager, get_db, get_current_user_id, \
-    get_current_user_role
+    get_current_user_role, get_event_service
 from src.schemas.events import EventsAddDTO, EventsUpdateDTO
 from src.services.events import EventsService
 
@@ -18,14 +18,13 @@ router = APIRouter(prefix="/events", tags=["События"])
 )
 @cache(expire=10)
 async def get_events(
-    db: Annotated[get_db_manager, Depends(get_db)],
+    service: Annotated[EventsService, Depends(get_event_service)],
     role: Annotated[str, Depends(get_current_user_role)],
 ):
     """
     Получает список всех событий.
 
-    :param db: Зависимость для работы с базой данных.
-    :type db: DBDep
+    :param service: Зависимость для работы с базой данных.
     :param role: Роль текущего пользователя (admin/user/guest).
     :type role: Str
     :return: Список событий.
@@ -33,7 +32,7 @@ async def get_events(
     :raises WrongUserDataHTTPException: Если роль не в списке допустимых.
     """
 
-    return await EventsService(db).get_events(role)
+    return await service.get_events(role)
 
 
 @router.get(
@@ -43,15 +42,14 @@ async def get_events(
 )
 @cache(expire=10)
 async def get_one_event(
-    db: Annotated[get_db_manager, Depends(get_db)],
+    service: Annotated[EventsService, Depends(get_event_service)],
     role: Annotated[str, Depends(get_current_user_role)],
     event_id: int = Path(..., ge=1, le=2147483647, description="ID события"),
 ):
     """
     Возвращает одно событие по ID.
 
-    :param db: Сессия базы данных.
-    :type db: DBDep
+    :param service: Сессия базы данных.
     :param role: Роль пользователя.
     :type role: Str
     :param event_id: Уникальный идентификатор события. Должен быть > 0.
@@ -61,7 +59,7 @@ async def get_one_event(
     :raises HTTPException 404: Если событие не найдено.
     """
 
-    return await EventsService(db).get_one_event(event_id, role)
+    return await service.get_one_event(event_id, role)
 
 
 @router.get(
@@ -72,7 +70,7 @@ async def get_one_event(
 @cache(expire=10)
 async def get_my_events(
     user_id: Annotated[int, Depends(get_current_user_id)],
-    db: Annotated[get_db_manager, Depends(get_db)],
+    service: Annotated[EventsService, Depends(get_event_service)],
     role: Annotated[str, Depends(get_current_user_role)],
 ):
     """
@@ -80,15 +78,14 @@ async def get_my_events(
 
     :param user_id: ID текущего пользователя (из JWT).
     :type user_id: Int
-    :param db: Сессия базы данных.
-    :type db: DBDep
+    :param service: Сессия базы данных.
     :param role: Роль пользователя.
     :type role: Str
     :return: Список событий пользователя.
     :rtype: List[EventDTO]
     """
 
-    return await EventsService(db).get_my_events(user_id, role)
+    return await service.get_my_events(user_id, role)
 
 
 @router.get(
@@ -98,7 +95,7 @@ async def get_my_events(
 )
 @cache(expire=10)
 async def get_search_events(
-    db: Annotated[get_db_manager, Depends(get_db)],
+    service: Annotated[EventsService, Depends(get_event_service)],
     pagination: Annotated[PaginationParams, Depends()],
     role: Annotated[str, Depends(get_current_user_role)],
     title: str | None = Query(None, description="Название события"),
@@ -112,8 +109,7 @@ async def get_search_events(
     """
     Поиск событий по заданным фильтрам с пагинацией.
 
-    :param db: Сессия базы данных.
-    :type db: DBDep
+    :param service: Сессия базы данных.
     :param pagination: Параметры пагинации (page, per_page).
     :type pagination: PaginationParams
     :param role: Роль пользователя.
@@ -132,7 +128,7 @@ async def get_search_events(
     :rtype: PaginatedResponse[EventDTO]
     """
 
-    return await EventsService(db).get_filtered_by_time(
+    return await service.get_filtered_by_time(
         pagination,
         title,
         category,
@@ -150,7 +146,7 @@ async def get_search_events(
     status_code=status.HTTP_201_CREATED,
 )
 async def create_events(
-    db: Annotated[get_db_manager, Depends(get_db)],
+    service: Annotated[EventsService, Depends(get_event_service)],
     role: Annotated[str, Depends(get_current_user_role)],
     data: EventsAddDTO = Body(
         openapi_examples={
@@ -171,8 +167,7 @@ async def create_events(
     """
     Создаёт новое событие.
 
-    :param db: Сессия базы данных.
-    :type db: DBDep
+    :param service: Сессия базы данных.
     :param role: Роль пользователя.
     :type role: Str
     :param data: Данные для создания события.
@@ -182,7 +177,7 @@ async def create_events(
     :status 201: Событие успешно создано.
     """
 
-    events = await EventsService(db).create_events(data, role)
+    events = await service.create_events(data, role)
     return {"Status": status.HTTP_201_CREATED, "data": events}
 
 
@@ -194,7 +189,7 @@ async def create_events(
 )
 async def edit_event(
     role: Annotated[str, Depends(get_current_user_role)],
-    db: Annotated[get_db_manager, Depends(get_db)],
+    service: Annotated[EventsService, Depends(get_event_service)],
     event_id: int = Path(..., ge=1, le=2147483647, description="ID события"),
     event_data: EventsUpdateDTO = Body(
         openapi_examples={
@@ -217,8 +212,7 @@ async def edit_event(
 
     :param role: Роль пользователя.
     :type role: Str
-    :param db: Сессия базы данных.
-    :type db: DBDep
+    :param service: Сессия базы данных.
     :param event_id: ID события для обновления.
     :type event_id: Int
     :param event_data: Новые данные события.
@@ -229,7 +223,7 @@ async def edit_event(
     :raises HTTPException 404: Если событие не найдено.
     """
 
-    await EventsService(db).edit_event(event_id, event_data, role, exclude_unset=True)
+    await service.edit_event(event_id, event_data, role, exclude_unset=True)
     return status.HTTP_200_OK
 
 
@@ -240,15 +234,14 @@ async def edit_event(
     status_code=status.HTTP_204_NO_CONTENT,
 )
 async def delete_event(
-    db: Annotated[get_db_manager, Depends(get_db)],
+    service: Annotated[EventsService, Depends(get_event_service)],
     role: Annotated[str, Depends(get_current_user_role)],
     event_id: int = Path(..., ge=1, le=2147483647, description="ID события"),
 ):
     """
     Удаляет событие по ID.
 
-    :param db: Сессия базы данных.
-    :type db: DBDep
+    :param service: Сессия базы данных.
     :param role: Роль пользователя.
     :type role: Str
     :param event_id: ID события для удаления.
@@ -259,5 +252,5 @@ async def delete_event(
     :raises HTTPException 404: Если событие не найдено.
     """
 
-    await EventsService(db).delete_event(event_id, role)
+    await service.delete_event(event_id, role)
     return status.HTTP_204_NO_CONTENT
