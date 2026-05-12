@@ -5,7 +5,7 @@ from fastapi_cache.decorator import cache
 
 from src.api.dependencies import PaginationParams, get_admin_service, get_current_user_role
 from src.exceptions import ObjectNotFoundException, UserNotFoundHTTPException
-from src.schemas.users import UserPutDTO
+from src.schemas.users import UserPutDTO, UserFilterDTO
 from src.services.admin import AdminService
 from src.utils.redis_utils import delete_refresh_token
 
@@ -23,25 +23,19 @@ async def get_users(
     service: Annotated[AdminService, Depends(get_admin_service)],
     pagination: Annotated[PaginationParams, Depends()],
     role: Annotated[str, Depends(get_current_user_role)],
-    email: str | None = Query(None),
-    name: str | None = Query(None),
-    sname: str | None = Query(None),
+    filters: UserFilterDTO = Depends(),
 ):
     """
     :param service: Для работы с БД через зависимость
     :param pagination: Пагинация: page, per_page
     :param role: Роль текущего пользователя (из JWT)
-    :param email: Фильтр по email
-    :param name: Фильтр по имени
-    :param sname: Фильтр по фамилии
+    :param filters: Фильтры по имени/фамилии/email
     :return: List[UserDTO] — список пользователей.
     """
 
     return await service.get_filtered_by_time(
         pagination,
-        email,
-        name,
-        sname,
+        filters,
         role
     )
 

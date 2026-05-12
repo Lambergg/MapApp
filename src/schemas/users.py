@@ -126,3 +126,9 @@ class UserWithHashedPassword(UserDTO):
     """
 
     hashed_password: str
+
+
+class UserFilterDTO(BaseModel):
+    email: str | None = Field(None, description="Email")
+    name: str | None = Field(None, description="Name")
+    sname: str | None = Field(None, description="Sname")

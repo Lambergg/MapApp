@@ -6,7 +6,6 @@ from src.api.dependencies import get_current_user_id, get_current_user_role, get
 from src.exceptions import UserDeleteTokenHTTPException
 from src.schemas.users import UserLoginDTO, UserPatchDTO, UserRequestAddDTO
 from src.services.auth import AuthService
-from src.tasks.tasks import test_task
 from src.utils.ratelimitter import (rate_limit_auth_get_me,
                                     rate_limit_auth_refresh)
 from src.utils.redis_utils import delete_refresh_token
@@ -97,7 +96,6 @@ async def get_me(
     :param _: Ограничение по частоте запросов.
     :return: Объект UserDTO.
     """
-    test_task.delay()  # type: ignore
 
     return await service.get_me(user_id)
 

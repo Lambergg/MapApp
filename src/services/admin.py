@@ -21,14 +21,12 @@ class AdminService(BaseService):
     async def get_filtered_by_time(
         self,
         pagination,
-        email,
-        name,
-        sname,
+        filters,
         role
     ):
         """
         Возвращает список пользователей с пагинацией и фильтрацией.
-
+        :param filters: Фильры
         :param pagination: Объект с параметрами пагинации (page, per_page).
         :type pagination: PaginationParams
         :param email: Фильтр по подстроке email (регистронезависимо).
@@ -50,9 +48,9 @@ class AdminService(BaseService):
         return await self.db.admin.get_filtered_by_time(
             limit=per_page,
             offset=per_page * (pagination.page - 1),
-            email=email,
-            name=name,
-            sname=sname,
+            email=filters.email,
+            name=filters.name,
+            sname=filters.sname,
         )
 
     async def get_user(self, user_id: int, role):
