@@ -2,7 +2,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Body, Depends, Path, Request, Response, status
 
-from src.api.dependencies import UserIdDep, UserRoleDep, get_db_manager, get_db
+from src.api.dependencies import get_db_manager, get_db, get_current_user_id, get_current_user_role
 from src.exceptions import UserDeleteTokenHTTPException
 from src.schemas.users import UserLoginDTO, UserPatchDTO, UserRequestAddDTO
 from src.services.auth import AuthService
@@ -85,7 +85,7 @@ async def login_user(
     description="<h1>Для получения информации о пользователе он должен быть аутентифицирован</h1>",
 )
 async def get_me(
-    user_id: UserIdDep,
+    user_id: Annotated[int, Depends(get_current_user_id)],
     db: Annotated[get_db_manager, Depends(get_db)],
     _: None = Depends(rate_limit_auth_get_me)
 ):
@@ -109,7 +109,7 @@ async def get_me(
     status_code=status.HTTP_200_OK,
 )
 async def logout_user(
-    user_id: UserIdDep,
+    user_id: Annotated[int, Depends(get_current_user_id)],
     response: Response,
     request: Request,
 ):
@@ -138,8 +138,8 @@ async def logout_user(
 )
 async def edit_user_profile(
     db: Annotated[get_db_manager, Depends(get_db)],
-    role: UserRoleDep,
-    user_id: int = Path(..., le=2147483647),
+    role: Annotated[str, Depends(get_current_user_role)],
+    user_id: int = Path(..., ge=1, le=2147483647, description="ID пользователя"),
     user_data: UserPatchDTO = Body(
         openapi_examples={
             "1": {

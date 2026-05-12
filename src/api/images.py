@@ -1,6 +1,8 @@
-from fastapi import APIRouter, UploadFile
+from typing import Annotated
 
-from src.api.dependencies import UserRoleDep
+from fastapi import APIRouter, UploadFile, Depends
+
+from src.api.dependencies import get_current_user_role
 from src.services.images import ImagesService
 
 router = APIRouter(prefix="/images", tags=["Изображения отелей"])
@@ -11,7 +13,7 @@ router = APIRouter(prefix="/images", tags=["Изображения отелей"
     summary="Загрузка изображения",
     description="<h1>Загрузите ваше изображение</h1>",
 )
-def upload_image(role: UserRoleDep, file: UploadFile):
+def upload_image(role: Annotated[str, Depends(get_current_user_role)], file: UploadFile):
     """
     Загружает изображение на сервер.
 

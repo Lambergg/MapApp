@@ -3,7 +3,8 @@ from typing import Annotated
 from fastapi import APIRouter, Body, Path, Query, status, Depends
 from fastapi_cache.decorator import cache
 
-from src.api.dependencies import UserIdDep, UserRoleDep, PaginationParams, get_db_manager, get_db
+from src.api.dependencies import PaginationParams, get_db_manager, get_db, get_current_user_id, \
+    get_current_user_role
 from src.schemas.events import EventsAddDTO, EventsUpdateDTO
 from src.services.events import EventsService
 
@@ -18,7 +19,7 @@ router = APIRouter(prefix="/events", tags=["События"])
 @cache(expire=10)
 async def get_events(
     db: Annotated[get_db_manager, Depends(get_db)],
-    role: UserRoleDep,
+    role: Annotated[str, Depends(get_current_user_role)],
 ):
     """
     Получает список всех событий.
@@ -43,7 +44,8 @@ async def get_events(
 @cache(expire=10)
 async def get_one_event(
     db: Annotated[get_db_manager, Depends(get_db)],
-    role: UserRoleDep, event_id: int
+    role: Annotated[str, Depends(get_current_user_role)],
+    event_id: int = Path(..., ge=1, le=2147483647, description="ID события"),
 ):
     """
     Возвращает одно событие по ID.
@@ -69,9 +71,9 @@ async def get_one_event(
 )
 @cache(expire=10)
 async def get_my_events(
-    user_id: UserIdDep,
+    user_id: Annotated[int, Depends(get_current_user_id)],
     db: Annotated[get_db_manager, Depends(get_db)],
-    role: UserRoleDep,
+    role: Annotated[str, Depends(get_current_user_role)],
 ):
     """
     Возвращает все события, созданные или в которых участвует пользователь.
@@ -98,7 +100,7 @@ async def get_my_events(
 async def get_search_events(
     db: Annotated[get_db_manager, Depends(get_db)],
     pagination: Annotated[PaginationParams, Depends()],
-    role: UserRoleDep,
+    role: Annotated[str, Depends(get_current_user_role)],
     title: str | None = Query(None, description="Название события"),
     category: str | None = Query(None, description="Категория события"),
     address: str | None = Query(None, description="Адрес события"),
@@ -149,7 +151,7 @@ async def get_search_events(
 )
 async def create_events(
     db: Annotated[get_db_manager, Depends(get_db)],
-    role: UserRoleDep,
+    role: Annotated[str, Depends(get_current_user_role)],
     data: EventsAddDTO = Body(
         openapi_examples={
             "1": {
@@ -191,9 +193,9 @@ async def create_events(
     status_code=status.HTTP_200_OK,
 )
 async def edit_event(
-    role: UserRoleDep,
+    role: Annotated[str, Depends(get_current_user_role)],
     db: Annotated[get_db_manager, Depends(get_db)],
-    event_id: int = Path(..., le=2147483647),
+    event_id: int = Path(..., ge=1, le=2147483647, description="ID события"),
     event_data: EventsUpdateDTO = Body(
         openapi_examples={
             "1": {
@@ -239,8 +241,8 @@ async def edit_event(
 )
 async def delete_event(
     db: Annotated[get_db_manager, Depends(get_db)],
-    role: UserRoleDep,
-    event_id: int = Path(..., le=2147483647),
+    role: Annotated[str, Depends(get_current_user_role)],
+    event_id: int = Path(..., ge=1, le=2147483647, description="ID события"),
 ):
     """
     Удаляет событие по ID.

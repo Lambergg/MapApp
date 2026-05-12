@@ -3,7 +3,7 @@ from typing import Annotated
 from fastapi import APIRouter, Body, Path, Query, status, Depends
 from fastapi_cache.decorator import cache
 
-from src.api.dependencies import UserRoleDep, PaginationParams, get_db, get_db_manager
+from src.api.dependencies import PaginationParams, get_admin_service, get_current_user_role
 from src.exceptions import ObjectNotFoundException, UserNotFoundHTTPException
 from src.schemas.users import UserPutDTO
 from src.services.admin import AdminService
@@ -20,15 +20,15 @@ router = APIRouter(prefix="/admin", tags=["Администрирование"])
 )
 @cache(expire=10)
 async def get_users(
-    db: Annotated[get_db_manager, Depends(get_db)],
+    service: Annotated[AdminService, Depends(get_admin_service)],
     pagination: Annotated[PaginationParams, Depends()],
-    role: UserRoleDep,
-    email: str | None = Query(None, description="Email пользователя"),
-    name: str | None = Query(None, description="Имя пользователя"),
-    sname: str | None = Query(None, description="Фамилия пользователя"),
+    role: Annotated[str, Depends(get_current_user_role)],
+    email: str | None = Query(None),
+    name: str | None = Query(None),
+    sname: str | None = Query(None),
 ):
     """
-    :param db: Сессия БД через зависимость
+    :param service: Для работы с БД через зависимость
     :param pagination: Пагинация: page, per_page
     :param role: Роль текущего пользователя (из JWT)
     :param email: Фильтр по email
@@ -37,7 +37,7 @@ async def get_users(
     :return: List[UserDTO] — список пользователей.
     """
 
-    return await AdminService(db).get_filtered_by_time(
+    return await service.get_filtered_by_time(
         pagination,
         email,
         name,
@@ -53,18 +53,18 @@ async def get_users(
 )
 @cache(expire=10)
 async def get_user(
-    db: Annotated[get_db_manager, Depends(get_db)],
-    role: UserRoleDep,
-    user_id: int = Path(..., le=2147483647),
+    service: Annotated[AdminService, Depends(get_admin_service)],
+    role: Annotated[str, Depends(get_current_user_role)],
+    user_id: int = Path(..., ge=1, le=2147483647, description="ID пользователя"),
 ):
     """
-    :param db: ЗСессия БД через зависимость
+    :param service: Для работы с БД через зависимость
     :param role: Роль текущего пользователя (из JWT)
     :param user_id: query-параметр ID пользователя (до 2147483647)
     :return: Возврат UserDTO — данные пользователя. По его id.
     """
     try:
-        return await AdminService(db).get_user(user_id, role)
+        return await service.get_user(user_id, role)
     except ObjectNotFoundException:
         raise UserNotFoundHTTPException
 
@@ -76,9 +76,9 @@ async def get_user(
     status_code=status.HTTP_200_OK,
 )
 async def edit_user_role(
-    db: Annotated[get_db_manager, Depends(get_db)],
-    role: UserRoleDep,
-    user_id: int = Path(..., le=2147483647),
+    service: Annotated[AdminService, Depends(get_admin_service)],
+    role: Annotated[str, Depends(get_current_user_role)],
+    user_id: int = Path(..., ge=1, le=2147483647, description="ID пользователя"),
     user_data: UserPutDTO = Body(
         openapi_examples={
             "1": {
@@ -92,14 +92,13 @@ async def edit_user_role(
     ),
 ):
     """
-    :param db: ЗСессия БД через зависимость
+    :param service: Для работы с БД через зависимость
     :param role: Роль текущего пользователя (из JWT)
     :param user_id: query-параметр ID пользователя (до 2147483647)
-    :param data: Схема UserPutDTO
+    :param user_data: Схема UserPutDTO
     :return: 200 OK при успехе.
     """
-
-    await AdminService(db).edit_user_role(
+    await service.edit_user_role(
         user_id, user_data, role, exclude_unset=False
     )
     return status.HTTP_200_OK
@@ -112,18 +111,17 @@ async def edit_user_role(
     status_code=status.HTTP_204_NO_CONTENT,
 )
 async def delete_user(
-    db: Annotated[get_db_manager, Depends(get_db)],
-    role: UserRoleDep,
-    user_id: int = Path(..., le=2147483647),
+    service: Annotated[AdminService, Depends(get_admin_service)],
+    role: Annotated[str, Depends(get_current_user_role)],
+    user_id: int = Path(..., ge=1, le=2147483647, description="ID пользователя"),
 ):
     """
-    :param db: ЗСессия БД через зависимость
+    :param service: Для работы с БД через зависимость
     :param role: Роль текущего пользователя (из JWT)
     :param user_id: query-параметр ID пользователя (до 2147483647)
     :return: 204 No Content
     """
-
-    await AdminService(db).delete_user(user_id, role)
+    await service.delete_user(user_id, role)
     return status.HTTP_204_NO_CONTENT
 
 
@@ -134,18 +132,17 @@ async def delete_user(
     status_code=status.HTTP_200_OK,
 )
 async def delete_account(
-    db: Annotated[get_db_manager, Depends(get_db)],
-    role: UserRoleDep,
-    user_id: int = Path(..., le=2147483647),
+    service: Annotated[AdminService, Depends(get_admin_service)],
+    role: Annotated[str, Depends(get_current_user_role)],
+    user_id: int = Path(..., ge=1, le=2147483647, description="ID пользователя"),
 ):
     """
-    :param db: ЗСессия БД через зависимость
+    :param service: Для работы с БД через зависимость
     :param role: Роль текущего пользователя (из JWT)
     :param user_id: query-параметр ID пользователя (до 2147483647)
     :return: message: "Аккаунт успешно деактивирован (Забанен)", status: 200
     """
-
-    await AdminService(db).soft_delete_user(user_id, role)
+    await service.soft_delete_user(user_id, role)
     await delete_refresh_token(user_id)
     return {
         "message": "Аккаунт успешно деактивирован (Забанен)",

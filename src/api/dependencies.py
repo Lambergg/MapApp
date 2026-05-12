@@ -5,6 +5,7 @@ from pydantic import BaseModel
 
 from src.database import async_session_maker
 from src.init import redis_manager_auth
+from src.services.admin import AdminService
 from src.services.auth import AuthService
 from src.utils.db_manager import DBManager
 
@@ -61,9 +62,6 @@ def get_current_user_id(token: str = Depends(get_token)) -> int:
     return data["user_id"]
 
 
-UserIdDep = Annotated[int, Depends(get_current_user_id)]
-
-
 async def get_current_user_role(
     user_id: int = Depends(get_current_user_id),
 ) -> str:
@@ -82,9 +80,6 @@ async def get_current_user_role(
     return user_role
 
 
-UserRoleDep = Annotated[str, Depends(get_current_user_role)]
-
-
 def get_db_manager():
     """
     Создаёт и возвращает экземпляр DBManager с фабрикой сессий.
@@ -101,3 +96,9 @@ async def get_db():
     """
     async with get_db_manager() as db:
         yield db
+
+
+async def get_admin_service(
+    db: Annotated[get_db_manager, Depends(get_db)]
+) -> AdminService:
+    return AdminService(db)
