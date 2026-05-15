@@ -4,6 +4,7 @@ from fastapi import APIRouter, Body, Path, status, Depends
 from fastapi_cache.decorator import cache
 
 from src.api.dependencies import PaginationParams, get_admin_service, get_current_user_role
+from src.common.constants import MAX_ID_VALUE, MIN_ID_VALUE
 from src.exceptions import ObjectNotFoundException, UserNotFoundHTTPException
 from src.schemas.users import UserPutDTO, UserFilterDTO
 from src.services.admin import AdminService
@@ -51,8 +52,8 @@ async def get_user(
     role: Annotated[str, Depends(get_current_user_role)],
     user_id: int = Path(
         ...,
-        ge=1,
-        le=2147483647,
+        ge=MIN_ID_VALUE,
+        le=MAX_ID_VALUE,
         description="user_id: path-параметр ID пользователя (до 2147483647)"
     ),
 ):
@@ -81,7 +82,7 @@ async def get_user(
 async def edit_user_role(
     service: Annotated[AdminService, Depends(get_admin_service)],
     role: Annotated[str, Depends(get_current_user_role)],
-    user_id: int = Path(..., ge=1, le=2147483647, description="path-параметр ID пользователя (до 2147483647)"),
+    user_id: int = Path(..., ge=MIN_ID_VALUE, le=MAX_ID_VALUE, description="path-параметр ID пользователя (до 2147483647)"),
     user_data: UserPutDTO = Body(
         openapi_examples={
             "1": {
@@ -116,7 +117,7 @@ async def edit_user_role(
 async def delete_user(
     service: Annotated[AdminService, Depends(get_admin_service)],
     role: Annotated[str, Depends(get_current_user_role)],
-    user_id: int = Path(..., ge=1, le=2147483647, description="path-параметр ID пользователя (до 2147483647)"),
+    user_id: int = Path(..., ge=MIN_ID_VALUE, le=MAX_ID_VALUE, description="path-параметр ID пользователя (до 2147483647)"),
 ):
     """
     :param service: Для работы с БД через зависимость
@@ -137,7 +138,7 @@ async def delete_user(
 async def delete_account(
     service: Annotated[AdminService, Depends(get_admin_service)],
     role: Annotated[str, Depends(get_current_user_role)],
-    user_id: int = Path(..., ge=1, le=2147483647, description="path-параметр ID пользователя (до 2147483647)"),
+    user_id: int = Path(..., ge=MIN_ID_VALUE, le=MAX_ID_VALUE, description="path-параметр ID пользователя (до 2147483647)"),
 ):
     """
     :param service: Для работы с БД через зависимость

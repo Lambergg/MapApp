@@ -5,7 +5,7 @@ from fastapi import APIRouter, UploadFile, Depends
 from src.api.dependencies import get_current_user_role
 from src.services.images import ImagesService
 
-router = APIRouter(prefix="/images", tags=["Изображения отелей"])
+router = APIRouter(prefix="/images", tags=["Аватары пользователей"])
 
 
 @router.post(
