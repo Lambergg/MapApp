@@ -53,13 +53,13 @@ async def get_user(
         ...,
         ge=1,
         le=2147483647,
-        description="user_id: query-параметр ID пользователя (до 2147483647)"
+        description="user_id: path-параметр ID пользователя (до 2147483647)"
     ),
 ):
     """
     :param service: Для работы с БД через зависимость
     :param role: Роль текущего пользователя (из JWT)
-    :param user_id: query-параметр ID пользователя (до 2147483647)
+    :param user_id: path-параметр ID пользователя (до 2147483647)
     :return: Возврат UserDTO — данные пользователя. По его id.
     """
     try:
@@ -81,7 +81,7 @@ async def get_user(
 async def edit_user_role(
     service: Annotated[AdminService, Depends(get_admin_service)],
     role: Annotated[str, Depends(get_current_user_role)],
-    user_id: int = Path(..., ge=1, le=2147483647, description="query-параметр ID пользователя (до 2147483647)"),
+    user_id: int = Path(..., ge=1, le=2147483647, description="path-параметр ID пользователя (до 2147483647)"),
     user_data: UserPutDTO = Body(
         openapi_examples={
             "1": {
@@ -97,7 +97,7 @@ async def edit_user_role(
     """
     :param service: Для работы с БД через зависимость
     :param role: Роль текущего пользователя (из JWT)
-    :param user_id: query-параметр ID пользователя (до 2147483647)
+    :param user_id: path-параметр ID пользователя (до 2147483647)
     :param user_data: Схема UserPutDTO
     :return: 200 OK при успехе.
     """
@@ -116,12 +116,12 @@ async def edit_user_role(
 async def delete_user(
     service: Annotated[AdminService, Depends(get_admin_service)],
     role: Annotated[str, Depends(get_current_user_role)],
-    user_id: int = Path(..., ge=1, le=2147483647, description="query-параметр ID пользователя (до 2147483647)"),
+    user_id: int = Path(..., ge=1, le=2147483647, description="path-параметр ID пользователя (до 2147483647)"),
 ):
     """
     :param service: Для работы с БД через зависимость
     :param role: Роль текущего пользователя (из JWT)
-    :param user_id: query-параметр ID пользователя (до 2147483647)
+    :param user_id: path-параметр ID пользователя (до 2147483647)
     :return: 204 No Content
     """
     await service.delete_user(user_id, role)
@@ -137,12 +137,12 @@ async def delete_user(
 async def delete_account(
     service: Annotated[AdminService, Depends(get_admin_service)],
     role: Annotated[str, Depends(get_current_user_role)],
-    user_id: int = Path(..., ge=1, le=2147483647, description="query-параметр ID пользователя (до 2147483647)"),
+    user_id: int = Path(..., ge=1, le=2147483647, description="path-параметр ID пользователя (до 2147483647)"),
 ):
     """
     :param service: Для работы с БД через зависимость
     :param role: Роль текущего пользователя (из JWT)
-    :param user_id: query-параметр ID пользователя (до 2147483647)
+    :param user_id: path-параметр ID пользователя (до 2147483647)
     :return: message: "Аккаунт успешно деактивирован (Забанен)", status: 200
     """
     await service.soft_delete_user(user_id, role)

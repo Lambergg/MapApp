@@ -44,7 +44,7 @@ async def register_user(
     :return: HTTP 201 Created.
     """
     await service.register_user(data)
-    return status.HTTP_201_CREATED
+    return
 
 
 @router.post(
@@ -125,7 +125,7 @@ async def logout_user(
     response.delete_cookie("access_token")
     response.delete_cookie("refresh_token")
     await delete_refresh_token(user_id)
-    return status.HTTP_200_OK
+    return
 
 
 @router.put(
@@ -137,7 +137,7 @@ async def logout_user(
 async def edit_user_profile(
     service: Annotated[AuthService, Depends(get_auth_service)],
     role: Annotated[str, Depends(get_current_user_role)],
-    user_id: int = Path(..., ge=1, le=2147483647, description="query-параметр ID пользователя (до 2147483647)"),
+    user_id: int = Path(..., ge=1, le=2147483647, description="path-параметр ID пользователя (до 2147483647)"),
     user_data: UserPatchDTO = Body(
         openapi_examples={
             "1": {
@@ -167,7 +167,7 @@ async def edit_user_profile(
     await service.edit_user_profile(
         user_id, user_data, role, exclude_unset=True
     )
-    return status.HTTP_200_OK
+    return
 
 
 @router.post(
