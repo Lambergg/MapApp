@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import APIRouter, UploadFile, Depends
+from fastapi import APIRouter, Depends, UploadFile
 
 from src.api.dependencies import get_current_user_role
 from src.services.images import ImagesService

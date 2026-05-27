@@ -2,8 +2,12 @@ from src.config import settings
 from src.connectors.redis_connector import RedisManager
 
 redis_manager = RedisManager(
-    host=settings.REDIS_HOST, port=settings.REDIS_PORT, db=0
+    host=settings.REDIS_HOST,
+    port=settings.REDIS_PORT,
+    db=0
 )
 redis_manager_auth = RedisManager(
-    host=settings.REDIS_HOST, port=settings.REDIS_PORT, db=1
+    host=settings.REDIS_HOST,
+    port=settings.REDIS_PORT,
+    db=1
 )

@@ -67,7 +67,9 @@ class AuthService(BaseService):
             "exp": expire,
         }
         return jwt.encode(
-            to_encode, settings.JWT_SECRET_KEY, algorithm=settings.JWT_ALGORITHM
+            to_encode,
+            settings.JWT_SECRET_KEY,
+            algorithm=settings.JWT_ALGORITHM
         )
 
     def create_refresh_token(self) -> str:
@@ -427,14 +429,17 @@ class AuthService(BaseService):
                         raise EventMaxUsersHTTPException
 
             await self.db.users_events.set_user_events(
-                user_id, events_ids=events_ids_for_sync
+                user_id,
+                events_ids=events_ids_for_sync
             )
 
             await self.get_user_with_check(user_id)  # type: ignore
 
         try:
             await self.db.users.edit(
-                update_data, id=user_id, exclude_unset=exclude_unset
+                update_data,
+                id=user_id,
+                exclude_unset=exclude_unset
             )
 
             await self.db.commit()

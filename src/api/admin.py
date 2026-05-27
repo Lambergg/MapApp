@@ -1,15 +1,15 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Body, Path, status, Depends
+from fastapi import APIRouter, Body, Depends, Path, status
 from fastapi_cache.decorator import cache
 
-from src.api.dependencies import PaginationParams, get_admin_service, get_current_user_role
+from src.api.dependencies import (PaginationParams, get_admin_service,
+                                  get_current_user_role)
 from src.common.constants import MAX_ID_VALUE, MIN_ID_VALUE
 from src.exceptions import ObjectNotFoundException, UserNotFoundHTTPException
-from src.schemas.users import UserPutDTO, UserFilterDTO
+from src.schemas.users import UserFilterDTO, UserPutDTO
 from src.services.admin import AdminService
 from src.utils.redis_utils import delete_refresh_token
-
 
 router = APIRouter(prefix="/admin", tags=["Администрирование"])
 
@@ -82,7 +82,12 @@ async def get_user(
 async def edit_user_role(
     service: Annotated[AdminService, Depends(get_admin_service)],
     role: Annotated[str, Depends(get_current_user_role)],
-    user_id: int = Path(..., ge=MIN_ID_VALUE, le=MAX_ID_VALUE, description="path-параметр ID пользователя (до 2147483647)"),
+    user_id: int = Path(
+        ...,
+        ge=MIN_ID_VALUE,
+        le=MAX_ID_VALUE,
+        description="path-параметр ID пользователя (до 2147483647)"
+    ),
     user_data: UserPutDTO = Body(
         openapi_examples={
             "1": {
@@ -103,7 +108,10 @@ async def edit_user_role(
     :return: 200 OK при успехе.
     """
     await service.edit_user_role(
-        user_id, user_data, role, exclude_unset=False
+        user_id,
+        user_data,
+        role,
+        exclude_unset=False
     )
     return
 
@@ -117,7 +125,12 @@ async def edit_user_role(
 async def delete_user(
     service: Annotated[AdminService, Depends(get_admin_service)],
     role: Annotated[str, Depends(get_current_user_role)],
-    user_id: int = Path(..., ge=MIN_ID_VALUE, le=MAX_ID_VALUE, description="path-параметр ID пользователя (до 2147483647)"),
+    user_id: int = Path(
+        ...,
+        ge=MIN_ID_VALUE,
+        le=MAX_ID_VALUE,
+        description="path-параметр ID пользователя (до 2147483647)"
+    ),
 ):
     """
     :param service: Для работы с БД через зависимость
@@ -138,7 +151,12 @@ async def delete_user(
 async def delete_account(
     service: Annotated[AdminService, Depends(get_admin_service)],
     role: Annotated[str, Depends(get_current_user_role)],
-    user_id: int = Path(..., ge=MIN_ID_VALUE, le=MAX_ID_VALUE, description="path-параметр ID пользователя (до 2147483647)"),
+    user_id: int = Path(
+        ...,
+        ge=MIN_ID_VALUE,
+        le=MAX_ID_VALUE,
+        description="path-параметр ID пользователя (до 2147483647)"
+    ),
 ):
     """
     :param service: Для работы с БД через зависимость

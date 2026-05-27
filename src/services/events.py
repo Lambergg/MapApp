@@ -1,5 +1,5 @@
 import logging
-from datetime import datetime, timezone
+from datetime import datetime
 
 from src.exceptions import (EventDataEmptyHTTPException,
                             EventIndexWrongHTTPException,
@@ -64,9 +64,9 @@ class EventsService(BaseService):
             now = datetime.now()
             await self.db.events.delete_past_events(before=now)
             await self.db.commit()
-            logging.info(f"Устаревшие события удалены!!!")
+            logging.info("Устаревшие события удалены!!!")
         except EventsDeletePastException:
-            logging.error(f"Произошла ошибка при попытке удалить устаревшие мероприятия")
+            logging.error("Произошла ошибка при попытке удалить устаревшие мероприятия")
             raise EventsDeletePastHTTPEException
 
         events = await self.db.events.get_all()
@@ -193,7 +193,9 @@ class EventsService(BaseService):
         update_data = data.model_dump(exclude_unset=exclude_unset)
         try:
             await self.db.events.edit(
-                update_data, id=event_id, exclude_unset=exclude_unset
+                update_data,
+                id=event_id,
+                exclude_unset=exclude_unset
             )
         except ObjectEmptyDataException:
             raise EventDataEmptyHTTPException

@@ -1,16 +1,16 @@
 from fastapi import APIRouter, Depends, status
 
 from src.init import redis_manager, redis_manager_auth
-from src.utils.ratelimitter import rate_limit_auth_get_me
+from src.utils.ratelimitter import rate_limit_health_get
 
 router = APIRouter(prefix="/health", tags=["Health"])
 
 
 @router.post(
-    "/redis_set",
+    "/set",
     status_code=status.HTTP_201_CREATED,
     summary="Установка значений",
-    description="<h1>Проверка установки данных в Redis, устанавливает ключи A и B со значениями 1234 и 3421</h1>",
+    description="<h1>Проверка установки данных, устанавливает ключи A и B со значениями 1234 и 3421</h1>",
 )
 async def redis_set():
     """
@@ -27,11 +27,11 @@ async def redis_set():
 
     await redis_manager.set(key1, value1)
     await redis_manager_auth.set(key2, value2)
-    return status.HTTP_201_CREATED
+    return
 
 
-@router.get("/get_redis", summary="Получение значений из редиса")
-async def get_data_from_redis(_: None = Depends(rate_limit_auth_get_me)):
+@router.get("/get", summary="Получение значений")
+async def get_data_from_redis(_: None = Depends(rate_limit_health_get)):
     """
     Получает тестовые значения из двух экземпляров Redis:
     - `A` из основной базы (db0)

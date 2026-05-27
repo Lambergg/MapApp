@@ -2,7 +2,8 @@ from typing import Annotated
 
 from fastapi import APIRouter, Body, Depends, Path, Request, Response, status
 
-from src.api.dependencies import get_current_user_id, get_current_user_role, get_auth_service
+from src.api.dependencies import (get_auth_service, get_current_user_id,
+                                  get_current_user_role)
 from src.common.constants import MAX_ID_VALUE, MIN_ID_VALUE
 from src.exceptions import UserDeleteTokenHTTPException
 from src.schemas.users import UserLoginDTO, UserPatchDTO, UserRequestAddDTO
@@ -138,7 +139,12 @@ async def logout_user(
 async def edit_user_profile(
     service: Annotated[AuthService, Depends(get_auth_service)],
     role: Annotated[str, Depends(get_current_user_role)],
-    user_id: int = Path(..., ge=MIN_ID_VALUE, le=MAX_ID_VALUE, description="path-параметр ID пользователя (до 2147483647)"),
+    user_id: int = Path(
+        ...,
+        ge=MIN_ID_VALUE,
+        le=MAX_ID_VALUE,
+        description="path-параметр ID пользователя (до 2147483647)"
+    ),
     user_data: UserPatchDTO = Body(
         openapi_examples={
             "1": {
@@ -166,7 +172,10 @@ async def edit_user_profile(
     """
 
     await service.edit_user_profile(
-        user_id, user_data, role, exclude_unset=True
+        user_id,
+        user_data,
+        role,
+        exclude_unset=True
     )
     return
 

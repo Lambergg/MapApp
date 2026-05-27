@@ -31,7 +31,10 @@ class RedisManager:
         """
         logging.info("Подключаюсь к Redis...")
         self._redis = await redis.Redis(
-            host=self.host, port=self.port, db=self.db, decode_responses=True
+            host=self.host,
+            port=self.port,
+            db=self.db,
+            decode_responses=True
         )
         logging.info("Redis подключен")
 

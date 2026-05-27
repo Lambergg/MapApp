@@ -1,11 +1,11 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Body, Path, Query, status, Depends
+from fastapi import APIRouter, Body, Depends, Path, Query, status
 from fastapi_cache.decorator import cache
 
-from src.api.dependencies import PaginationParams, get_db_manager, get_db, get_current_user_id, \
-    get_current_user_role, get_event_service
-from src.common.constants import MIN_ID_VALUE, MAX_ID_VALUE
+from src.api.dependencies import (PaginationParams, get_current_user_id,
+                                  get_current_user_role, get_event_service)
+from src.common.constants import MAX_ID_VALUE, MIN_ID_VALUE
 from src.schemas.events import EventsAddDTO, EventsUpdateDTO
 from src.services.events import EventsService
 
@@ -45,7 +45,12 @@ async def get_events(
 async def get_one_event(
     service: Annotated[EventsService, Depends(get_event_service)],
     role: Annotated[str, Depends(get_current_user_role)],
-    event_id: int = Path(..., ge=MIN_ID_VALUE, le=MAX_ID_VALUE, description="path-параметр ID (до 2147483647)"),
+    event_id: int = Path(
+        ...,
+        ge=MIN_ID_VALUE,
+        le=MAX_ID_VALUE,
+        description="path-параметр ID (до 2147483647)"
+    ),
 ):
     """
     Возвращает одно событие по ID.
@@ -191,7 +196,12 @@ async def create_events(
 async def edit_event(
     role: Annotated[str, Depends(get_current_user_role)],
     service: Annotated[EventsService, Depends(get_event_service)],
-    event_id: int = Path(..., ge=MIN_ID_VALUE, le=MAX_ID_VALUE, description="path-параметр ID (до 2147483647)"),
+    event_id: int = Path(
+        ...,
+        ge=MIN_ID_VALUE,
+        le=MAX_ID_VALUE,
+        description="path-параметр ID (до 2147483647)"
+    ),
     event_data: EventsUpdateDTO = Body(
         openapi_examples={
             "1": {
@@ -237,7 +247,12 @@ async def edit_event(
 async def delete_event(
     service: Annotated[EventsService, Depends(get_event_service)],
     role: Annotated[str, Depends(get_current_user_role)],
-    event_id: int = Path(..., ge=MIN_ID_VALUE, le=MAX_ID_VALUE, description="path-параметр ID пользователя (до 2147483647)"),
+    event_id: int = Path(
+        ...,
+        ge=MIN_ID_VALUE,
+        le=MAX_ID_VALUE,
+        description="path-параметр ID пользователя (до 2147483647)"
+    ),
 ):
     """
     Удаляет событие по ID.
