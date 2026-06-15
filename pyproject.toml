@@ -1,7 +1,7 @@
 [project]
 name = "map-app"
 version = "0.1.0"
-description = "Add your description here"
+description = "Проект для участия на получение гранта в университете"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
