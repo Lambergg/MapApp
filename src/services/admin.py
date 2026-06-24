@@ -142,3 +142,4 @@ class AdminService(BaseService):
             raise UserNotFoundHTTPException
 
         await self.db.users.deactivate_user(user_id)
+        await delete_refresh_token(user_id)

@@ -7,9 +7,10 @@ from src.api.dependencies import (PaginationParams, get_admin_service,
                                   get_current_user_role)
 from src.common.constants import MAX_ID_VALUE, MIN_ID_VALUE
 from src.exceptions import ObjectNotFoundException, UserNotFoundHTTPException
+from src.schemas.answers import BanAnswerDTO
 from src.schemas.users import UserFilterDTO, UserPutDTO
 from src.services.admin import AdminService
-from src.utils.redis_utils import delete_refresh_token
+
 
 router = APIRouter(prefix="/admin", tags=["Администрирование"])
 
@@ -146,7 +147,8 @@ async def delete_user(
     "/delete_account/{user_id}",
     summary="Мягкое удаление аккаунта",
     description="<h1>Пользователь деактивируется (Банится), происходит logout</h1>",
-    status_code=status.HTTP_204_NO_CONTENT,
+    response_model=BanAnswerDTO,
+    status_code=status.HTTP_200_OK,
 )
 async def delete_account(
     service: Annotated[AdminService, Depends(get_admin_service)],
@@ -162,11 +164,6 @@ async def delete_account(
     :param service: Для работы с БД через зависимость
     :param role: Роль текущего пользователя (из JWT)
     :param user_id: path-параметр ID пользователя (до 2147483647)
-    :return: message: "Аккаунт успешно деактивирован (Забанен)", status: 200
     """
     await service.soft_delete_user(user_id, role)
-    await delete_refresh_token(user_id)
-    return {
-        "message": "Аккаунт успешно деактивирован (Забанен)",
-        "status": status.HTTP_204_NO_CONTENT,
-    }
+    return BanAnswerDTO(message="Аккаунт успешно деактивирован (Забанен)")
