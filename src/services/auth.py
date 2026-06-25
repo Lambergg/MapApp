@@ -284,7 +284,6 @@ class AuthService(BaseService):
         :raises WrongUserDataHTTPException: Если роль не найдена.
         """
         refresh_token = request.cookies.get("refresh_token")
-        token = request.cookies.get("access_token")
         if not refresh_token:
             raise RefreshTokenRequiredHTTPException
 
@@ -294,12 +293,15 @@ class AuthService(BaseService):
 
         user_id = int(user_id_str)
 
-        payload = self.decode_access_token(token)
-        username = payload["username"]
-
         user_role = await redis_manager_auth.get(f"user_role:{user_id}")
         if not user_role:
             raise WrongUserDataHTTPException
+
+        try:
+            user = await self.db.users.get_one(id=user_id)
+            username = user.name
+        except ObjectNotFoundException:
+            raise UserNotFoundHTTPException
 
         new_access_token = self.create_access_token(
             user_id, user_role, username

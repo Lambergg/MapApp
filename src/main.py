@@ -45,7 +45,7 @@ async def lifespan(app: FastAPI):
     logging.info("Приложение остановлено")
 
 
-app = FastAPI(docs_url=None, lifespan=lifespan, title="Приложение Сошлись")
+app = FastAPI(docs_url=None, lifespan=lifespan, title="Приложение Kloket")
 
 app.mount("/static", StaticFiles(directory="src/static"), name="static")
 
