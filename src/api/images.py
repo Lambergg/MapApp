@@ -3,6 +3,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, UploadFile
 
 from src.api.dependencies import get_current_user_role
+from src.schemas.answers import ImageAnswerDTO
 from src.services.images import ImagesService
 
 router = APIRouter(prefix="/images", tags=["Аватары пользователей"])
@@ -12,6 +13,7 @@ router = APIRouter(prefix="/images", tags=["Аватары пользовате�
     "/upload",
     summary="Загрузка изображения",
     description="<h1>Загрузите ваше изображение</h1>",
+    response_model=ImageAnswerDTO,
 )
 def upload_image(role: Annotated[str, Depends(get_current_user_role)], file: UploadFile):
     """
@@ -29,4 +31,4 @@ def upload_image(role: Annotated[str, Depends(get_current_user_role)], file: Upl
     image_path = ImagesService().upload_image(file, role)
     image_url = image_path.replace("src/", "/")
 
-    return {"image_url": image_url}
+    return ImageAnswerDTO(url=f"Изображение успешно загружено по ссылке: {image_url}")

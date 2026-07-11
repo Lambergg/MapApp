@@ -183,8 +183,8 @@ async def create_events(
     :status 201: Событие успешно создано.
     """
 
-    events = await service.create_events(data, role)
-    return {"Status": status.HTTP_201_CREATED, "data": events}
+    await service.create_events(data, role)
+    return
 
 
 @router.put(
