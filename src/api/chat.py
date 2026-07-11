@@ -11,7 +11,7 @@ router = APIRouter(prefix="/chat", tags=["Чат пользователей"])
 
 
 @router.websocket("/ws/{username}")
-async def websocket_endpoint(websocket: WebSocket, username: str):
+async def websocket_endpoint(websocket: WebSocket, username: str) -> None:
     """
     Обработчик WebSocket-подключения для чата.
 
