@@ -4,6 +4,7 @@ from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 
 from src.connectors.ws_connector import manager
 
+
 logger = logging.getLogger("chat")
 
 router = APIRouter(prefix="/chat", tags=["Чат пользователей"])
