@@ -5,12 +5,11 @@ from fastapi import APIRouter, Body, Depends, Path, Request, Response, status
 from src.api.dependencies import (get_auth_service, get_current_user_id,
                                   get_current_user_role)
 from src.common.constants import MAX_ID_VALUE, MIN_ID_VALUE
-from src.exceptions import UserDeleteTokenHTTPException
 from src.schemas.users import UserLoginDTO, UserPatchDTO, UserRequestAddDTO
 from src.services.auth import AuthService
 from src.utils.ratelimitter import (rate_limit_auth_get_me,
                                     rate_limit_auth_refresh)
-from src.utils.redis_utils import delete_refresh_token
+
 
 router = APIRouter(prefix="/auth", tags=["Авторизация и аутентификация"])
 
@@ -109,6 +108,7 @@ async def get_me(
     status_code=status.HTTP_200_OK,
 )
 async def logout_user(
+    service: Annotated[AuthService, Depends(get_auth_service)],
     user_id: Annotated[int, Depends(get_current_user_id)],
     response: Response,
     request: Request,
@@ -118,15 +118,15 @@ async def logout_user(
 
     :param user_id: ID пользователя (DI).
     :param response: Для удаления cookies.
+    :param service: Для удаления токенов из Redis.
     :param request: Для получения access-токена из cookie.
     :return: HTTP 200 OK.
     """
-    access_token = request.cookies.get("access_token") or None
-    if not access_token:
-        raise UserDeleteTokenHTTPException
-    response.delete_cookie("access_token")
-    response.delete_cookie("refresh_token")
-    await delete_refresh_token(user_id)
+    await service.logout_user(
+        request,
+        response,
+        user_id,
+    )
     return
 
 

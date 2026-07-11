@@ -22,7 +22,7 @@ from src.exceptions import (EventMaxUsersHTTPException,
                             UserPasswordToShortHTTPException,
                             WrongPasswordHTTPException,
                             WrongRefreshTokenHTTPException,
-                            WrongUserDataHTTPException)
+                            WrongUserDataHTTPException, UserDeleteTokenHTTPException)
 from src.init import redis_manager_auth
 from src.schemas.users import (UserAddDTO, UserDTO, UserLoginDTO, UserPatchDTO,
                                UserRequestAddDTO)
@@ -119,15 +119,21 @@ class AuthService(BaseService):
         key = f"refresh_token:{user_id}"
         return await redis_manager_auth.get(key)
 
-    async def delete_refresh_token(self, user_id: int):
+    async def delete_refresh_token(self, user_id: int, refresh_token: str):
         """
         Удаляет refresh-токен из Redis.
 
+        :param refresh_token: refresh-токен для удаления обратной ссылки.
+        :type refresh_token: str
         :param user_id: ID пользователя.
         :type user_id: int
         """
         key = f"refresh_token:{user_id}"
+        rt_key = f"rt:{refresh_token}"
+        user_role = f"user_role:{user_id}"
         await redis_manager_auth.delete(key)
+        await redis_manager_auth.delete(rt_key)
+        await redis_manager_auth.delete(user_role)
 
     def hash_password(self, password: str) -> str:
         """
@@ -268,6 +274,16 @@ class AuthService(BaseService):
             "refresh_token": refresh_token,
             "token_type": "bearer",
         }
+
+
+    async def logout_user(self, request: Request, response: Response, user_id):
+        access_token = request.cookies.get("access_token") or None
+        refresh_token = request.cookies.get("refresh_token") or None
+        if not access_token or not refresh_token:
+            raise UserDeleteTokenHTTPException
+        response.delete_cookie("access_token")
+        response.delete_cookie("refresh_token")
+        await self.delete_refresh_token(user_id, refresh_token)
 
     async def refresh_tokens(self, request: Request, response: Response):
         """
