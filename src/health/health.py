@@ -3,6 +3,7 @@ from fastapi import APIRouter, Depends, status
 from src.init import redis_manager, redis_manager_auth
 from src.utils.ratelimitter import rate_limit_health_get
 
+
 router = APIRouter(prefix="/health", tags=["Health"])
 
 

@@ -5,6 +5,7 @@ from sqlalchemy import Row, RowMapping
 
 from src.database import Base
 
+
 SchemaType = TypeVar("SchemaType", bound=BaseModel)
 
 

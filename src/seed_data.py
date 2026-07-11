@@ -6,6 +6,7 @@ from pathlib import Path
 from passlib.context import CryptContext
 from sqlalchemy import text
 
+
 sys.path.append(str(Path(__file__).parent.parent))
 
 from src.database import async_session_maker
