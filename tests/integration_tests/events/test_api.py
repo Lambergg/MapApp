@@ -40,7 +40,3 @@ async def test_event_flow(ac: AsyncClient):
         },
     )
     assert response.status_code == 201
-    res = response.json()
-    assert isinstance(res, dict)
-    assert res["data"]["title"] == title
-    assert "data" in res

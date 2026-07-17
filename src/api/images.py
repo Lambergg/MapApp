@@ -29,6 +29,5 @@ def upload_image(role: Annotated[str, Depends(get_current_user_role)], file: Upl
     """
 
     image_path = ImagesService().upload_image(file, role)
-    image_url = image_path.replace("src/", "/")
 
-    return ImageAnswerDTO(url=f"Изображение успешно загружено по ссылке: {image_url}")
+    return ImageAnswerDTO(url=f"Изображение успешно загружено по ссылке: {image_path}")

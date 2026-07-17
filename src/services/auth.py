@@ -325,7 +325,7 @@ class AuthService(BaseService):
         )
         new_refresh_token = self.create_refresh_token()
 
-        await self.delete_refresh_token(user_id)
+        await self.delete_refresh_token(user_id, refresh_token)
         await redis_manager_auth.delete(f"rt:{refresh_token}")
 
         await redis_manager_auth.set(

@@ -46,4 +46,4 @@ class ImagesService(BaseService):
             shutil.copyfileobj(file.file, new_file)
 
             resize_image.delay(image_path)  # type: ignore
-            return image_path
+            return image_path.replace("src/", "/")
