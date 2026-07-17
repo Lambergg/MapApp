@@ -9,7 +9,6 @@ from src.common.constants import MAX_ID_VALUE, MIN_ID_VALUE
 from src.schemas.events import EventsAddDTO, EventsUpdateDTO
 from src.services.events import EventsService
 
-
 router = APIRouter(prefix="/events", tags=["События"])
 
 

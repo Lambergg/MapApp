@@ -15,6 +15,7 @@ from src.exceptions import (EventMaxUsersHTTPException,
                             RefreshTokenRequiredHTTPException,
                             TokenWrongTypeHTTPException,
                             UserAllReadyExistsHTTPException,
+                            UserDeleteTokenHTTPException,
                             UserIndexWrongHTTPException,
                             UserIsBannedHTTPException,
                             UserNotFoundHTTPException,
@@ -22,7 +23,7 @@ from src.exceptions import (EventMaxUsersHTTPException,
                             UserPasswordToShortHTTPException,
                             WrongPasswordHTTPException,
                             WrongRefreshTokenHTTPException,
-                            WrongUserDataHTTPException, UserDeleteTokenHTTPException)
+                            WrongUserDataHTTPException)
 from src.init import redis_manager_auth
 from src.schemas.users import (UserAddDTO, UserDTO, UserLoginDTO, UserPatchDTO,
                                UserRequestAddDTO)

@@ -3,7 +3,6 @@ from typing import List
 
 from fastapi import WebSocket
 
-
 logger = logging.getLogger("websocket")
 
 

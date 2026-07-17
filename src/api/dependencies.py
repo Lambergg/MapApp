@@ -3,10 +3,12 @@ from typing import Annotated
 from fastapi import Depends, HTTPException, Query, Request
 from pydantic import BaseModel
 
+from src.connectors.ws_connector import manager
 from src.database import async_session_maker
 from src.init import redis_manager_auth
 from src.services.admin import AdminService
 from src.services.auth import AuthService
+from src.services.chat import ChatService
 from src.services.events import EventsService
 from src.utils.db_manager import DBManager
 
@@ -115,3 +117,6 @@ async def get_event_service(
     db: Annotated[get_db_manager, Depends(get_db)]
 ) -> EventsService:
     return EventsService(db)
+
+async def get_chat_service() -> ChatService:
+    return ChatService(manager)

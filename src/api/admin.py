@@ -11,7 +11,6 @@ from src.schemas.answers import BanAnswerDTO
 from src.schemas.users import UserFilterDTO, UserPutDTO
 from src.services.admin import AdminService
 
-
 router = APIRouter(prefix="/admin", tags=["Администрирование"])
 
 

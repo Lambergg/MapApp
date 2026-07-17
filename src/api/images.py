@@ -6,7 +6,6 @@ from src.api.dependencies import get_current_user_role
 from src.schemas.answers import ImageAnswerDTO
 from src.services.images import ImagesService
 
-
 router = APIRouter(prefix="/images", tags=["Аватары пользователей"])
 
 

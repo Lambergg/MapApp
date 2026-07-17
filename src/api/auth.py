@@ -10,7 +10,6 @@ from src.services.auth import AuthService
 from src.utils.ratelimitter import (rate_limit_auth_get_me,
                                     rate_limit_auth_refresh)
 
-
 router = APIRouter(prefix="/auth", tags=["Авторизация и аутентификация"])
 
 
