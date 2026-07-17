@@ -1,10 +1,13 @@
+from datetime import timedelta
 from typing import Annotated
 
 from fastapi import Depends, HTTPException, Query, Request
 from pydantic import BaseModel
 
+from src.config import settings
 from src.connectors.ws_connector import manager
 from src.database import async_session_maker
+from src.exceptions import ObjectNotFoundException
 from src.init import redis_manager_auth
 from src.services.admin import AdminService
 from src.services.auth import AuthService
@@ -48,7 +51,8 @@ def get_token(request: Request) -> str:
     token = request.cookies.get("access_token") or None
     if not token:
         raise HTTPException(
-            status_code=401, detail="Вы не предоставили токен доступа"
+            status_code=401,
+            detail="Вы не предоставили токен доступа"
         )
     return token
 
@@ -63,24 +67,6 @@ def get_current_user_id(token: str = Depends(get_token)) -> int:
     """
     data = AuthService().decode_access_token(token)
     return data["user_id"]
-
-
-async def get_current_user_role(
-    user_id: int = Depends(get_current_user_id),
-) -> str:
-    """
-    Получает роль пользователя из Redis по его ID.
-
-    :param user_id: ID пользователя (получается из токена).
-    :return: Роль пользователя (`admin`, `user`, `guest` и т.д.).
-    :raises HTTPException: Если роль не найдена в Redis.
-    """
-    user_role = await redis_manager_auth.get(f"user_role:{user_id}")
-    if not user_role:
-        raise HTTPException(
-            status_code=401, detail="Не удалось получить данные пользователя"
-        )
-    return user_role
 
 
 def get_db_manager():
@@ -99,6 +85,46 @@ async def get_db():
     """
     async with get_db_manager() as db:
         yield db
+
+
+async def get_current_user_role(
+        db: Annotated[get_db_manager, Depends(get_db)],
+        user_id: int = Depends(get_current_user_id),
+) -> str:
+    """
+    Получает роль пользователя из Redis по его ID.
+    Получает роль пользователя из Redis или БД по его ID.
+
+    Сначала пытается получить из Redis (кэш), если нет — обращается в БД.
+
+    :param user_id: ID пользователя (получается из токена).
+    :param db: Менеджер базы данных.
+    :return: Роль пользователя (`admin`, `user`, `guest` и т.д.).
+    :raises HTTPException: Если роль не найдена в Redis.
+    :raises HTTPException: Если роль не найдена ни в Redis, ни в БД.
+    """
+    user_role = await redis_manager_auth.get(f"user_role:{user_id}")
+    if user_role:
+        return user_role
+
+# Если роли нет в Redis, пробуем получить из БД
+    try:
+        user = await db.users.get_one(id=user_id)
+        if user and user.role:
+            # Сохраняем в Redis для кэширования
+            await redis_manager_auth.set(
+                f"user_role:{user_id}",
+                user.role,
+                expire=timedelta(days=settings.REFRESH_TOKEN_EXPIRES_DAYS),
+            )
+            return user.role
+    except Exception:
+        raise ObjectNotFoundException
+
+    raise HTTPException(
+        status_code=401,
+        detail="Не удалось получить данные пользователя"
+    )
 
 
 async def get_admin_service(
