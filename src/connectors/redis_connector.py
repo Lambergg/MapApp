@@ -69,8 +69,6 @@ class RedisManager:
         """
         if expire:
             await self._redis.set(key, value, ex=expire)
-        else:
-            await self._redis.set(key, value)
         logging.info(f"{key} и {value} сохранено в редис")
 
     async def get(self, key: str):
