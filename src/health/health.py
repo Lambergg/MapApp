@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, status
 
 from src.init import redis_manager, redis_manager_auth
-from src.utils.ratelimitter import rate_limit_health_get
+from src.utils.ratelimitter import rate_limit_health_get, rate_limit_health_set
 
 router = APIRouter(prefix="/health", tags=["Health"])
 
@@ -10,9 +10,9 @@ router = APIRouter(prefix="/health", tags=["Health"])
     "/set",
     status_code=status.HTTP_201_CREATED,
     summary="Установка значений",
-    description="<h1>Проверка установки данных, устанавливает ключи A и B со значениями 1234 и 3421</h1>",
+    description="<h1>Проверка установки данных, устанавливает ключи A и B</h1>",
 )
-async def redis_set():
+async def redis_set(_: None = Depends(rate_limit_health_set)):
     """
     Устанавливает тестовые значения в два разных экземпляра (db0 и db1).
     Используется для проверки работоспособности подключения.
@@ -23,10 +23,10 @@ async def redis_set():
     key1 = "A"
     value1 = "1234"
     key2 = "B"
-    value2 = "3421"
+    value2 = ["3421","1234"]
 
-    await redis_manager.set(key1, value1)
-    await redis_manager_auth.set(key2, value2)
+    await redis_manager.set(key1, value1, 60)
+    await redis_manager_auth.set(key2, value2 , 60)
     return
 
 
