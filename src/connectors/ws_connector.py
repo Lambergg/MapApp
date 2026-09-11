@@ -41,7 +41,7 @@ class ConnectionManager:
                 f"Соединение закрыто. Оставшиеся: {len(self.active_connections)}"
             )
         except ValueError:
-            pass
+            self.disconnect(websocket)
 
     async def send_personal_message(
         self, message: str, websocket: WebSocket
@@ -66,7 +66,7 @@ class ConnectionManager:
         Автоматически удаляет соединения, при отправке в которые произошла ошибка.
 
         :param message: Текст сообщения для рассылки.
-        :type message: str
+        :type message: Str
         """
         disconnected = []
         for connection in self.active_connections:
