@@ -17,7 +17,7 @@ class UserRequestAddDTO(BaseModel):
     events_ids: list[int] = []
 
     @field_validator("password")
-    def validate_email(cls, v) -> str:
+    def validate_email(cls, v) -> None:
         """
         Проверяет длину пароля.
 
@@ -29,7 +29,7 @@ class UserRequestAddDTO(BaseModel):
         """
         if len(v) < 8:
             raise ValueError("Пароль должен быть больше восьми символов")
-        return v
+        return None
 
 
 class UserLoginDTO(BaseModel):
@@ -42,10 +42,10 @@ class UserLoginDTO(BaseModel):
     password: str
 
     @field_validator("password")
-    def validate_email(cls, v) -> str:
+    def validate_email(cls, v) -> None:
         if len(v) < 8:
             raise ValueError("Пароль должен быть больше восьми символов")
-        return v
+        return None
 
 
 class UserAddDTO(BaseModel):
@@ -111,10 +111,10 @@ class UserPatchDTO(BaseModel):
     events_ids: list[int] = []
 
     @field_validator("password")
-    def validate_pass(cls, v) -> str:
+    def validate_pass(cls, v) -> None:
         if len(v) < 8:
             raise ValueError("Пароль должен быть больше восьми символов")
-        return v
+        return None
 
     model_config = ConfigDict(from_attributes=True)
 

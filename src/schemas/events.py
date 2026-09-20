@@ -18,20 +18,20 @@ class EventsAddDTO(BaseModel):
 
     @field_validator("date")
     @classmethod
-    def validate_datetime(cls, v):
+    def validate_datetime(cls, v) -> None:
         """
         Убирает информацию о временной зоне, если она есть.
 
         :param v: Входная дата.
         :type v: Datetime | None
         :return: Очищенная дата.
-        :rtype: Datetime | None
+        :rtype: None
         """
         if v is None:
             return v
         if v.tzinfo is not None:
             v = v.replace(tzinfo=None)
-        return v
+        return None
 
 
 class EventsDTO(EventsAddDTO):
@@ -61,20 +61,20 @@ class EventsUpdateDTO(BaseModel):
 
     @field_validator("date")
     @classmethod
-    def validate_datetime(cls, v):
+    def validate_datetime(cls, v) -> None:
         """
         Убирает информацию о временной зоне, если она есть.
 
         :param v: Входная дата.
         :type v: Datetime | None
         :return: Очищенная дата.
-        :rtype: Datetime | None
+        :rtype: None
         """
         if v is None:
             return v
         if v.tzinfo is not None:
             v = v.replace(tzinfo=None)
-        return v
+        return None
 
 
 class UsersEventsAddDTO(BaseModel):
