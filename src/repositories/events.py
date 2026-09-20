@@ -23,7 +23,7 @@ class EventsRepository(BaseRepository):
     model = EventsOrm
     mapper = EventDataMapper
 
-    async def delete_past_events(self, before: datetime):
+    async def delete_past_events(self, before: datetime) -> None:
         """
         Удаляет все события, которые произошли до указанной даты.
         """
@@ -64,13 +64,13 @@ class EventsRepository(BaseRepository):
 
     async def get_filtered_by_time(
         self,
-        limit,
-        offset,
-        title,
-        category,
-        address,
-        date,
-        max_users,
+        limit: int,
+        offset: int,
+        title: str | None,
+        category: str | None,
+        address: str | None,
+        date: str | None,
+        max_users: int | None,
     ) -> list[EventsDTO]:
         """
         Возвращает отфильтрованный и постраничный список событий.
@@ -122,8 +122,6 @@ class EventsRepository(BaseRepository):
 
         query = query.limit(limit).offset(offset).order_by(EventsOrm.id.asc())
 
-        # Логирование SQL (для отладки — раскомментировать при необходимости)
-        # print(query.compile(compile_kwargs={"literal_binds": True}))
         result = await self.session.execute(query)
 
         return [
@@ -140,9 +138,7 @@ class EventsRepository(BaseRepository):
         :return: Число участников.
         :rtype: Int
         """
-        query = select(func.count(UsersEventsOrm.user_id)).where(
-            UsersEventsOrm.event_id == event_id
-        )
+        query = select(func.count(UsersEventsOrm.user_id)).where(UsersEventsOrm.event_id == event_id)
         result = await self.session.execute(query)
         return result.scalar_one()
 
@@ -184,11 +180,11 @@ class UsersEventsRepository(BaseRepository):
 
         # Удаляем лишние связи
         if ids_to_delete:
-            delete_m2m_facilities_stmt = delete(self.model).filter(  # type: ignore
+            delete_m2m_events_stmt = delete(self.model).filter(  # type: ignore
                 self.model.user_id == user_id,  # type: ignore
                 self.model.event_id.in_(ids_to_delete),  # type: ignore
             )
-            await self.session.execute(delete_m2m_facilities_stmt)
+            await self.session.execute(delete_m2m_events_stmt)
 
         # Добавляем новые связи
         if ids_to_insert:

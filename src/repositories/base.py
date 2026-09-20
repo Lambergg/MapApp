@@ -1,5 +1,5 @@
 import logging
-from typing import Any, Sequence
+from typing import Any, Sequence, ClassVar
 
 import sqlalchemy.exc
 from asyncpg.exceptions import UniqueViolationError
@@ -28,11 +28,11 @@ class BaseRepository:
     :type mapper: Type[DataMapper]
     """
 
-    model: type[Base]
-    mapper: type[DataMapper]
+    model: ClassVar[type[Base]]
+    mapper: ClassVar[type[DataMapper]]
     session: AsyncSession
 
-    def __init__(self, session: AsyncSession):
+    def __init__(self, session: AsyncSession) -> None:
         """
         Инициализирует репозиторий с указанной сессией.
 
@@ -41,7 +41,7 @@ class BaseRepository:
         """
         self.session = session
 
-    async def get_filtered(self, *filter, **filter_by) -> list[BaseModel | Any]:
+    async def get_filtered(self, *filter, **filter_by) -> list[BaseModel]:
         """
         Возвращает список объектов, соответствующих условиям фильтрации.
         Поддерживает комбинацию позиционных (`*filter`) и именованных (`**filter_by`) фильтров.
@@ -51,7 +51,7 @@ class BaseRepository:
         :param filter_by: Поля модели для точного совпадения (например, `email="test@example.com"`).
         :type filter_by: dict
         :return: Список объектов, преобразованных в Pydantic-схемы.
-        :rtype: list[BaseModel | Any]
+        :rtype: list[BaseModel]
         """
         query = select(self.model).filter(*filter).filter_by(**filter_by)
         result = await self.session.execute(query)
@@ -61,28 +61,27 @@ class BaseRepository:
             for model in result.scalars().all()
         ]
 
-    async def get_all(self, *args, **kwargs) -> list[BaseModel | Any]:
+    async def get_all(self, *args, **kwargs) -> list[BaseModel]:
         """
         Возвращает все записи модели.
         По умолчанию вызывает `get_filtered()` без фильтров.
 
         :return: Список всех объектов.
-        :rtype: List[BaseModel | Any]
+        :rtype: List[BaseModel]
         """
         return await self.get_filtered()
 
-    async def get_one_or_none(self, **filter_by) -> BaseModel | None | Any:
+    async def get_one_or_none(self, **filter_by) -> BaseModel | None:
         """
         Возвращает один объект по фильтру или `None`, если не найден.
 
         :param filter_by: Поля для поиска (например, `id=1`).
         :type filter_by: Dict
         :return: Объект в формате Pydantic или `None`.
-        :rtype: BaseModel | None | Any
+        :rtype: BaseModel | None
         """
         query = select(self.model).filter_by(**filter_by)
         result = await self.session.execute(query)
-        # print(query.compile(compile_kwargs={"literal_binds": True}))
         model = result.scalars().one_or_none()
         if model is None:
             return None
@@ -106,14 +105,14 @@ class BaseRepository:
             raise ObjectNotFoundException
         return self.mapper.map_to_domain_entity(model)
 
-    async def add(self, data: BaseModel) -> BaseModel | Any:
+    async def add(self, data: BaseModel) -> BaseModel:
         """
         Добавляет новый объект в базу данных.
 
         :param data: Pydantic-схема с данными для добавления.
         :type data: BaseModel
         :return: Созданный объект, преобразованный в Pydantic.
-        :rtype: BaseModel | Any
+        :rtype: BaseModel
         :raises ObjectAlreadyExistsException: Если нарушено уникальное ограничение.
         :raises IntegrityError: При других ошибках целостности.
         """
@@ -193,9 +192,7 @@ class BaseRepository:
             if isinstance(ex.orig.__cause__, UniqueViolationError):
                 raise ObjectAlreadyExistsException from ex
             elif "not-null" in str(ex.orig):
-                raise ObjectNotNullException(
-                    "Обязательные поля не могут быть пустыми"
-                ) from ex
+                raise ObjectNotNullException("Обязательные поля не могут быть пустыми") from ex
             else:
                 logging.error(
                     f"Незнакомая ошибка. Входные данные: {data=}, тип ошибки: {type(ex.orig.__cause__)=}"

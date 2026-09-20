@@ -16,11 +16,11 @@ class AdminRepository(UsersRepository):
 
     async def get_filtered_by_time(
         self,
-        limit,
-        offset,
-        email,
-        name,
-        sname,
+        limit: int,
+        offset: int,
+        email: str | None,
+        name: str | None,
+        sname: str | None,
     ) -> list[UserDTO]:
         """
         Возвращает список пользователей с пагинацией и фильтрацией по части email, имени или фамилии.
@@ -57,8 +57,6 @@ class AdminRepository(UsersRepository):
 
         query = query.limit(limit).offset(offset).order_by(UsersOrm.id.asc())
 
-        # Логирование SQL (для отладки — раскомментировать при необходимости)
-        # print(query.compile(compile_kwargs={"literal_binds": True}))
         result = await self.session.execute(query)
 
         return [
