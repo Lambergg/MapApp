@@ -24,7 +24,7 @@ async def redis_set(_: None = Depends(rate_limit_health_set)) -> None:
     key1 = "A"
     value1 = "1234"
     key2 = "B"
-    value2 = ["3421","1234"]
+    value2 = "3421"
 
     await redis_manager.set(key1, value1, 60)
     await redis_manager_auth.set(key2, value2 , 60)

@@ -1,5 +1,5 @@
 from datetime import timedelta
-from typing import Annotated
+from typing import Annotated, AsyncGenerator
 
 from fastapi import Depends, HTTPException, Query, Request
 from pydantic import BaseModel
@@ -69,7 +69,7 @@ def get_current_user_id(token: str = Depends(get_token)) -> int:
     return data["user_id"]
 
 
-def get_db_manager():
+def get_db_manager() -> DBManager:
     """
     Создаёт и возвращает экземпляр DBManager с фабрикой сессий.
     :return: Экземпляр DBManager.
@@ -77,7 +77,7 @@ def get_db_manager():
     return DBManager(session_factory=async_session_maker)
 
 
-async def get_db():
+async def get_db() -> AsyncGenerator[DBManager, None]:
     """
     Асинхронная зависимость для получения активной сессии БД.
     Управляет жизненным циклом сессии: открывает и закрывает её через контекстный менеджер.

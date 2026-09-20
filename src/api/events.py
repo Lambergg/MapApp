@@ -6,7 +6,7 @@ from fastapi_cache.decorator import cache
 from src.api.dependencies import (PaginationParams, get_current_user_id,
                                   get_current_user_role, get_event_service)
 from src.common.constants import MAX_ID_VALUE, MIN_ID_VALUE
-from src.schemas.events import EventsAddDTO, EventsUpdateDTO
+from src.schemas.events import EventsAddDTO, EventsUpdateDTO, EventsDTO
 from src.services.events import EventsService
 
 router = APIRouter(prefix="/events", tags=["События"])
@@ -21,7 +21,7 @@ router = APIRouter(prefix="/events", tags=["События"])
 async def get_events(
     service: Annotated[EventsService, Depends(get_event_service)],
     role: Annotated[str, Depends(get_current_user_role)],
-):
+) -> list[EventsDTO]:
     """
     Получает список всех событий.
 
@@ -29,7 +29,7 @@ async def get_events(
     :param role: Роль текущего пользователя (admin/user/guest).
     :type role: Str
     :return: Список событий.
-    :rtype: List[EventDTO]
+    :rtype: List[EventsDTO]
     :raises WrongUserDataHTTPException: Если роль не в списке допустимых.
     """
 
@@ -51,7 +51,7 @@ async def get_one_event(
         le=MAX_ID_VALUE,
         description="path-параметр ID (до 2147483647)"
     ),
-):
+) -> EventsDTO:
     """
     Возвращает одно событие по ID.
 
@@ -61,7 +61,7 @@ async def get_one_event(
     :param event_id: Уникальный идентификатор события. Должен быть > 0.
     :type event_id: int
     :return: Данные события.
-    :rtype: EventDTO
+    :rtype: EventsDTO
     :raises HTTPException 404: Если событие не найдено.
     """
 
@@ -78,7 +78,7 @@ async def get_my_events(
     user_id: Annotated[int, Depends(get_current_user_id)],
     service: Annotated[EventsService, Depends(get_event_service)],
     role: Annotated[str, Depends(get_current_user_role)],
-):
+) -> list[EventsDTO]:
     """
     Возвращает все события, созданные или в которых участвует пользователь.
 
@@ -88,7 +88,7 @@ async def get_my_events(
     :param role: Роль пользователя.
     :type role: Str
     :return: Список событий пользователя.
-    :rtype: List[EventDTO]
+    :rtype: List[EventsDTO]
     """
 
     return await service.get_my_events(user_id, role)
@@ -111,7 +111,7 @@ async def get_search_events(
     max_users: int | None = Query(
         None, description="Максимальное количество участников события"
     ),
-):
+) -> list[EventsDTO]:
     """
     Поиск событий по заданным фильтрам с пагинацией.
 
@@ -131,7 +131,7 @@ async def get_search_events(
     :param max_users: Фильтр по максимальному числу участников.
     :type max_users: int | None
     :return: Отфильтрованный список событий.
-    :rtype: PaginatedResponse[EventDTO]
+    :rtype: list[EventsDTO]
     """
 
     return await service.get_filtered_by_time(
@@ -169,7 +169,7 @@ async def create_events(
             },
         }
     ),
-):
+) -> None:
     """
     Создаёт новое событие.
 
@@ -217,7 +217,7 @@ async def edit_event(
             },
         }
     ),
-):
+) -> None:
     """
     Обновляет существующее событие по ID.
 
@@ -229,7 +229,7 @@ async def edit_event(
     :param event_data: Новые данные события.
     :type event_data: EventsUpdateDTO
     :return: Статус 200 при успехе.
-    :rtype: Int
+    :rtype: None
     :status 200: Успешно обновлено.
     :raises HTTPException 404: Если событие не найдено.
     """
@@ -253,7 +253,7 @@ async def delete_event(
         le=MAX_ID_VALUE,
         description="path-параметр ID пользователя (до 2147483647)"
     ),
-):
+) -> None:
     """
     Удаляет событие по ID.
 

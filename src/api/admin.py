@@ -8,7 +8,7 @@ from src.api.dependencies import (PaginationParams, get_admin_service,
 from src.common.constants import MAX_ID_VALUE, MIN_ID_VALUE
 from src.exceptions import ObjectNotFoundException, UserNotFoundHTTPException
 from src.schemas.answers import BanAnswerDTO
-from src.schemas.users import UserFilterDTO, UserPutDTO
+from src.schemas.users import UserFilterDTO, UserPutDTO, UserDTO
 from src.services.admin import AdminService
 
 router = APIRouter(prefix="/admin", tags=["Администрирование"])
@@ -25,7 +25,7 @@ async def get_users(
     pagination: Annotated[PaginationParams, Depends()],
     role: Annotated[str, Depends(get_current_user_role)],
     filters: UserFilterDTO = Depends(),
-):
+) -> list[UserDTO]:
     """
     :param service: Для работы с БД через зависимость
     :param pagination: Пагинация: page, per_page
@@ -56,7 +56,7 @@ async def get_user(
         le=MAX_ID_VALUE,
         description="user_id: path-параметр ID пользователя (до 2147483647)"
     ),
-):
+) -> UserDTO:
     """
     :param service: Для работы с БД через зависимость
     :param role: Роль текущего пользователя (из JWT)
@@ -99,7 +99,7 @@ async def edit_user_role(
             },
         }
     ),
-):
+) -> None:
     """
     :param service: Для работы с БД через зависимость
     :param role: Роль текущего пользователя (из JWT)
@@ -131,7 +131,7 @@ async def delete_user(
         le=MAX_ID_VALUE,
         description="path-параметр ID пользователя (до 2147483647)"
     ),
-):
+) -> None:
     """
     :param service: Для работы с БД через зависимость
     :param role: Роль текущего пользователя (из JWT)
@@ -158,7 +158,7 @@ async def delete_account(
         le=MAX_ID_VALUE,
         description="path-параметр ID пользователя (до 2147483647)"
     ),
-):
+) -> BanAnswerDTO:
     """
     :param service: Для работы с БД через зависимость
     :param role: Роль текущего пользователя (из JWT)

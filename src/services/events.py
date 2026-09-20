@@ -11,7 +11,7 @@ from src.exceptions import (EventDataEmptyHTTPException,
                             ObjectAlreadyExistsException,
                             ObjectEmptyDataException, ObjectNotFoundException,
                             WrongUserDataHTTPException)
-from src.schemas.events import EventsAddDTO, EventsUpdateDTO
+from src.schemas.events import EventsAddDTO, EventsUpdateDTO, EventsDTO
 from src.services.base import BaseService
 
 
@@ -24,7 +24,7 @@ class EventsService(BaseService):
     - Получения событий пользователя
     """
 
-    async def create_events(self, data: EventsAddDTO, role):
+    async def create_events(self, data: EventsAddDTO, role) -> EventsDTO:
         """
         Создаёт новое событие.
 
@@ -47,7 +47,7 @@ class EventsService(BaseService):
 
         return events
 
-    async def get_events(self, role):
+    async def get_events(self, role) -> list[EventsDTO]:
         """
         Возвращает список всех событий.
 
@@ -72,7 +72,7 @@ class EventsService(BaseService):
         events = await self.db.events.get_all()
         return events
 
-    async def get_my_events(self, user_id: int, role):
+    async def get_my_events(self, user_id: int, role) -> list[EventsDTO]:
         """
         Возвращает все события, связанные с пользователем (участие или создание).
 
@@ -94,7 +94,7 @@ class EventsService(BaseService):
 
         return events
 
-    async def get_one_event(self, event_id: int, role):
+    async def get_one_event(self, event_id: int, role) -> EventsDTO:
         """
         Возвращает одно событие по ID.
 
@@ -127,7 +127,7 @@ class EventsService(BaseService):
         date,
         max_users,
         role
-    ):
+    ) -> list[EventsDTO]:
         """
         Возвращает отфильтрованный и постраничный список событий.
         Поддерживает поиск по подстрокам (регистронезависимо) и точному совпадению даты/max_users.
@@ -146,7 +146,7 @@ class EventsService(BaseService):
         :type max_users: int | None
         :param role: Роль авторизованного юзера
         :return: Список событий, соответствующих фильтрам.
-        :rtype: PaginatedResponse[EventsDTO]
+        :rtype: list[EventsDTO]
         """
         if role not in ("admin", "user", "guest"):
             logging.error(f"WrongUserData. Route: /events/search. Role: {role}")
@@ -165,7 +165,7 @@ class EventsService(BaseService):
 
     async def edit_event(
         self, event_id: int, data: EventsUpdateDTO, role, exclude_unset: bool = False
-    ):
+    ) -> None:
         """
         Обновляет существующее событие.
 
@@ -202,7 +202,7 @@ class EventsService(BaseService):
 
         await self.db.commit()
 
-    async def delete_event(self, event_id: int, role):
+    async def delete_event(self, event_id: int, role) -> None:
         """
         Удаляет событие по ID.
 

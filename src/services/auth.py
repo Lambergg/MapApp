@@ -26,7 +26,7 @@ from src.exceptions import (EventMaxUsersHTTPException,
                             WrongUserDataHTTPException)
 from src.init import redis_manager_auth
 from src.schemas.users import (UserAddDTO, UserDTO, UserLoginDTO, UserPatchDTO,
-                               UserRequestAddDTO)
+                               UserRequestAddDTO, UserWithEvents)
 from src.services.base import BaseService
 
 
@@ -188,7 +188,7 @@ class AuthService(BaseService):
         except jwt.PyJWTError:
             raise PyJWTErrorHTTPException
 
-    async def register_user(self, data: UserRequestAddDTO):
+    async def register_user(self, data: UserRequestAddDTO) -> None:
         """
         Регистрирует нового пользователя.
 
@@ -213,7 +213,7 @@ class AuthService(BaseService):
         except ObjectAlreadyExistsException:
             raise UserAllReadyExistsHTTPException
 
-    async def login_user(self, data: UserLoginDTO, response: Response):
+    async def login_user(self, data: UserLoginDTO, response: Response) -> dict[str, str]:
         """
         Аутентифицирует пользователя и выдаёт токены.
 
@@ -277,7 +277,7 @@ class AuthService(BaseService):
         }
 
 
-    async def logout_user(self, request: Request, response: Response, user_id):
+    async def logout_user(self, request: Request, response: Response, user_id) -> None:
         access_token = request.cookies.get("access_token") or None
         refresh_token = request.cookies.get("refresh_token") or None
         if not access_token or not refresh_token:
@@ -286,7 +286,7 @@ class AuthService(BaseService):
         response.delete_cookie("refresh_token")
         await self.delete_refresh_token(user_id, refresh_token)
 
-    async def refresh_tokens(self, request: Request, response: Response):
+    async def refresh_tokens(self, request: Request, response: Response) -> dict[str, str]:
         """
         Обновляет access и refresh токены по текущему refresh-токену.
 
@@ -365,7 +365,7 @@ class AuthService(BaseService):
     async def get_me(
         self,
         user_id: int,
-    ):
+    ) -> UserWithEvents:
         """
         Возвращает профиль текущего пользователя со списком событий.
 
@@ -382,7 +382,7 @@ class AuthService(BaseService):
 
     async def edit_user_profile(
         self, user_id: int, data: UserPatchDTO, role, exclude_unset: bool = False
-    ):
+    ) -> None:
         """
         Обновляет профиль пользователя, включая участие в событиях.
         Проверяет:

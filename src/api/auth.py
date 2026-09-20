@@ -5,7 +5,7 @@ from fastapi import APIRouter, Body, Depends, Path, Request, Response, status
 from src.api.dependencies import (get_auth_service, get_current_user_id,
                                   get_current_user_role)
 from src.common.constants import MAX_ID_VALUE, MIN_ID_VALUE
-from src.schemas.users import UserLoginDTO, UserPatchDTO, UserRequestAddDTO
+from src.schemas.users import UserLoginDTO, UserPatchDTO, UserRequestAddDTO, UserWithEvents
 from src.services.auth import AuthService
 from src.utils.ratelimitter import (rate_limit_auth_get_me,
                                     rate_limit_auth_refresh)
@@ -35,7 +35,7 @@ async def register_user(
             }
         }
     ),
-):
+) -> None:
     """
     Регистрирует нового пользователя.
 
@@ -66,7 +66,7 @@ async def login_user(
             }
         }
     ),
-):
+) -> dict[str, str]:
     """
     Авторизует пользователя по email и паролю.
 
@@ -87,14 +87,14 @@ async def get_me(
     user_id: Annotated[int, Depends(get_current_user_id)],
     service: Annotated[AuthService, Depends(get_auth_service)],
     _: None = Depends(rate_limit_auth_get_me)
-):
+) -> UserWithEvents:
     """
     Возвращает данные текущего пользователя по ID из токена.
 
     :param user_id: ID пользователя из JWT (DI).
     :param service: Сессия БД.
     :param _: Ограничение по частоте запросов.
-    :return: Объект UserDTO.
+    :return: Объект UserWithEvents.
     """
 
     return await service.get_me(user_id)
@@ -111,7 +111,7 @@ async def logout_user(
     user_id: Annotated[int, Depends(get_current_user_id)],
     response: Response,
     request: Request,
-):
+) -> None:
     """
     Выполняет выход: удаляет токены из cookies и Redis.
 
@@ -159,7 +159,7 @@ async def edit_user_profile(
             },
         }
     ),
-):
+) -> None:
     """
     Обновляет профиль пользователя. Только для владельца или админа.
 
@@ -189,7 +189,7 @@ async def refresh(
     response: Response,
     service: Annotated[AuthService, Depends(get_auth_service)],
     _: None = Depends(rate_limit_auth_refresh),
-):
+) -> dict[str, str]:
     """
     Обновляет пару токенов, используя refresh-токен.
 

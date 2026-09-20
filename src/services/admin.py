@@ -4,7 +4,7 @@ from src.exceptions import (AdminOnlyAccessHTTPException,
                             ObjectNotFoundException,
                             UserIndexWrongHTTPException,
                             UserNotFoundHTTPException)
-from src.schemas.users import UserPutDTO
+from src.schemas.users import UserPutDTO, UserDTO
 from src.services.base import BaseService
 from src.utils.redis_utils import delete_refresh_token
 
@@ -23,7 +23,7 @@ class AdminService(BaseService):
         pagination,
         filters,
         role
-    ):
+    ) -> list[UserDTO]:
         """
         Возвращает список пользователей с пагинацией и фильтрацией.
         :param filters: Фильры
@@ -47,7 +47,7 @@ class AdminService(BaseService):
             sname=filters.sname,
         )
 
-    async def get_user(self, user_id: int, role):
+    async def get_user(self, user_id: int, role) -> UserDTO:
         """
         Получает пользователя по ID.
 
@@ -68,7 +68,7 @@ class AdminService(BaseService):
 
     async def edit_user_role(
         self, user_id: int, data: UserPutDTO, role, exclude_unset: bool = False
-    ):
+    ) -> None:
         """
         Обновляет роль и статус пользователя.
 
@@ -95,7 +95,7 @@ class AdminService(BaseService):
         await self.db.users.edit(data, id=user_id, exclude_unset=exclude_unset)
         await self.db.commit()
 
-    async def delete_user(self, user_id: int, role):
+    async def delete_user(self, user_id: int, role) -> None:
         """
         Полное удаление пользователя из базы данных.
 
@@ -120,7 +120,7 @@ class AdminService(BaseService):
         await self.db.users.delete(id=user_id)
         await self.db.commit()
 
-    async def soft_delete_user(self, user_id: int, role):
+    async def soft_delete_user(self, user_id: int, role) -> None:
         """
         Мягкое удаление — деактивация пользователя (бан).
 

@@ -15,7 +15,7 @@ router = APIRouter(prefix="/images", tags=["Аватары пользовате�
     description="<h1>Загрузите ваше изображение</h1>",
     response_model=ImageAnswerDTO,
 )
-def upload_image(role: Annotated[str, Depends(get_current_user_role)], file: UploadFile):
+def upload_image(role: Annotated[str, Depends(get_current_user_role)], file: UploadFile) -> ImageAnswerDTO:
     """
     Загружает изображение на сервер.
 
