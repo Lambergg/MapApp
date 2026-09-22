@@ -7,8 +7,7 @@ from src.api.dependencies import (get_auth_service, get_current_user_id,
 from src.common.constants import MAX_ID_VALUE, MIN_ID_VALUE
 from src.schemas.users import UserLoginDTO, UserPatchDTO, UserRequestAddDTO, UserWithEvents
 from src.services.auth import AuthService
-from src.utils.ratelimitter import (rate_limit_auth_get_me,
-                                    rate_limit_auth_refresh)
+from src.utils.ratelimitter import rate_limiter_factory
 
 router = APIRouter(prefix="/auth", tags=["Авторизация и аутентификация"])
 
@@ -21,6 +20,7 @@ router = APIRouter(prefix="/auth", tags=["Авторизация и аутент
 )
 async def register_user(
     service: Annotated[AuthService, Depends(get_auth_service)],
+    _: None = Depends(rate_limiter_factory("/auth/register", 1, 10)),
     data: UserRequestAddDTO = Body(
         openapi_examples={
             "1": {
@@ -39,6 +39,7 @@ async def register_user(
     """
     Регистрирует нового пользователя.
 
+    :param _: Ограничение на количество запросов.
     :param service: Сессия базы данных (DI).
     :param data: Данные пользователя для регистрации.
     :return: HTTP 201 Created.
@@ -55,6 +56,7 @@ async def register_user(
 async def login_user(
     response: Response,
     service: Annotated[AuthService, Depends(get_auth_service)],
+    _: None = Depends(rate_limiter_factory("/auth/login", 1, 5)),
     data: UserLoginDTO = Body(
         openapi_examples={
             "1": {
@@ -70,6 +72,7 @@ async def login_user(
     """
     Авторизует пользователя по email и паролю.
 
+    :param _: Ограничитель частоты запросов.
     :param response: HTTP-ответ (для установки cookies).
     :param service: Сессия БД.
     :param data: Логин и пароль.
@@ -86,7 +89,7 @@ async def login_user(
 async def get_me(
     user_id: Annotated[int, Depends(get_current_user_id)],
     service: Annotated[AuthService, Depends(get_auth_service)],
-    _: None = Depends(rate_limit_auth_get_me)
+    _: None = Depends(rate_limiter_factory("/auth/me", 1, 5))
 ) -> UserWithEvents:
     """
     Возвращает данные текущего пользователя по ID из токена.
@@ -107,14 +110,16 @@ async def get_me(
     status_code=status.HTTP_200_OK,
 )
 async def logout_user(
-    service: Annotated[AuthService, Depends(get_auth_service)],
-    user_id: Annotated[int, Depends(get_current_user_id)],
     response: Response,
     request: Request,
+    service: Annotated[AuthService, Depends(get_auth_service)],
+    user_id: Annotated[int, Depends(get_current_user_id)],
+    _: None = Depends(rate_limiter_factory("/auth/logout", 1, 10)),
 ) -> None:
     """
     Выполняет выход: удаляет токены из cookies и Redis.
 
+    :param _: Ограничение по частоте запросов.
     :param user_id: ID пользователя (DI).
     :param response: Для удаления cookies.
     :param service: Для удаления токенов из Redis.
@@ -138,6 +143,7 @@ async def logout_user(
 async def edit_user_profile(
     service: Annotated[AuthService, Depends(get_auth_service)],
     role: Annotated[str, Depends(get_current_user_role)],
+    _: None = Depends(rate_limiter_factory("/auth/edit_profile/{user_id}", 1, 5)),
     user_id: int = Path(
         ...,
         ge=MIN_ID_VALUE,
@@ -163,6 +169,7 @@ async def edit_user_profile(
     """
     Обновляет профиль пользователя. Только для владельца или админа.
 
+    :param _:
     :param service: Сессия БД.
     :param role: Роль текущего пользователя.
     :param user_id: ID профиля для редактирования.
@@ -188,7 +195,7 @@ async def refresh(
     request: Request,
     response: Response,
     service: Annotated[AuthService, Depends(get_auth_service)],
-    _: None = Depends(rate_limit_auth_refresh),
+    _: None = Depends(rate_limiter_factory("/auth/refresh", 1, 10)),
 ) -> dict[str, str]:
     """
     Обновляет пару токенов, используя refresh-токен.

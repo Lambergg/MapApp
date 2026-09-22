@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, status
 
 from src.init import redis_manager, redis_manager_auth
 from src.schemas.answers import HealthAnswerDTO
-from src.utils.ratelimitter import rate_limit_health_get, rate_limit_health_set
+from src.utils.ratelimitter import rate_limiter_factory
 
 router = APIRouter(prefix="/health", tags=["Health"])
 
@@ -13,7 +13,9 @@ router = APIRouter(prefix="/health", tags=["Health"])
     summary="Установка значений",
     description="<h1>Проверка установки данных, устанавливает ключи A и B</h1>",
 )
-async def redis_set(_: None = Depends(rate_limit_health_set)) -> None:
+async def redis_set(
+        _: None = Depends(rate_limiter_factory("/health/set", 1, 5))
+) -> None:
     """
     Устанавливает тестовые значения в два разных экземпляра (db0 и db1).
     Используется для проверки работоспособности подключения.
@@ -36,7 +38,9 @@ async def redis_set(_: None = Depends(rate_limit_health_set)) -> None:
     summary="Получение значений",
     response_model=HealthAnswerDTO
 )
-async def get_data_from_redis(_: None = Depends(rate_limit_health_get)) -> HealthAnswerDTO:
+async def get_data_from_redis(
+        _: None = Depends(rate_limiter_factory("/health/get", 1, 5))
+) -> HealthAnswerDTO:
     """
     Получает тестовые значения из двух экземпляров:
     - `A` из основной базы.

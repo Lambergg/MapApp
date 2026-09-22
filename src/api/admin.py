@@ -10,6 +10,7 @@ from src.exceptions import ObjectNotFoundException, UserNotFoundHTTPException
 from src.schemas.answers import BanAnswerDTO
 from src.schemas.users import UserFilterDTO, UserPutDTO, UserDTO
 from src.services.admin import AdminService
+from src.utils.ratelimitter import rate_limiter_factory
 
 router = APIRouter(prefix="/admin", tags=["Администрирование"])
 
@@ -82,6 +83,7 @@ async def get_user(
 async def edit_user_role(
     service: Annotated[AdminService, Depends(get_admin_service)],
     role: Annotated[str, Depends(get_current_user_role)],
+    _: None = Depends(rate_limiter_factory("/admin/change_role/{user_id}", 1, 5)),
     user_id: int = Path(
         ...,
         ge=MIN_ID_VALUE,
@@ -101,6 +103,7 @@ async def edit_user_role(
     ),
 ) -> None:
     """
+    :param _: Ограничение на количество запросов
     :param service: Для работы с БД через зависимость
     :param role: Роль текущего пользователя (из JWT)
     :param user_id: path-параметр ID пользователя (до 2147483647)
@@ -125,6 +128,7 @@ async def edit_user_role(
 async def delete_user(
     service: Annotated[AdminService, Depends(get_admin_service)],
     role: Annotated[str, Depends(get_current_user_role)],
+    _: None = Depends(rate_limiter_factory("/admin/delete_user/{user_id}", 1, 5)),
     user_id: int = Path(
         ...,
         ge=MIN_ID_VALUE,
@@ -133,6 +137,7 @@ async def delete_user(
     ),
 ) -> None:
     """
+    :param _: Ограничение на количество запросов
     :param service: Для работы с БД через зависимость
     :param role: Роль текущего пользователя (из JWT)
     :param user_id: path-параметр ID пользователя (до 2147483647)
@@ -152,6 +157,7 @@ async def delete_user(
 async def delete_account(
     service: Annotated[AdminService, Depends(get_admin_service)],
     role: Annotated[str, Depends(get_current_user_role)],
+    _: None = Depends(rate_limiter_factory("/admin/delete_account/{user_id}", 1, 5)),
     user_id: int = Path(
         ...,
         ge=MIN_ID_VALUE,
@@ -160,6 +166,7 @@ async def delete_account(
     ),
 ) -> BanAnswerDTO:
     """
+    :param _: Ограничение на количество запросов
     :param service: Для работы с БД через зависимость
     :param role: Роль текущего пользователя (из JWT)
     :param user_id: path-параметр ID пользователя (до 2147483647)

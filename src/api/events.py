@@ -8,6 +8,7 @@ from src.api.dependencies import (PaginationParams, get_current_user_id,
 from src.common.constants import MAX_ID_VALUE, MIN_ID_VALUE
 from src.schemas.events import EventsAddDTO, EventsUpdateDTO, EventsDTO
 from src.services.events import EventsService
+from src.utils.ratelimitter import rate_limiter_factory
 
 router = APIRouter(prefix="/events", tags=["События"])
 
@@ -154,6 +155,7 @@ async def get_search_events(
 async def create_events(
     service: Annotated[EventsService, Depends(get_event_service)],
     role: Annotated[str, Depends(get_current_user_role)],
+    _: None = Depends(rate_limiter_factory("/events/create", 1, 5)),
     data: EventsAddDTO = Body(
         openapi_examples={
             "1": {
@@ -173,6 +175,7 @@ async def create_events(
     """
     Создаёт новое событие.
 
+    :param _: Ограничение на количество запросов.
     :param service: Сессия базы данных.
     :param role: Роль пользователя.
     :type role: Str
@@ -196,6 +199,7 @@ async def create_events(
 async def edit_event(
     role: Annotated[str, Depends(get_current_user_role)],
     service: Annotated[EventsService, Depends(get_event_service)],
+    _: None = Depends(rate_limiter_factory("/events/edit/{event_id}", 1, 5)),
     event_id: int = Path(
         ...,
         ge=MIN_ID_VALUE,
@@ -221,6 +225,7 @@ async def edit_event(
     """
     Обновляет существующее событие по ID.
 
+    :param _: Ограничение частоты запросов.
     :param role: Роль пользователя.
     :type role: Str
     :param service: Сессия базы данных.
@@ -247,6 +252,7 @@ async def edit_event(
 async def delete_event(
     service: Annotated[EventsService, Depends(get_event_service)],
     role: Annotated[str, Depends(get_current_user_role)],
+    _: None = Depends(rate_limiter_factory("/events/delete/{event_id}", 1, 10)),
     event_id: int = Path(
         ...,
         ge=MIN_ID_VALUE,
@@ -257,6 +263,7 @@ async def delete_event(
     """
     Удаляет событие по ID.
 
+    :param _: Ограничение на количество запросов.
     :param service: Сессия базы данных.
     :param role: Роль пользователя.
     :type role: Str
