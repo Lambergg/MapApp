@@ -31,7 +31,7 @@ class EventsAddDTO(BaseModel):
             return v
         if v.tzinfo is not None:
             v = v.replace(tzinfo=None)
-        return None
+        return v
 
 
 class EventsDTO(EventsAddDTO):
@@ -74,7 +74,7 @@ class EventsUpdateDTO(BaseModel):
             return v
         if v.tzinfo is not None:
             v = v.replace(tzinfo=None)
-        return None
+        return v
 
 
 class UsersEventsAddDTO(BaseModel):

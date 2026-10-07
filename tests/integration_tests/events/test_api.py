@@ -26,7 +26,7 @@ async def test_event_flow(ac: AsyncClient):
     description = "Крутой фестиваль в Москве"
     category = "Досуг"
     address = "Красная площадь"
-    date = "2026-01-01T17:00:00"
+    date = "2036-01-01T17:00:00"
     max_users = 4
     response = await ac.post(
         "/events/create",

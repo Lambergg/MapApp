@@ -2,6 +2,7 @@
 import json
 from typing import AsyncGenerator
 from unittest import mock
+from asgi_lifespan import LifespanManager
 
 mock.patch(
     "fastapi_cache.decorator.cache", lambda *args, **kwargs: lambda f: f
@@ -85,18 +86,17 @@ async def setup_database(check_test_mode):
 
 @pytest.fixture(scope="session")
 async def ac() -> AsyncGenerator[AsyncClient, None]:
-    """
-    Возвращает тестовый клиент FastAPI.
-    Каждый тест получает чистый экземпляр клиента.
-    Использует `ac` для синхронных вызовов.
+    #    """
+    #    Возвращает тестовый клиент FastAPI.
+    #    Каждый тест получает чистый экземпляр клиента.
+    #    Использует `client` для синхронных вызовов.
 
-    :yield: Тестовый клиент.
-    """
-    async with AsyncClient(
-        transport=ASGITransport(app=app),
-        base_url="http://test",
-    ) as ac:
-        yield ac
+    #    :yield: Тестовый клиент.
+    #    """
+    async with LifespanManager(app):
+        transport = ASGITransport(app=app)
+        async with AsyncClient(transport=transport, base_url="http://test") as client:
+            yield client
 
 
 @pytest.fixture(scope="session", autouse=True)
