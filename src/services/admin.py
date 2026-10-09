@@ -9,6 +9,9 @@ from src.services.base import BaseService
 from src.utils.redis_utils import delete_refresh_token
 
 
+logger = logging.getLogger("admin")
+
+
 class AdminService(BaseService):
     """
     Сервис для административных операций с пользователями.
@@ -35,7 +38,7 @@ class AdminService(BaseService):
         """
 
         if role != "admin":
-            logging.error(f"AdminAccessOnly. Route: /admin/users. Role: {role}")
+            logger.error(f"AdminAccessOnly. Route: /admin/users. Role: {role}")
             raise AdminOnlyAccessHTTPException
 
         per_page = pagination.per_page or 5
@@ -62,7 +65,7 @@ class AdminService(BaseService):
         if user_id <= 0:
             raise UserIndexWrongHTTPException
         if role != "admin":
-            logging.error(f"AdminAccessOnly. Route: /admin/users/{user_id}. Role: {role}")
+            logger.error(f"AdminAccessOnly. Route: /admin/users/{user_id}. Role: {role}")
             raise AdminOnlyAccessHTTPException
         return await self.db.users.get_one(id=user_id)
 
@@ -85,7 +88,7 @@ class AdminService(BaseService):
         if user_id <= 0:
             raise UserIndexWrongHTTPException
         if role != "admin":
-            logging.error(f"AdminAccessOnly. Route: /admin/change_role/{user_id}. Role: {role}")
+            logger.error(f"AdminAccessOnly. Route: /admin/change_role/{user_id}. Role: {role}")
             raise AdminOnlyAccessHTTPException
         try:
             await self.db.users.get_one(id=user_id)
@@ -110,7 +113,7 @@ class AdminService(BaseService):
         if user_id <= 0:
             raise UserIndexWrongHTTPException
         if role != "admin":
-            logging.error(f"AdminAccessOnly. Route: /admin/delete_user/{user_id}. Role: {role}")
+            logger.error(f"AdminAccessOnly. Route: /admin/delete_user/{user_id}. Role: {role}")
             raise AdminOnlyAccessHTTPException
         try:
             await self.db.users.get_one(id=user_id)
@@ -134,7 +137,7 @@ class AdminService(BaseService):
         if user_id <= 0:
             raise UserIndexWrongHTTPException
         if role != "admin":
-            logging.error(f"AdminAccessOnly. Route: /admin/delete_account/{user_id}. Role: {role}")
+            logger.error(f"AdminAccessOnly. Route: /admin/delete_account/{user_id}. Role: {role}")
             raise AdminOnlyAccessHTTPException
         try:
             await self.db.users.get_one(id=user_id)

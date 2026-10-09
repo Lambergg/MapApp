@@ -16,6 +16,9 @@ from src.exceptions import (ObjectAlreadyExistsException,
 from src.repositories.mappers.base import DataMapper
 
 
+logger = logging.getLogger("repo_base")
+
+
 class BaseRepository:
     """
     Базовый репозиторий для выполнения CRUD-операций с ORM-моделями.
@@ -126,13 +129,13 @@ class BaseRepository:
             model = result.scalars().one()
             return self.mapper.map_to_domain_entity(model)
         except IntegrityError as ex:
-            logging.error(
+            logger.error(
                 f"Не удалось добавить данные в БД, входные данные: {data=}, тип ошибки: {type(ex.orig.__cause__)=}"
             )
             if isinstance(ex.orig.__cause__, UniqueViolationError):
                 raise ObjectAlreadyExistsException from ex
             else:
-                logging.error(
+                logger.error(
                     f"Незнакомая ошибка. Входные данные: {data=}, тип ошибки: {type(ex.orig.__cause__)=}"
                 )
                 raise ex
@@ -186,7 +189,7 @@ class BaseRepository:
                 raise ObjectNotFoundException
 
         except IntegrityError as ex:
-            logging.error(
+            logger.error(
                 f"Ошибка целостности БД при обновлении: {data=}, тип ошибки: {type(ex.orig.__cause__)=}"
             )
             if isinstance(ex.orig.__cause__, UniqueViolationError):
@@ -194,7 +197,7 @@ class BaseRepository:
             elif "not-null" in str(ex.orig):
                 raise ObjectNotNullException("Обязательные поля не могут быть пустыми") from ex
             else:
-                logging.error(
+                logger.error(
                     f"Незнакомая ошибка. Входные данные: {data=}, тип ошибки: {type(ex.orig.__cause__)=}"
                 )
                 raise ex

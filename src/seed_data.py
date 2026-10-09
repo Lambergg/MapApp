@@ -11,7 +11,8 @@ sys.path.append(str(Path(__file__).parent.parent))
 from src.database import async_session_maker
 from src.models.users import UsersOrm
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.INFO, format="%(name)s %(asctime)s %(levelname)s %(message)s")
+logger = logging.getLogger("seed_data")
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -55,7 +56,7 @@ async def seed_data():
                     sname="Пользователь",
                     age=34,
                     email="user@example.com",
-                    hashed_password=pwd_context.hash("user123"),
+                    hashed_password=pwd_context.hash("user1234"),
                     role="user",
                 ),
                 UsersOrm(
@@ -71,7 +72,7 @@ async def seed_data():
             session.add_all(users)
 
         await session.commit()
-        logging.info("Тестовые данные успешно загружены!")
+        logger.info("Тестовые данные успешно загружены!")
 
 
 if __name__ == "__main__":

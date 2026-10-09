@@ -7,6 +7,9 @@ from PIL import Image
 from src.tasks.celery_app import celery_instance
 
 
+logger = logging.getLogger("tasks")
+
+
 @celery_instance.task
 def resize_image(image_path: str) -> None:
     """
@@ -17,7 +20,7 @@ def resize_image(image_path: str) -> None:
     :raises FileNotFoundError: Если файл изображения не найден.
     :raises Exception: При ошибках обработки изображения.
     """
-    logging.debug(f"Вызываеться resize_image с аргументом {image_path=}")
+    logger.debug(f"Вызываеться resize_image с аргументом {image_path=}")
     sizes = [90]
     output_folder = "src/static/images"
 
@@ -45,6 +48,6 @@ def resize_image(image_path: str) -> None:
         # Сохраняем изображение
         img_resized.save(output_path)
 
-    logging.info(
+    logger.info(
         f"Изображение сохранено в следующих размерах: {sizes} в папке {output_folder}"
     )

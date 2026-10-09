@@ -15,6 +15,9 @@ from src.schemas.events import EventsAddDTO, EventsUpdateDTO, EventsDTO
 from src.services.base import BaseService
 
 
+logger = logging.getLogger("events")
+
+
 class EventsService(BaseService):
     """
     Сервис для управления событиями.
@@ -36,7 +39,7 @@ class EventsService(BaseService):
         :raises EventsAlreadyExistsHTTPException: Если событие с таким названием уже существует.
         """
         if role not in ("admin", "user", "guest"):
-            logging.error(f"WrongUserData. Route: /events/create. Role: {role}")
+            logger.error(f"WrongUserData. Route: /events/create. Role: {role}")
             raise WrongUserDataHTTPException
 
         try:
@@ -56,7 +59,7 @@ class EventsService(BaseService):
         :rtype: List[EventsDTO]
         """
         if role not in ("admin", "user", "guest"):
-            logging.error(f"WrongUserData. Route: /events/all. Role: {role}")
+            logger.error(f"WrongUserData. Route: /events/all. Role: {role}")
             raise WrongUserDataHTTPException
 
         # Удаляем прошедшие события
@@ -64,9 +67,9 @@ class EventsService(BaseService):
             now = datetime.now()
             await self.db.events.delete_past_events(before=now)
             await self.db.commit()
-            logging.info("Устаревшие события удалены!!!")
+            logger.info("Устаревшие события удалены!!!")
         except EventsDeletePastException:
-            logging.error("Произошла ошибка при попытке удалить устаревшие мероприятия")
+            logger.error("Произошла ошибка при попытке удалить устаревшие мероприятия")
             raise EventsDeletePastHTTPEException
 
         events = await self.db.events.get_all()
@@ -84,7 +87,7 @@ class EventsService(BaseService):
         :raises EventsNotFoundHTTPException: Если у пользователя нет событий.
         """
         if role not in ("admin", "user", "guest"):
-            logging.error(f"WrongUserData. Route: /events/me. Role: {role}")
+            logger.error(f"WrongUserData. Route: /events/me. Role: {role}")
             raise WrongUserDataHTTPException
 
         events = await self.db.events.get_events_by_user_id(user_id=user_id)
@@ -109,7 +112,7 @@ class EventsService(BaseService):
         if event_id <= 0:
             raise EventIndexWrongHTTPException
         if role not in ("admin", "user", "guest"):
-            logging.error(f"WrongUserData. Route: /events/one/{event_id}. Role: {role}")
+            logger.error(f"WrongUserData. Route: /events/one/{event_id}. Role: {role}")
             raise WrongUserDataHTTPException
         try:
             event = await self.db.events.get_one(id=event_id)
@@ -149,7 +152,7 @@ class EventsService(BaseService):
         :rtype: list[EventsDTO]
         """
         if role not in ("admin", "user", "guest"):
-            logging.error(f"WrongUserData. Route: /events/search. Role: {role}")
+            logger.error(f"WrongUserData. Route: /events/search. Role: {role}")
             raise WrongUserDataHTTPException
 
         per_page = pagination.per_page or 5
@@ -183,7 +186,7 @@ class EventsService(BaseService):
         if event_id <= 0:
             raise EventIndexWrongHTTPException
         if role not in ("admin", "user", "guest"):
-            logging.error(f"WrongUserData. Route: /events/edit/{event_id}. Role: {role}")
+            logger.error(f"WrongUserData. Route: /events/edit/{event_id}. Role: {role}")
             raise WrongUserDataHTTPException
         try:
             await self.db.events.get_one(id=event_id)
@@ -215,7 +218,7 @@ class EventsService(BaseService):
         if event_id <= 0:
             raise EventIndexWrongHTTPException
         if role not in ("admin", "user", "guest"):
-            logging.error(f"WrongUserData. Route: /events/delete/{event_id}. Role: {role}")
+            logger.error(f"WrongUserData. Route: /events/delete/{event_id}. Role: {role}")
             raise WrongUserDataHTTPException
 
         try:

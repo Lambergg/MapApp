@@ -30,6 +30,9 @@ from src.schemas.users import (UserAddDTO, UserDTO, UserLoginDTO, UserPatchDTO,
 from src.services.base import BaseService
 
 
+logger = logging.getLogger("auth")
+
+
 class AuthService(BaseService):
     """
     Сервис аутентификации и управления пользователями.
@@ -230,13 +233,15 @@ class AuthService(BaseService):
         user = await self.db.users.get_user_with_hashed_password(
             email=data.email
         )
-        if not user.is_active:
-            raise UserIsBannedHTTPException
+        #if not user.is_active:
+        #    raise UserIsBannedHTTPException
 
         if not user:
             raise UserNotRegisterHTTPException
         if not self.verify_password(data.password, user.hashed_password):
             raise WrongPasswordHTTPException
+        if not user.is_active:
+            raise UserIsBannedHTTPException
 
         access_token = self.create_access_token(user.id, user.role, user.name)
         refresh_token = self.create_refresh_token()
@@ -408,7 +413,7 @@ class AuthService(BaseService):
         if user_id <= 0:
             raise UserIndexWrongHTTPException
         if role not in ("admin", "user", "guest"):
-            logging.error(f"WrongUserData. Route: /auth/edit_profile/{user_id}. Role: {role}")
+            logger.error(f"WrongUserData. Route: /auth/edit_profile/{user_id}. Role: {role}")
             raise WrongUserDataHTTPException
         try:
             user = await self.db.users.get_one(id=user_id)

@@ -10,6 +10,9 @@ from src.services.base import BaseService
 from src.tasks.tasks import resize_image
 
 
+logger = logging.getLogger("images")
+
+
 class ImagesService(BaseService):
     """
     Сервис для загрузки изображений.
@@ -36,7 +39,7 @@ class ImagesService(BaseService):
         - Относительный путь к сохранённому файлу (str).
         """
         if role not in ("admin", "moderator", "user"):
-            logging.error(f"WrongUserData. Route: /images/upload. Role: {role}")
+            logger.error(f"WrongUserData. Route: /images/upload. Role: {role}")
             raise AdminOrModeratorOrUserOnlyAccessHTTPException
         if file.content_type not in self.ALLOWED_TYPES:
             raise WrongTypeImageHTTPException

@@ -3,6 +3,9 @@ import logging
 import redis.asyncio as redis
 
 
+logger = logging.getLogger("redis_connector")
+
+
 class RedisManager:
     """
     Менеджер для асинхронного взаимодействия с Redis.
@@ -29,14 +32,14 @@ class RedisManager:
         """
         Устанавливает соединение с Redis.
         """
-        logging.info("Подключаюсь к Redis...")
+        logger.info("Подключаюсь к Redis...")
         self._redis = await redis.Redis(
             host=self.host,
             port=self.port,
             db=self.db,
             decode_responses=True
         )
-        logging.info("Redis подключен")
+        logger.info("Redis подключен")
 
     async def ping(self):
         """
@@ -46,14 +49,14 @@ class RedisManager:
         :rtype: bool
         """
         if self._redis is None:
-            logging.error("Нет подключения")
+            logger.error("Нет подключения")
             return False
         try:
             await self._redis.ping()
-            logging.info("Пинг прошел успешно!")
+            logger.info("Пинг прошел успешно!")
             return True
         except Exception as e:
-            logging.error(f"Ошибка при пинге {e}")
+            logger.error(f"Ошибка при пинге {e}")
             return False
 
     async def set(self, key: str, value: str, expire: int | None = None):
@@ -69,7 +72,7 @@ class RedisManager:
         """
         if expire:
             await self._redis.set(key, value, ex=expire)
-        logging.info(f"{key} и {value} сохранено в редис")
+        logger.info(f"{key} и {value} сохранено в редис")
 
     async def get(self, key: str):
         """
