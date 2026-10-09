@@ -47,6 +47,11 @@ class Settings(BaseSettings):
     REFRESH_TOKEN_EXPIRES_DAYS: int
     REFRESH_TOKEN_EXPIRES_MINUTES: int
 
+    CORS_ORIGINS: list[str]
+    CORS_ALLOW_CREDENTIALS: bool
+    CORS_ALLOW_METHODS: list[str]
+    CORS_ALLOW_HEADERS: list[str]
+
     model_config = SettingsConfigDict(env_file=".env")
 
 

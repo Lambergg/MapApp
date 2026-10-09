@@ -24,6 +24,7 @@ from src.api.events import router as events_router
 from src.api.images import router as images_router
 from src.health.health import router as heals_router
 from src.init import redis_manager, redis_manager_auth
+from src.config import settings
 
 
 @asynccontextmanager
@@ -45,7 +46,7 @@ async def lifespan(app: FastAPI):
     logging.info("Приложение остановлено")
 
 
-app = FastAPI(docs_url=None, lifespan=lifespan, title="Приложение Kloket")
+app = FastAPI(docs_url=None, lifespan=lifespan, title="Приложение MapApp")
 
 app.mount("/static", StaticFiles(directory="src/static"), name="static")
 
@@ -59,10 +60,10 @@ app.include_router(chat)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_origins=settings.CORS_ORIGINS,
+    allow_credentials=settings.CORS_ALLOW_CREDENTIALS,
+    allow_methods=settings.CORS_ALLOW_METHODS,
+    allow_headers=settings.CORS_ALLOW_HEADERS,
 )
 
 
