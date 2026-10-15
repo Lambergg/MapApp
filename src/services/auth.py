@@ -1,3 +1,4 @@
+import asyncio
 import logging
 import uuid
 from datetime import datetime, timedelta, timezone
@@ -139,7 +140,7 @@ class AuthService(BaseService):
         await redis_manager_auth.delete(rt_key)
         await redis_manager_auth.delete(user_role)
 
-    def hash_password(self, password: str) -> str:
+    async def hash_password(self, password: str) -> str:
         """
         Хэширует пароль с помощью bcrypt.
 
@@ -148,7 +149,7 @@ class AuthService(BaseService):
         :return: Хэшированная строка.
         :rtype: Str
         """
-        return self.pwd_context.hash(password)
+        return await asyncio.to_thread(self.pwd_context.hash, password)
 
     def verify_password(
         self, plain_password: str, hashed_password: str
@@ -202,7 +203,7 @@ class AuthService(BaseService):
         """
         if len(data.password) < 8:
             raise UserPasswordToShortHTTPException
-        hashed_password = self.hash_password(data.password)
+        hashed_password = await self.hash_password(data.password)
         new_user_data = UserAddDTO(
             name=data.name,
             sname=data.sname,
