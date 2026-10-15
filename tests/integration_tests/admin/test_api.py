@@ -1,6 +1,6 @@
 from httpx import AsyncClient
 
-async def test_event_flow(ac: AsyncClient):
+async def test_admin_flow(ac: AsyncClient):
     # /auth/login
     resp_login = await ac.post(
         "/auth/login", json={"email": "admin@test.com", "password": "test1234"}
