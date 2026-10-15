@@ -4,7 +4,7 @@ from httpx import AsyncClient
 async def test_event_flow(ac: AsyncClient):
     # /auth/login
     resp_login = await ac.post(
-        "/auth/login", json={"email": "test@test.com", "password": "test1234"}
+        "/auth/login", json={"email": "admin@test.com", "password": "test1234"}
     )
     assert resp_login.status_code == 200
     assert ac.cookies["access_token"]

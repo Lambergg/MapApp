@@ -18,7 +18,7 @@ from src.database import Base, async_session_maker_null_pool, engine_null_pool
 from src.main import app
 from src.models import *
 from src.schemas.events import EventsAddDTO
-from src.schemas.users import UserAddDTO
+from src.schemas.users import UserWithRoleAndActivDTO
 from src.utils.db_manager import DBManager
 
 
@@ -77,7 +77,7 @@ async def setup_database(check_test_mode):
         users = json.load(file_users)
 
     events = [EventsAddDTO.model_validate(event) for event in events]
-    users = [UserAddDTO.model_validate(user) for user in users]
+    users = [UserWithRoleAndActivDTO.model_validate(user) for user in users]
 
     async with DBManager(session_factory=async_session_maker_null_pool) as db_:
         await db_.events.add_bulk(events)

@@ -61,6 +61,8 @@ async def test_auth_flow(
     assert "id" in user
     assert "password" not in user
     assert "hashed_password" not in user
+    assert "role" in user
+    assert "is_active" in user
 
     # /auth/logout
     resp_logout = await ac.post("/auth/logout")

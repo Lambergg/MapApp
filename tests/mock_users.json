@@ -4,27 +4,35 @@
     "sname": "User",
     "age": 30,
     "email": "admin@test.com",
-    "hashed_password": "$2b$12$iqlVVJ0ZjHyq9LCMFChLz.8R..GHuYBtzDquqaMO0W56my2jreHim"
+    "hashed_password": "$2b$12$iqlVVJ0ZjHyq9LCMFChLz.8R..GHuYBtzDquqaMO0W56my2jreHim",
+    "role": "admin",
+    "is_active": true
   },
     {
     "name": "User",
     "sname": "User",
     "age": 20,
     "email": "user@test.com",
-    "hashed_password": "$2b$12$iqlVVJ0ZjHyq9LCMFChLz.8R..GHuYBtzDquqaMO0W56my2jreHim"
+    "hashed_password": "$2b$12$iqlVVJ0ZjHyq9LCMFChLz.8R..GHuYBtzDquqaMO0W56my2jreHim",
+      "role": "user",
+      "is_active": true
   },
     {
     "name": "User",
     "sname": "Banned",
     "age": 30,
     "email": "banuser@test.com",
-    "hashed_password": "$2b$12$iqlVVJ0ZjHyq9LCMFChLz.8R..GHuYBtzDquqaMO0W56my2jreHim"
+    "hashed_password": "$2b$12$iqlVVJ0ZjHyq9LCMFChLz.8R..GHuYBtzDquqaMO0W56my2jreHim",
+      "role": "user",
+      "is_active": false
   },
     {
     "name": "Guest",
     "sname": "User",
     "age": 30,
     "email": "guest@test.com",
-    "hashed_password": "$2b$12$iqlVVJ0ZjHyq9LCMFChLz.8R..GHuYBtzDquqaMO0W56my2jreHim"
+    "hashed_password": "$2b$12$iqlVVJ0ZjHyq9LCMFChLz.8R..GHuYBtzDquqaMO0W56my2jreHim",
+      "role": "guest",
+      "is_active": true
   }
 ]

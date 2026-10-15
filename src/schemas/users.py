@@ -129,6 +129,17 @@ class UserWithHashedPassword(UserDTO):
 
 
 class UserFilterDTO(BaseModel):
+    """
+    Схема для фильтрации пользователей.
+    """
     email: str | None = Field(None, description="Email")
     name: str | None = Field(None, description="Name")
     sname: str | None = Field(None, description="Sname")
+
+
+class UserWithRoleAndActivDTO(UserAddDTO):
+    """
+    Схема для использования в тестах — содержит роль и активность пользователя.
+    """
+    role: str = Field(..., min_length=1)
+    is_active: bool = Field(...)
