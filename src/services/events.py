@@ -11,9 +11,8 @@ from src.exceptions import (EventDataEmptyHTTPException,
                             ObjectAlreadyExistsException,
                             ObjectEmptyDataException, ObjectNotFoundException,
                             WrongUserDataHTTPException)
-from src.schemas.events import EventsAddDTO, EventsUpdateDTO, EventsDTO
+from src.schemas.events import EventsAddDTO, EventsDTO, EventsUpdateDTO
 from src.services.base import BaseService
-
 
 logger = logging.getLogger("events")
 
@@ -69,7 +68,9 @@ class EventsService(BaseService):
             await self.db.commit()
             logger.info("Устаревшие события удалены!!!")
         except EventsDeletePastException:
-            logger.error("Произошла ошибка при попытке удалить устаревшие мероприятия")
+            logger.error(
+                "Произошла ошибка при попытке удалить устаревшие мероприятия"
+            )
             raise EventsDeletePastHTTPEException
 
         events = await self.db.events.get_all()
@@ -112,7 +113,9 @@ class EventsService(BaseService):
         if event_id <= 0:
             raise EventIndexWrongHTTPException
         if role not in ("admin", "user", "guest"):
-            logger.error(f"WrongUserData. Route: /events/one/{event_id}. Role: {role}")
+            logger.error(
+                f"WrongUserData. Route: /events/one/{event_id}. Role: {role}"
+            )
             raise WrongUserDataHTTPException
         try:
             event = await self.db.events.get_one(id=event_id)
@@ -122,14 +125,7 @@ class EventsService(BaseService):
         return event
 
     async def get_filtered_by_time(
-        self,
-        pagination,
-        title,
-        category,
-        address,
-        date,
-        max_users,
-        role
+        self, pagination, title, category, address, date, max_users, role
     ) -> list[EventsDTO]:
         """
         Возвращает отфильтрованный и постраничный список событий.
@@ -167,7 +163,11 @@ class EventsService(BaseService):
         )
 
     async def edit_event(
-        self, event_id: int, data: EventsUpdateDTO, role, exclude_unset: bool = False
+        self,
+        event_id: int,
+        data: EventsUpdateDTO,
+        role,
+        exclude_unset: bool = False,
     ) -> None:
         """
         Обновляет существующее событие.
@@ -186,7 +186,9 @@ class EventsService(BaseService):
         if event_id <= 0:
             raise EventIndexWrongHTTPException
         if role not in ("admin", "user", "guest"):
-            logger.error(f"WrongUserData. Route: /events/edit/{event_id}. Role: {role}")
+            logger.error(
+                f"WrongUserData. Route: /events/edit/{event_id}. Role: {role}"
+            )
             raise WrongUserDataHTTPException
         try:
             await self.db.events.get_one(id=event_id)
@@ -196,9 +198,7 @@ class EventsService(BaseService):
         update_data = data.model_dump(exclude_unset=exclude_unset)
         try:
             await self.db.events.edit(
-                update_data,
-                id=event_id,
-                exclude_unset=exclude_unset
+                update_data, id=event_id, exclude_unset=exclude_unset
             )
         except ObjectEmptyDataException:
             raise EventDataEmptyHTTPException
@@ -218,7 +218,9 @@ class EventsService(BaseService):
         if event_id <= 0:
             raise EventIndexWrongHTTPException
         if role not in ("admin", "user", "guest"):
-            logger.error(f"WrongUserData. Route: /events/delete/{event_id}. Role: {role}")
+            logger.error(
+                f"WrongUserData. Route: /events/delete/{event_id}. Role: {role}"
+            )
             raise WrongUserDataHTTPException
 
         try:

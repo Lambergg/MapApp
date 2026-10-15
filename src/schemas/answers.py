@@ -5,16 +5,21 @@ class BanAnswerDTO(BaseModel):
     """
     Схема для возврата сообщения о бане через API.
     """
+
     message: str
+
 
 class ImageAnswerDTO(BaseModel):
     """
     Схема для возврата url изображения через API.
     """
+
     url: str
+
 
 class HealthAnswerDTO(BaseModel):
     """
     Схема для возврата answer через API.
     """
+
     answer: dict

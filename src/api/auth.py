@@ -5,7 +5,8 @@ from fastapi import APIRouter, Body, Depends, Path, Request, Response, status
 from src.api.dependencies import (get_auth_service, get_current_user_id,
                                   get_current_user_role)
 from src.common.constants import MAX_ID_VALUE, MIN_ID_VALUE
-from src.schemas.users import UserLoginDTO, UserPatchDTO, UserRequestAddDTO, UserWithEvents
+from src.schemas.users import (UserLoginDTO, UserPatchDTO, UserRequestAddDTO,
+                               UserWithEvents)
 from src.services.auth import AuthService
 from src.utils.ratelimitter import rate_limiter_factory
 
@@ -89,7 +90,7 @@ async def login_user(
 async def get_me(
     user_id: Annotated[int, Depends(get_current_user_id)],
     service: Annotated[AuthService, Depends(get_auth_service)],
-    _: None = Depends(rate_limiter_factory("/auth/me", 1, 5))
+    _: None = Depends(rate_limiter_factory("/auth/me", 1, 5)),
 ) -> UserWithEvents:
     """
     Возвращает данные текущего пользователя по ID из токена.
@@ -143,12 +144,14 @@ async def logout_user(
 async def edit_user_profile(
     service: Annotated[AuthService, Depends(get_auth_service)],
     role: Annotated[str, Depends(get_current_user_role)],
-    _: None = Depends(rate_limiter_factory("/auth/edit_profile/{user_id}", 1, 5)),
+    _: None = Depends(
+        rate_limiter_factory("/auth/edit_profile/{user_id}", 1, 5)
+    ),
     user_id: int = Path(
         ...,
         ge=MIN_ID_VALUE,
         le=MAX_ID_VALUE,
-        description="path-параметр ID пользователя (до 2147483647)"
+        description="path-параметр ID пользователя (до 2147483647)",
     ),
     user_data: UserPatchDTO = Body(
         openapi_examples={
@@ -178,10 +181,7 @@ async def edit_user_profile(
     """
 
     await service.edit_user_profile(
-        user_id,
-        user_data,
-        role,
-        exclude_unset=True
+        user_id, user_data, role, exclude_unset=True
     )
     return
 

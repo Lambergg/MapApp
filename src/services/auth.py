@@ -30,7 +30,6 @@ from src.schemas.users import (UserAddDTO, UserDTO, UserLoginDTO, UserPatchDTO,
                                UserRequestAddDTO, UserWithEvents)
 from src.services.base import BaseService
 
-
 logger = logging.getLogger("auth")
 
 
@@ -72,9 +71,7 @@ class AuthService(BaseService):
             "exp": expire,
         }
         return jwt.encode(
-            to_encode,
-            settings.JWT_SECRET_KEY,
-            algorithm=settings.JWT_ALGORITHM
+            to_encode, settings.JWT_SECRET_KEY, algorithm=settings.JWT_ALGORITHM
         )
 
     def create_refresh_token(self) -> str:
@@ -217,7 +214,9 @@ class AuthService(BaseService):
         except ObjectAlreadyExistsException:
             raise UserAllReadyExistsHTTPException
 
-    async def login_user(self, data: UserLoginDTO, response: Response) -> dict[str, str]:
+    async def login_user(
+        self, data: UserLoginDTO, response: Response
+    ) -> dict[str, str]:
         """
         Аутентифицирует пользователя и выдаёт токены.
 
@@ -234,7 +233,7 @@ class AuthService(BaseService):
         user = await self.db.users.get_user_with_hashed_password(
             email=data.email
         )
-        #if not user.is_active:
+        # if not user.is_active:
         #    raise UserIsBannedHTTPException
 
         if not user:
@@ -282,8 +281,9 @@ class AuthService(BaseService):
             "token_type": "bearer",
         }
 
-
-    async def logout_user(self, request: Request, response: Response, user_id) -> None:
+    async def logout_user(
+        self, request: Request, response: Response, user_id
+    ) -> None:
         access_token = request.cookies.get("access_token") or None
         refresh_token = request.cookies.get("refresh_token") or None
         if not access_token or not refresh_token:
@@ -292,7 +292,9 @@ class AuthService(BaseService):
         response.delete_cookie("refresh_token")
         await self.delete_refresh_token(user_id, refresh_token)
 
-    async def refresh_tokens(self, request: Request, response: Response) -> dict[str, str]:
+    async def refresh_tokens(
+        self, request: Request, response: Response
+    ) -> dict[str, str]:
         """
         Обновляет access и refresh токены по текущему refresh-токену.
 
@@ -387,7 +389,11 @@ class AuthService(BaseService):
         return user
 
     async def edit_user_profile(
-        self, user_id: int, data: UserPatchDTO, role, exclude_unset: bool = False
+        self,
+        user_id: int,
+        data: UserPatchDTO,
+        role,
+        exclude_unset: bool = False,
     ) -> None:
         """
         Обновляет профиль пользователя, включая участие в событиях.
@@ -414,7 +420,9 @@ class AuthService(BaseService):
         if user_id <= 0:
             raise UserIndexWrongHTTPException
         if role not in ("admin", "user", "guest"):
-            logger.error(f"WrongUserData. Route: /auth/edit_profile/{user_id}. Role: {role}")
+            logger.error(
+                f"WrongUserData. Route: /auth/edit_profile/{user_id}. Role: {role}"
+            )
             raise WrongUserDataHTTPException
         try:
             user = await self.db.users.get_one(id=user_id)
@@ -454,17 +462,14 @@ class AuthService(BaseService):
                         raise EventMaxUsersHTTPException
 
             await self.db.users_events.set_user_events(
-                user_id,
-                events_ids=events_ids_for_sync
+                user_id, events_ids=events_ids_for_sync
             )
 
             await self.get_user_with_check(user_id)  # type: ignore
 
         try:
             await self.db.users.edit(
-                update_data,
-                id=user_id,
-                exclude_unset=exclude_unset
+                update_data, id=user_id, exclude_unset=exclude_unset
             )
 
             await self.db.commit()

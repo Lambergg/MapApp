@@ -138,7 +138,9 @@ class EventsRepository(BaseRepository):
         :return: Число участников.
         :rtype: Int
         """
-        query = select(func.count(UsersEventsOrm.user_id)).where(UsersEventsOrm.event_id == event_id)
+        query = select(func.count(UsersEventsOrm.user_id)).where(
+            UsersEventsOrm.event_id == event_id
+        )
         result = await self.session.execute(query)
         return result.scalar_one()
 

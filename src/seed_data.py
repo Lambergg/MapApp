@@ -11,7 +11,9 @@ sys.path.append(str(Path(__file__).parent.parent))
 from src.database import async_session_maker
 from src.models.users import UsersOrm
 
-logging.basicConfig(level=logging.INFO, format="%(name)s %(asctime)s %(levelname)s %(message)s")
+logging.basicConfig(
+    level=logging.INFO, format="%(name)s %(asctime)s %(levelname)s %(message)s"
+)
 logger = logging.getLogger("seed_data")
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")

@@ -14,7 +14,6 @@ sys.path.append(str(Path(__file__).parent.parent))
 from app import create_app
 from src.config import settings
 
-
 app = create_app()
 
 app.mount("/static", StaticFiles(directory="src/static"), name="static")

@@ -51,8 +51,7 @@ def get_token(request: Request) -> str:
     token = request.cookies.get("access_token") or None
     if not token:
         raise HTTPException(
-            status_code=401,
-            detail="Вы не предоставили токен доступа"
+            status_code=401, detail="Вы не предоставили токен доступа"
         )
     return token
 
@@ -88,8 +87,8 @@ async def get_db() -> AsyncGenerator[DBManager, None]:
 
 
 async def get_current_user_role(
-        db: Annotated[get_db_manager, Depends(get_db)],
-        user_id: int = Depends(get_current_user_id),
+    db: Annotated[get_db_manager, Depends(get_db)],
+    user_id: int = Depends(get_current_user_id),
 ) -> str:
     """
     Получает роль пользователя из Redis по его ID.
@@ -107,7 +106,7 @@ async def get_current_user_role(
     if user_role:
         return user_role
 
-# Если роли нет в Redis, пробуем получить из БД
+    # Если роли нет в Redis, пробуем получить из БД
     try:
         user = await db.users.get_one(id=user_id)
         if user and user.role:
@@ -122,27 +121,27 @@ async def get_current_user_role(
         raise ObjectNotFoundException
 
     raise HTTPException(
-        status_code=401,
-        detail="Не удалось получить данные пользователя"
+        status_code=401, detail="Не удалось получить данные пользователя"
     )
 
 
 async def get_admin_service(
-    db: Annotated[get_db_manager, Depends(get_db)]
+    db: Annotated[get_db_manager, Depends(get_db)],
 ) -> AdminService:
     return AdminService(db)
 
 
 async def get_auth_service(
-    db: Annotated[get_db_manager, Depends(get_db)]
+    db: Annotated[get_db_manager, Depends(get_db)],
 ) -> AuthService:
     return AuthService(db)
 
 
 async def get_event_service(
-    db: Annotated[get_db_manager, Depends(get_db)]
+    db: Annotated[get_db_manager, Depends(get_db)],
 ) -> EventsService:
     return EventsService(db)
+
 
 async def get_chat_service() -> ChatService:
     return ChatService(manager)

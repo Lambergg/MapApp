@@ -8,7 +8,7 @@ from src.api.dependencies import (PaginationParams, get_admin_service,
 from src.common.constants import MAX_ID_VALUE, MIN_ID_VALUE
 from src.exceptions import ObjectNotFoundException, UserNotFoundHTTPException
 from src.schemas.answers import BanAnswerDTO
-from src.schemas.users import UserFilterDTO, UserPutDTO, UserDTO
+from src.schemas.users import UserDTO, UserFilterDTO, UserPutDTO
 from src.services.admin import AdminService
 from src.utils.ratelimitter import rate_limiter_factory
 
@@ -35,11 +35,7 @@ async def get_users(
     :return: List[UserDTO] — список пользователей.
     """
 
-    return await service.get_filtered_by_time(
-        pagination,
-        filters,
-        role
-    )
+    return await service.get_filtered_by_time(pagination, filters, role)
 
 
 @router.get(
@@ -55,7 +51,7 @@ async def get_user(
         ...,
         ge=MIN_ID_VALUE,
         le=MAX_ID_VALUE,
-        description="user_id: path-параметр ID пользователя (до 2147483647)"
+        description="user_id: path-параметр ID пользователя (до 2147483647)",
     ),
 ) -> UserDTO:
     """
@@ -83,12 +79,14 @@ async def get_user(
 async def edit_user_role(
     service: Annotated[AdminService, Depends(get_admin_service)],
     role: Annotated[str, Depends(get_current_user_role)],
-    _: None = Depends(rate_limiter_factory("/admin/change_role/{user_id}", 1, 5)),
+    _: None = Depends(
+        rate_limiter_factory("/admin/change_role/{user_id}", 1, 5)
+    ),
     user_id: int = Path(
         ...,
         ge=MIN_ID_VALUE,
         le=MAX_ID_VALUE,
-        description="path-параметр ID пользователя (до 2147483647)"
+        description="path-параметр ID пользователя (до 2147483647)",
     ),
     user_data: UserPutDTO = Body(
         openapi_examples={
@@ -110,12 +108,7 @@ async def edit_user_role(
     :param user_data: Схема UserPutDTO
     :return: 200 OK при успехе.
     """
-    await service.edit_user_role(
-        user_id,
-        user_data,
-        role,
-        exclude_unset=False
-    )
+    await service.edit_user_role(user_id, user_data, role, exclude_unset=False)
     return
 
 
@@ -128,12 +121,14 @@ async def edit_user_role(
 async def delete_user(
     service: Annotated[AdminService, Depends(get_admin_service)],
     role: Annotated[str, Depends(get_current_user_role)],
-    _: None = Depends(rate_limiter_factory("/admin/delete_user/{user_id}", 1, 5)),
+    _: None = Depends(
+        rate_limiter_factory("/admin/delete_user/{user_id}", 1, 5)
+    ),
     user_id: int = Path(
         ...,
         ge=MIN_ID_VALUE,
         le=MAX_ID_VALUE,
-        description="path-параметр ID пользователя (до 2147483647)"
+        description="path-параметр ID пользователя (до 2147483647)",
     ),
 ) -> None:
     """
@@ -157,12 +152,14 @@ async def delete_user(
 async def delete_account(
     service: Annotated[AdminService, Depends(get_admin_service)],
     role: Annotated[str, Depends(get_current_user_role)],
-    _: None = Depends(rate_limiter_factory("/admin/delete_account/{user_id}", 1, 5)),
+    _: None = Depends(
+        rate_limiter_factory("/admin/delete_account/{user_id}", 1, 5)
+    ),
     user_id: int = Path(
         ...,
         ge=MIN_ID_VALUE,
         le=MAX_ID_VALUE,
-        description="path-параметр ID пользователя (до 2147483647)"
+        description="path-параметр ID пользователя (до 2147483647)",
     ),
 ) -> BanAnswerDTO:
     """

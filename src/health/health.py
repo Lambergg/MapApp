@@ -14,7 +14,7 @@ router = APIRouter(prefix="/health", tags=["Health"])
     description="<h1>Проверка установки данных, устанавливает ключи A и B</h1>",
 )
 async def redis_set(
-        _: None = Depends(rate_limiter_factory("/health/set", 1, 5))
+    _: None = Depends(rate_limiter_factory("/health/set", 1, 5)),
 ) -> None:
     """
     Устанавливает тестовые значения в два разных экземпляра (db0 и db1).
@@ -29,17 +29,15 @@ async def redis_set(
     value2 = "3421"
 
     await redis_manager.set(key1, value1, 60)
-    await redis_manager_auth.set(key2, value2 , 60)
+    await redis_manager_auth.set(key2, value2, 60)
     return
 
 
 @router.get(
-    "/get",
-    summary="Получение значений",
-    response_model=HealthAnswerDTO
+    "/get", summary="Получение значений", response_model=HealthAnswerDTO
 )
 async def get_data_from_redis(
-        _: None = Depends(rate_limiter_factory("/health/get", 1, 5))
+    _: None = Depends(rate_limiter_factory("/health/get", 1, 5)),
 ) -> HealthAnswerDTO:
     """
     Получает тестовые значения из двух экземпляров:

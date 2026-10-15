@@ -6,7 +6,7 @@ from fastapi_cache.decorator import cache
 from src.api.dependencies import (PaginationParams, get_current_user_id,
                                   get_current_user_role, get_event_service)
 from src.common.constants import MAX_ID_VALUE, MIN_ID_VALUE
-from src.schemas.events import EventsAddDTO, EventsUpdateDTO, EventsDTO
+from src.schemas.events import EventsAddDTO, EventsDTO, EventsUpdateDTO
 from src.services.events import EventsService
 from src.utils.ratelimitter import rate_limiter_factory
 
@@ -50,7 +50,7 @@ async def get_one_event(
         ...,
         ge=MIN_ID_VALUE,
         le=MAX_ID_VALUE,
-        description="path-параметр ID (до 2147483647)"
+        description="path-параметр ID (до 2147483647)",
     ),
 ) -> EventsDTO:
     """
@@ -136,13 +136,7 @@ async def get_search_events(
     """
 
     return await service.get_filtered_by_time(
-        pagination,
-        title,
-        category,
-        address,
-        date,
-        max_users,
-        role
+        pagination, title, category, address, date, max_users, role
     )
 
 
@@ -204,7 +198,7 @@ async def edit_event(
         ...,
         ge=MIN_ID_VALUE,
         le=MAX_ID_VALUE,
-        description="path-параметр ID (до 2147483647)"
+        description="path-параметр ID (до 2147483647)",
     ),
     event_data: EventsUpdateDTO = Body(
         openapi_examples={
@@ -257,7 +251,7 @@ async def delete_event(
         ...,
         ge=MIN_ID_VALUE,
         le=MAX_ID_VALUE,
-        description="path-параметр ID пользователя (до 2147483647)"
+        description="path-параметр ID пользователя (до 2147483647)",
     ),
 ) -> None:
     """

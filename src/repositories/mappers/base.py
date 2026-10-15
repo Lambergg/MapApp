@@ -22,9 +22,7 @@ class DataMapper:
     schema: Type[SchemaType]
 
     @classmethod
-    def map_to_domain_entity(
-        cls, data: Base | Row | RowMapping
-    ) -> SchemaType:
+    def map_to_domain_entity(cls, data: Base | Row | RowMapping) -> SchemaType:
         """
         Преобразует данные из формата ORM/словаря/строки БД в Pydantic-схему.
 

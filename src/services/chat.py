@@ -5,6 +5,7 @@ from fastapi import WebSocket, WebSocketDisconnect
 
 logger = logging.getLogger("chat")
 
+
 class ChatService:
     def __init__(self, connection_manager: Any):
         self.manager = connection_manager
@@ -20,7 +21,9 @@ class ChatService:
         await self.manager.connect(websocket)
         await self.manager.broadcast(f"{username} зашёл в чат")
 
-    async def broadcast_message(self, username: str, websocket: WebSocket) -> None:
+    async def broadcast_message(
+        self, username: str, websocket: WebSocket
+    ) -> None:
         """
         Получает и рассылает сообщения от пользователя.
 
@@ -35,7 +38,9 @@ class ChatService:
         except WebSocketDisconnect:
             await self.disconnect_user(websocket, username)
 
-    async def disconnect_user(self, websocket: WebSocket, username: str) -> None:
+    async def disconnect_user(
+        self, websocket: WebSocket, username: str
+    ) -> None:
         """
         Отключает пользователя от чата и уведомляет других.
 

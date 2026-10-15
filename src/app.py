@@ -1,6 +1,7 @@
 # ruff: noqa E402
 import logging
 from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi_cache import FastAPICache
 from fastapi_cache.backends.redis import RedisBackend
@@ -13,8 +14,9 @@ from src.api.images import router as images_router
 from src.health.health import router as heals_router
 from src.init import redis_manager, redis_manager_auth
 
-
-logging.basicConfig(level=logging.INFO, format="%(name)s %(asctime)s %(levelname)s %(message)s")
+logging.basicConfig(
+    level=logging.INFO, format="%(name)s %(asctime)s %(levelname)s %(message)s"
+)
 logger = logging.getLogger("app")
 
 
@@ -35,6 +37,7 @@ async def lifespan(app: FastAPI):
     await redis_manager_auth.close()
     logger.info("Подключение к Redis закрыто")
     logger.info("Приложение остановлено")
+
 
 def create_app() -> FastAPI:
     app = FastAPI(docs_url=None, lifespan=lifespan, title="Приложение MapApp")

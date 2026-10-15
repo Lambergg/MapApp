@@ -9,7 +9,6 @@ from src.exceptions import (AdminOrModeratorOrUserOnlyAccessHTTPException,
 from src.services.base import BaseService
 from src.tasks.tasks import resize_image
 
-
 logger = logging.getLogger("images")
 
 

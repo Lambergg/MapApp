@@ -2,6 +2,7 @@
 import json
 from typing import AsyncGenerator
 from unittest import mock
+
 from asgi_lifespan import LifespanManager
 
 mock.patch(
@@ -95,7 +96,9 @@ async def ac() -> AsyncGenerator[AsyncClient, None]:
     #    """
     async with LifespanManager(app):
         transport = ASGITransport(app=app)
-        async with AsyncClient(transport=transport, base_url="http://test") as client:
+        async with AsyncClient(
+            transport=transport, base_url="http://test"
+        ) as client:
             yield client
 
 

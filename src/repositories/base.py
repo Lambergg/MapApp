@@ -1,5 +1,5 @@
 import logging
-from typing import Any, Sequence, ClassVar
+from typing import ClassVar, Sequence
 
 import sqlalchemy.exc
 from asyncpg.exceptions import UniqueViolationError
@@ -14,7 +14,6 @@ from src.exceptions import (ObjectAlreadyExistsException,
                             ObjectNotFoundException, ObjectNotNullException,
                             ObjectTypeErrorException)
 from src.repositories.mappers.base import DataMapper
-
 
 logger = logging.getLogger("repo_base")
 
@@ -195,7 +194,9 @@ class BaseRepository:
             if isinstance(ex.orig.__cause__, UniqueViolationError):
                 raise ObjectAlreadyExistsException from ex
             elif "not-null" in str(ex.orig):
-                raise ObjectNotNullException("Обязательные поля не могут быть пустыми") from ex
+                raise ObjectNotNullException(
+                    "Обязательные поля не могут быть пустыми"
+                ) from ex
             else:
                 logger.error(
                     f"Незнакомая ошибка. Входные данные: {data=}, тип ошибки: {type(ex.orig.__cause__)=}"

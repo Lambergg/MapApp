@@ -2,7 +2,6 @@ import logging
 
 import redis.asyncio as redis
 
-
 logger = logging.getLogger("redis_connector")
 
 
@@ -34,10 +33,7 @@ class RedisManager:
         """
         logger.info("Подключаюсь к Redis...")
         self._redis = await redis.Redis(
-            host=self.host,
-            port=self.port,
-            db=self.db,
-            decode_responses=True
+            host=self.host, port=self.port, db=self.db, decode_responses=True
         )
         logger.info("Redis подключен")
 
