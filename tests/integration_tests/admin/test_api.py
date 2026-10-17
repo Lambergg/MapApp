@@ -1,5 +1,6 @@
 from httpx import AsyncClient
 
+
 async def test_admin_flow(ac: AsyncClient):
     # /auth/login
     resp_login = await ac.post(
@@ -21,7 +22,9 @@ async def test_admin_flow(ac: AsyncClient):
     assert isinstance(response.json(), dict)
 
     # /change_role/{user_id}
-    response = await ac.put("/admin/change_role/4", json={"role": "admin", "is_active": False})
+    response = await ac.put(
+        "/admin/change_role/4", json={"role": "admin", "is_active": False}
+    )
     assert response.status_code == 200
     assert response.json() is None
 

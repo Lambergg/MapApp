@@ -1,13 +1,12 @@
 import asyncio
-
-from fastapi_mail import FastMail, MessageSchema, MessageType
 import logging
 import os
-from pydantic import EmailStr
-from src.mailconfig import conf
 
+from fastapi_mail import FastMail, MessageSchema, MessageType
 from PIL import Image
+from pydantic import EmailStr
 
+from src.mailconfig import conf
 from src.tasks.celery_app import celery_instance
 
 logger = logging.getLogger("tasks")
@@ -55,12 +54,9 @@ def resize_image(image_path: str) -> None:
         f"Изображение сохранено в следующих размерах: {sizes} в папке {output_folder}"
     )
 
+
 @celery_instance.task
-def send_email(
-        email: EmailStr,
-        username: str,
-        password: str
-) -> None:
+def send_email(email: EmailStr, username: str, password: str) -> None:
     html_content = f"""
     <h3>Добро пожаловать!</h3>
     <p>Вы успешно зарегистрированы.</p>
@@ -71,9 +67,9 @@ def send_email(
 
     message = MessageSchema(
         subject="Ваши данные для входа",
-        recipients=[email], #type: ignore
+        recipients=[email],  # type: ignore
         body=html_content,
-        subtype=MessageType.html
+        subtype=MessageType.html,
     )
 
     async def _send():
@@ -82,4 +78,4 @@ def send_email(
 
     # Запускаем корутину в новом event loop внутри синхронной задачи
     asyncio.run(_send())
-    logger.info(f"Пользователь создан. Письмо с данными отправляется.")
+    logger.info("Пользователь создан. Письмо с данными отправляется.")

@@ -1,6 +1,6 @@
 from fastapi_mail import ConnectionConfig
-from src.config import settings
 
+from src.config import settings
 
 conf = ConnectionConfig(
     MAIL_USERNAME=settings.MAIL_USERNAME,

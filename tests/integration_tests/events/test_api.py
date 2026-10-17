@@ -1,6 +1,7 @@
 import pytest
 from httpx import AsyncClient
 
+
 @pytest.mark.parametrize(
     "name, sname, age, email, password",
     [
@@ -8,12 +9,7 @@ from httpx import AsyncClient
     ],
 )
 async def test_event_flow(
-        name: str,
-        sname: str,
-        age: int,
-        email: str,
-        password: str,
-        ac: AsyncClient
+    name: str, sname: str, age: int, email: str, password: str, ac: AsyncClient
 ):
     # /auth/login
     resp_login = await ac.post(
@@ -95,7 +91,8 @@ async def test_event_flow(
             "address": address2,
             "date": date2,
             "max_users": max_users2,
-        })
+        },
+    )
     assert response.status_code == 200
 
     # /events/delete/{event_id}

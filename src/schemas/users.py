@@ -28,7 +28,9 @@ class UserRequestAddDTO(BaseModel):
         :raises ValueError: Если пароль короче 8 символов или содержит пробелы.
         """
         if len(v) < 8 or " " in v:
-            raise ValueError("Пароль должен быть длиннее 8 символов и не содержать пробелов")
+            raise ValueError(
+                "Пароль должен быть длиннее 8 символов и не содержать пробелов"
+            )
         return v
 
 
@@ -44,7 +46,9 @@ class UserLoginDTO(BaseModel):
     @field_validator("password")
     def validate_password(cls, v) -> str:
         if len(v) < 8 or " " in v:
-            raise ValueError("Пароль должен быть длиннее 8 символов и не содержать пробелов")
+            raise ValueError(
+                "Пароль должен быть длиннее 8 символов и не содержать пробелов"
+            )
         return v
 
 
@@ -113,7 +117,9 @@ class UserPatchDTO(BaseModel):
     @field_validator("password")
     def validate_password(cls, v) -> str:
         if len(v) < 8 or " " in v:
-            raise ValueError("Пароль должен быть длиннее 8 символов и не содержать пробелов")
+            raise ValueError(
+                "Пароль должен быть длиннее 8 символов и не содержать пробелов"
+            )
         return v
 
     model_config = ConfigDict(from_attributes=True)
@@ -132,6 +138,7 @@ class UserFilterDTO(BaseModel):
     """
     Схема для фильтрации пользователей.
     """
+
     email: str | None = Field(None, description="Email")
     name: str | None = Field(None, description="Name")
     sname: str | None = Field(None, description="Sname")
@@ -141,5 +148,6 @@ class UserWithRoleAndActivDTO(UserAddDTO):
     """
     Схема для использования в тестах — содержит роль и активность пользователя.
     """
+
     role: str = Field(..., min_length=1)
     is_active: bool = Field(...)
