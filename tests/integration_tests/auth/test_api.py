@@ -5,9 +5,7 @@ from httpx import AsyncClient
 @pytest.mark.parametrize(
     "name, sname, age, email, password, status_code",
     [
-        ("Ivan", "Krasnov", 34, "test1@test1.com", "test1234", (200, 201)),
-        ("Misha", "Krasnov", 24, "test2@test2.com", "test1234", (200, 201)),
-        ("Julia", "Krasnova", 36, "test2@test2.com", "test1234", 409),
+        ("Julia", "Krasnova", 36, "admin@test.com", "test1234", 409),
         ("Andrey", "Martiukov", 59, "abcde", "test1234", 422),
         ("Admin", "User", 30, "admin@test.com", "test1234", (200, 409)),
     ],
@@ -69,3 +67,25 @@ async def test_auth_flow(
     assert resp_logout.status_code == 200
     assert "access_token" not in ac.cookies
     assert "refresh_token" not in ac.cookies
+
+    # /auth/edit_profile/{user_id}
+    resp_edit_profile = await ac.put(
+        "/auth/edit_profile/1",
+        json={
+            "name": "Admin",
+            "sname": "User",
+            "age": 30,
+            "email": "admin@test.com",
+            "password": "test1234",
+            "events_ids": [1, 2, 3],
+        },
+    )
+    assert resp_edit_profile.status_code == 200
+    assert resp_edit_profile.json() is None
+
+    # /auth/refresh
+    resp_refresh = await ac.post("/auth/refresh")
+    assert resp_refresh.status_code == 200
+    assert resp_refresh.json()["access_token"]
+    assert resp_refresh.json()["refresh_token"]
+    assert isinstance(resp_refresh.json(), dict)
