@@ -41,7 +41,8 @@ docker run --name map_back \
 map_image
 
 
-7) Или Запустить docker-compose.yml
+7) Или запустить \
+docker compose up --build (Опционально -d)
 
 
 #### Вставка моковых даннных в БД:

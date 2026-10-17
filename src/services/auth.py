@@ -438,7 +438,7 @@ class AuthService(BaseService):
         if "password" in update_data:
             password = update_data.pop("password")
             if password is not None:
-                update_data["hashed_password"] = self.hash_password(password)
+                update_data["hashed_password"] = await self.hash_password(password)
 
         if not data.model_dump(exclude_unset=True):
             return
