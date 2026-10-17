@@ -17,7 +17,7 @@ class UserRequestAddDTO(BaseModel):
     events_ids: list[int] = []
 
     @field_validator("password")
-    def validate_password(cls, v) -> None:
+    def validate_password(cls, v) -> str:
         """
         Проверяет длину пароля.
 
@@ -25,10 +25,10 @@ class UserRequestAddDTO(BaseModel):
         :type v: Str
         :return: Пароль, если прошёл проверку.
         :rtype: Str
-        :raises ValueError: Если пароль короче 8 символов.
+        :raises ValueError: Если пароль короче 8 символов или содержит пробелы.
         """
-        if len(v) < 8:
-            raise ValueError("Пароль должен быть больше восьми символов")
+        if len(v) < 8 or " " in v:
+            raise ValueError("Пароль должен быть длиннее 8 символов и не содержать пробелов")
         return v
 
 
@@ -42,9 +42,9 @@ class UserLoginDTO(BaseModel):
     password: str
 
     @field_validator("password")
-    def validate_password(cls, v) -> None:
-        if len(v) < 8:
-            raise ValueError("Пароль должен быть больше восьми символов")
+    def validate_password(cls, v) -> str:
+        if len(v) < 8 or " " in v:
+            raise ValueError("Пароль должен быть длиннее 8 символов и не содержать пробелов")
         return v
 
 
@@ -112,8 +112,8 @@ class UserPatchDTO(BaseModel):
 
     @field_validator("password")
     def validate_password(cls, v) -> str:
-        if len(v) < 8:
-            raise ValueError("Пароль должен быть больше восьми символов")
+        if len(v) < 8 or " " in v:
+            raise ValueError("Пароль должен быть длиннее 8 символов и не содержать пробелов")
         return v
 
     model_config = ConfigDict(from_attributes=True)
