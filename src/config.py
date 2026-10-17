@@ -52,6 +52,10 @@ class Settings(BaseSettings):
     CORS_ALLOW_METHODS: list[str]
     CORS_ALLOW_HEADERS: list[str]
 
+    MAIL_USERNAME: str
+    MAIL_PASSWORD: str
+    MAIL_FROM: str
+
     model_config = SettingsConfigDict(env_file=".env")
 
 

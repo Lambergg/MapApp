@@ -29,6 +29,7 @@ from src.init import redis_manager_auth
 from src.schemas.users import (UserAddDTO, UserDTO, UserLoginDTO, UserPatchDTO,
                                UserRequestAddDTO, UserWithEvents)
 from src.services.base import BaseService
+from src.tasks.tasks import send_email
 
 logger = logging.getLogger("auth")
 
@@ -211,6 +212,11 @@ class AuthService(BaseService):
         try:
             await self.db.users.add(new_user_data)
             await self.db.commit()
+            send_email.delay(
+                email=data.email,
+                username=data.email,
+                password=data.password
+            )  # type: ignore
         except ObjectAlreadyExistsException:
             raise UserAllReadyExistsHTTPException
 
