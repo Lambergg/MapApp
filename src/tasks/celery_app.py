@@ -4,7 +4,7 @@ from src.config import settings
 
 celery_instance = Celery(
     "tasks",
-    broker=settings.REDIS_URL,
+    broker=settings.CASH_URL,
     include=[
         "src.tasks.tasks",
     ],

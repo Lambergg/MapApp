@@ -3,9 +3,9 @@ from time import time
 from typing import Callable, Awaitable, Any
 
 from fastapi import HTTPException, Request, status
-from sqlalchemy.orm import dependency
 
 from src.init import redis_manager
+from src.interfaces.ratelimiter import IRateLimiter
 
 
 class RateLimiter:
@@ -85,7 +85,7 @@ class RateLimiter:
         return result == 1
 
 
-_rate_limiter = RateLimiter()
+_rate_limiter: IRateLimiter = RateLimiter()
 
 
 def rate_limiter_factory(

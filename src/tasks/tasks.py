@@ -58,11 +58,11 @@ def resize_image(image_path: str) -> None:
 @celery_instance.task
 def send_email(email: EmailStr, username: str, password: str) -> None:
     html_content = f"""
-    <h3>Добро пожаловать!</h3>
+    <h3>Добро пожаловать в приложение "MapApp"!</h3>
     <p>Вы успешно зарегистрированы.</p>
     <p><b>Ваш логин:</b> {username}</p>
     <p><b>Ваш пароль:</b> {password}</p>
-    <p>Пожалуйста, сохраните эти данные.</p>
+    <p>Пожалуйста, сохраните эти данные для входа.</p>
     """
 
     message = MessageSchema(

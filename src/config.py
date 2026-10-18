@@ -22,7 +22,7 @@ class Settings(BaseSettings):
     REDIS_PORT: int
 
     @property
-    def REDIS_URL(self) -> str:
+    def CASH_URL(self) -> str:
         """
         Формирует URL для подключения к Redis.
 
@@ -59,4 +59,4 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env")
 
 
-settings = Settings()
+settings = Settings() # type: ignore[call-arg]
