@@ -4,7 +4,7 @@ from src.exceptions import (AdminOnlyAccessHTTPException,
                             ObjectNotFoundException,
                             UserIndexWrongHTTPException,
                             UserNotFoundHTTPException)
-from src.schemas.users import UserDTO, UserPutDTO
+from src.schemas.users import UserDTO, UserPutDTO, UserFilterDTO
 from src.services.base import BaseService
 from src.utils.redis_utils import delete_refresh_token
 
@@ -21,7 +21,7 @@ class AdminService(BaseService):
     """
 
     async def get_filtered_by_time(
-        self, pagination, filters, role
+        self, pagination, filters:UserFilterDTO, role:str
     ) -> list[UserDTO]:
         """
         Возвращает список пользователей с пагинацией и фильтрацией.

@@ -11,7 +11,7 @@ from src.exceptions import (EventDataEmptyHTTPException,
                             ObjectAlreadyExistsException,
                             ObjectEmptyDataException, ObjectNotFoundException,
                             WrongUserDataHTTPException)
-from src.schemas.events import EventsAddDTO, EventsDTO, EventsUpdateDTO
+from src.schemas.events import EventsAddDTO, EventsDTO, EventsUpdateDTO, EventsFilterDTO
 from src.services.base import BaseService
 
 logger = logging.getLogger("events")
@@ -125,24 +125,15 @@ class EventsService(BaseService):
         return event
 
     async def get_filtered_by_time(
-        self, pagination, title, category, address, date, max_users, role
+        self, pagination, filters:EventsFilterDTO, role
     ) -> list[EventsDTO]:
         """
         Возвращает отфильтрованный и постраничный список событий.
         Поддерживает поиск по подстрокам (регистронезависимо) и точному совпадению даты/max_users.
 
+        :param filters: Фильтры для поиска.
         :param pagination: Параметры пагинации (page, per_page).
         :type pagination: PaginationParams
-        :param title: Фильтр по названию (опционально).
-        :type title: str | None
-        :param category: Фильтр по категории (опционально).
-        :type category: str | None
-        :param address: Фильтр по адресу (опционально).
-        :type address: str | None
-        :param date: Фильтр по дате (в формате YYYY-MM-DD, опционально).
-        :type date: str | None
-        :param max_users: Фильтр по максимальному числу участников (опционально).
-        :type max_users: int | None
         :param role: Роль авторизованного юзера
         :return: Список событий, соответствующих фильтрам.
         :rtype: list[EventsDTO]
@@ -155,11 +146,11 @@ class EventsService(BaseService):
         return await self.db.events.get_filtered_by_time(
             limit=per_page,
             offset=per_page * (pagination.page - 1),
-            title=title,
-            category=category,
-            address=address,
-            date=date,
-            max_users=max_users,
+            title=filters.title,
+            category=filters.category,
+            address=filters.address,
+            date=filters.date,
+            max_users=filters.max_users,
         )
 
     async def edit_event(

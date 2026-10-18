@@ -6,7 +6,7 @@ from fastapi_cache.decorator import cache
 from src.api.dependencies import (PaginationParams, get_current_user_id,
                                   get_current_user_role, get_event_service)
 from src.common.constants import MAX_ID_VALUE, MIN_ID_VALUE
-from src.schemas.events import EventsAddDTO, EventsDTO, EventsUpdateDTO
+from src.schemas.events import EventsAddDTO, EventsDTO, EventsUpdateDTO, EventsFilterDTO
 from src.services.events import EventsService
 from src.utils.ratelimitter import rate_limiter_factory
 
@@ -105,38 +105,23 @@ async def get_search_events(
     service: Annotated[EventsService, Depends(get_event_service)],
     pagination: Annotated[PaginationParams, Depends()],
     role: Annotated[str, Depends(get_current_user_role)],
-    title: str | None = Query(None, description="Название события"),
-    category: str | None = Query(None, description="Категория события"),
-    address: str | None = Query(None, description="Адрес события"),
-    date: str | None = Query(None, description="Дата/время события"),
-    max_users: int | None = Query(
-        None, description="Максимальное количество участников события"
-    ),
+    filters: EventsFilterDTO = Depends(),
 ) -> list[EventsDTO]:
     """
     Поиск событий по заданным фильтрам с пагинацией.
 
+    :param filters: Фильтры для поиска.
     :param service: Сессия базы данных.
     :param pagination: Параметры пагинации (page, per_page).
     :type pagination: PaginationParams
     :param role: Роль пользователя.
     :type role: str
-    :param title: Фильтр по названию.
-    :type title: str | None
-    :param category: Фильтр по категории.
-    :type category: str | None
-    :param address: Фильтр по адресу.
-    :type address: str | None
-    :param date: Фильтр по дате (ISO формат).
-    :type date: str | None
-    :param max_users: Фильтр по максимальному числу участников.
-    :type max_users: int | None
     :return: Отфильтрованный список событий.
     :rtype: list[EventsDTO]
     """
 
     return await service.get_filtered_by_time(
-        pagination, title, category, address, date, max_users, role
+        pagination, filters, role
     )
 
 
