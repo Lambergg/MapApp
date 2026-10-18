@@ -55,7 +55,9 @@ class RedisManager:
             logger.error(f"Ошибка при пинге {e}")
             return False
 
-    async def set(self, key: str, value: str, expire: int | None = None) -> None:
+    async def set(
+        self, key: str, value: str, expire: int | None = None
+    ) -> None:
         """
         Сохраняет значение в Redis с опциональным временем жизни.
 

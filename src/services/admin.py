@@ -4,7 +4,7 @@ from src.exceptions import (AdminOnlyAccessHTTPException,
                             ObjectNotFoundException,
                             UserIndexWrongHTTPException,
                             UserNotFoundHTTPException)
-from src.schemas.users import UserDTO, UserPutDTO, UserFilterDTO
+from src.schemas.users import UserDTO, UserFilterDTO, UserPutDTO
 from src.services.base import BaseService
 from src.utils.redis_utils import delete_refresh_token
 
@@ -21,7 +21,7 @@ class AdminService(BaseService):
     """
 
     async def get_filtered_by_time(
-        self, pagination, filters:UserFilterDTO, role:str
+        self, pagination, filters: UserFilterDTO, role: str
     ) -> list[UserDTO]:
         """
         Возвращает список пользователей с пагинацией и фильтрацией.
@@ -68,7 +68,11 @@ class AdminService(BaseService):
         return await self.db.users.get_one(id=user_id)
 
     async def edit_user_role(
-        self, user_id: int, data: UserPutDTO, role: str, exclude_unset: bool = False
+        self,
+        user_id: int,
+        data: UserPutDTO,
+        role: str,
+        exclude_unset: bool = False,
     ) -> None:
         """
         Обновляет роль и статус пользователя.

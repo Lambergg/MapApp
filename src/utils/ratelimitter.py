@@ -1,6 +1,6 @@
 import random
 from time import time
-from typing import Callable, Awaitable, Any
+from typing import Any, Awaitable, Callable
 
 from fastapi import HTTPException, Request, status
 

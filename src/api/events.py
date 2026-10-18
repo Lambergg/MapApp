@@ -1,12 +1,13 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Body, Depends, Path, Query, status
+from fastapi import APIRouter, Body, Depends, Path, status
 from fastapi_cache.decorator import cache
 
 from src.api.dependencies import (PaginationParams, get_current_user_id,
                                   get_current_user_role, get_event_service)
 from src.common.constants import MAX_ID_VALUE, MIN_ID_VALUE
-from src.schemas.events import EventsAddDTO, EventsDTO, EventsUpdateDTO, EventsFilterDTO
+from src.schemas.events import (EventsAddDTO, EventsDTO, EventsFilterDTO,
+                                EventsUpdateDTO)
 from src.services.events import EventsService
 from src.utils.ratelimitter import rate_limiter_factory
 
@@ -120,9 +121,7 @@ async def get_search_events(
     :rtype: list[EventsDTO]
     """
 
-    return await service.get_filtered_by_time(
-        pagination, filters, role
-    )
+    return await service.get_filtered_by_time(pagination, filters, role)
 
 
 @router.post(

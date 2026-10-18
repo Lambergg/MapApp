@@ -105,4 +105,6 @@ class EventsFilterDTO(BaseModel):
     category: str | None = Field(None, description="Категория события")
     address: str | None = Field(None, description="Адрес события")
     date: str | None = Field(None, description="Дата/время события")
-    max_users: int | None = Field(None, description="Максимальное количество участников события")
+    max_users: int | None = Field(
+        None, description="Максимальное количество участников события"
+    )

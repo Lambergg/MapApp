@@ -11,7 +11,8 @@ from src.exceptions import (EventDataEmptyHTTPException,
                             ObjectAlreadyExistsException,
                             ObjectEmptyDataException, ObjectNotFoundException,
                             WrongUserDataHTTPException)
-from src.schemas.events import EventsAddDTO, EventsDTO, EventsUpdateDTO, EventsFilterDTO
+from src.schemas.events import (EventsAddDTO, EventsDTO, EventsFilterDTO,
+                                EventsUpdateDTO)
 from src.services.base import BaseService
 
 logger = logging.getLogger("events")
@@ -125,7 +126,7 @@ class EventsService(BaseService):
         return event
 
     async def get_filtered_by_time(
-        self, pagination, filters:EventsFilterDTO, role
+        self, pagination, filters: EventsFilterDTO, role
     ) -> list[EventsDTO]:
         """
         Возвращает отфильтрованный и постраничный список событий.

@@ -23,7 +23,7 @@ class DBManager:
         """
         self.session_factory = session_factory
 
-    async def __aenter__(self) -> DBManager:
+    async def __aenter__(self) -> "DBManager":
         """
         Асинхронный вход в контекст.
         Создаёт новую сессию и инициализирует все репозитории.
