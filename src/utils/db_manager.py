@@ -14,7 +14,7 @@ class DBManager:
     :type session_factory: Async_sessionmaker
     """
 
-    def __init__(self, session_factory):
+    def __init__(self, session_factory) -> None:
         """
         Инициализирует менеджер с фабрикой сессий.
 
@@ -23,7 +23,7 @@ class DBManager:
         """
         self.session_factory = session_factory
 
-    async def __aenter__(self):
+    async def __aenter__(self) -> DBManager:
         """
         Асинхронный вход в контекст.
         Создаёт новую сессию и инициализирует все репозитории.
@@ -41,7 +41,7 @@ class DBManager:
 
         return self
 
-    async def __aexit__(self, *args):
+    async def __aexit__(self, *args) -> None:
         """
         Асинхронный выход из контекста.
         Выполняет откат при ошибках и закрывает сессии.
@@ -51,7 +51,7 @@ class DBManager:
         await self.session.rollback()
         await self.session.aclose()
 
-    async def commit(self):
+    async def commit(self) -> None:
         """
         Фиксирует текущую транзакцию.
         Вызывает `session.commit()` для сохранения изменений в БД.

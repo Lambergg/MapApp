@@ -22,7 +22,7 @@ class Settings(BaseSettings):
     REDIS_PORT: int
 
     @property
-    def REDIS_URL(self):
+    def REDIS_URL(self) -> str:
         """
         Формирует URL для подключения к Redis.
 
@@ -32,7 +32,7 @@ class Settings(BaseSettings):
         return f"redis://{self.REDIS_HOST}:{self.REDIS_PORT}"
 
     @property
-    def DB_URL(self):
+    def DB_URL(self) -> str:
         """
         Формирует URL для асинхронного подключения к PostgreSQL через asyncpg.
 

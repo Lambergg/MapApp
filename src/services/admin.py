@@ -46,7 +46,7 @@ class AdminService(BaseService):
             sname=filters.sname,
         )
 
-    async def get_user(self, user_id: int, role) -> UserDTO:
+    async def get_user(self, user_id: int, role: str) -> UserDTO:
         """
         Получает пользователя по ID.
 
@@ -68,7 +68,7 @@ class AdminService(BaseService):
         return await self.db.users.get_one(id=user_id)
 
     async def edit_user_role(
-        self, user_id: int, data: UserPutDTO, role, exclude_unset: bool = False
+        self, user_id: int, data: UserPutDTO, role: str, exclude_unset: bool = False
     ) -> None:
         """
         Обновляет роль и статус пользователя.
@@ -98,7 +98,7 @@ class AdminService(BaseService):
         await self.db.users.edit(data, id=user_id, exclude_unset=exclude_unset)
         await self.db.commit()
 
-    async def delete_user(self, user_id: int, role) -> None:
+    async def delete_user(self, user_id: int, role: str) -> None:
         """
         Полное удаление пользователя из базы данных.
 
@@ -125,7 +125,7 @@ class AdminService(BaseService):
         await self.db.users.delete(id=user_id)
         await self.db.commit()
 
-    async def soft_delete_user(self, user_id: int, role) -> None:
+    async def soft_delete_user(self, user_id: int, role: str) -> None:
         """
         Мягкое удаление — деактивация пользователя (бан).
 

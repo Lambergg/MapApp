@@ -1,7 +1,9 @@
 import random
 from time import time
+from typing import Callable, Awaitable, Any
 
 from fastapi import HTTPException, Request, status
+from sqlalchemy.orm import dependency
 
 from src.init import redis_manager
 
@@ -13,10 +15,10 @@ class RateLimiter:
     Гарантирует, что клиент не может выполнить более `max_requests` за `window_seconds`.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._lua_sha = None
 
-    async def _load_script(self):
+    async def _load_script(self) -> None:
         """
         Асинхронно загружает Lua-скрипт в Redis и кэширует его SHA1-хэш.
         Скрипт выполняет:
@@ -90,7 +92,7 @@ def rate_limiter_factory(
     endpoint: str,
     max_requests: int,
     window_seconds: int,
-):
+) -> Callable[[Request], Awaitable[None]]:
     """
     Фабрика зависимостей для создания rate limit-ограничений под конкретный эндпоинт.
 
@@ -106,7 +108,7 @@ def rate_limiter_factory(
 
     async def dependency(
         request: Request,
-    ):
+    ) -> Any:
         ip_address = request.client.host  # type: ignore
 
         limited = await _rate_limiter.is_limited(

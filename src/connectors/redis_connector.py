@@ -22,12 +22,12 @@ class RedisManager:
 
     _redis = redis.Redis
 
-    def __init__(self, host: str, port: int, db: int = 0):
+    def __init__(self, host: str, port: int, db: int = 0) -> None:
         self.host = host
         self.port = port
         self.db = db
 
-    async def connect(self):
+    async def connect(self) -> None:
         """
         Устанавливает соединение с Redis.
         """
@@ -37,7 +37,7 @@ class RedisManager:
         )
         logger.info("Redis подключен")
 
-    async def ping(self):
+    async def ping(self) -> bool:
         """
         Проверяет активность соединения с Redis.
 
@@ -55,7 +55,7 @@ class RedisManager:
             logger.error(f"Ошибка при пинге {e}")
             return False
 
-    async def set(self, key: str, value: str, expire: int | None = None):
+    async def set(self, key: str, value: str, expire: int | None = None) -> None:
         """
         Сохраняет значение в Redis с опциональным временем жизни.
 
@@ -70,7 +70,7 @@ class RedisManager:
             await self._redis.set(key, value, ex=expire)
         logger.info(f"{key} и {value} сохранено в редис")
 
-    async def get(self, key: str):
+    async def get(self, key: str) -> str | None:
         """
         Получает значение по ключу из Redis.
 
@@ -81,7 +81,7 @@ class RedisManager:
         """
         return await self._redis.get(key)
 
-    async def delete(self, key: str):
+    async def delete(self, key: str) -> None:
         """
         Удаляет ключ из Redis.
 
@@ -90,7 +90,7 @@ class RedisManager:
         """
         await self._redis.delete(key)
 
-    async def close(self):
+    async def close(self) -> None:
         """
         Закрывает соединение с Redis.
         """

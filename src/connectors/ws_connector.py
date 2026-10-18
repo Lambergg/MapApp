@@ -14,7 +14,7 @@ class ConnectionManager:
     как отдельным клиентам, так и рассылки всем подключённым.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.active_connections: List[WebSocket] = []
 
     async def connect(self, websocket: WebSocket) -> None:

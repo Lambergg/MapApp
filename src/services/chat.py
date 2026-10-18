@@ -7,7 +7,7 @@ logger = logging.getLogger("chat")
 
 
 class ChatService:
-    def __init__(self, connection_manager: Any):
+    def __init__(self, connection_manager: Any) -> None:
         self.manager = connection_manager
 
     async def connect_user(self, websocket: WebSocket, username: str) -> None:

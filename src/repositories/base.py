@@ -139,7 +139,7 @@ class BaseRepository:
                 )
                 raise ex
 
-    async def add_bulk(self, data: Sequence[BaseModel]):
+    async def add_bulk(self, data: Sequence[BaseModel]) -> None:
         """
         Массовое добавление объектов в базу данных.
 

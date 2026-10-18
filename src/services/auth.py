@@ -85,7 +85,7 @@ class AuthService(BaseService):
         token = str(uuid.uuid4())
         return token
 
-    async def store_refresh_token(self, user_id: int, refresh_token: str):
+    async def store_refresh_token(self, user_id: int, refresh_token: str) -> None:
         """
         Сохраняет refresh-токен в Redis с временем жизни.
         Использует два ключа:
@@ -122,7 +122,7 @@ class AuthService(BaseService):
         key = f"refresh_token:{user_id}"
         return await redis_manager_auth.get(key)
 
-    async def delete_refresh_token(self, user_id: int, refresh_token: str):
+    async def delete_refresh_token(self, user_id: int, refresh_token: str) -> None:
         """
         Удаляет refresh-токен из Redis.
 

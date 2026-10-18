@@ -1,7 +1,7 @@
 from src.init import redis_manager_auth
 
 
-async def delete_refresh_token(user_id: int):
+async def delete_refresh_token(user_id: int) -> None:
     """
     Удаляет refresh-токен и связанные с ним ключи из Redis.
     Выполняет очистку следующих ключей:

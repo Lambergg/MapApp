@@ -1,6 +1,7 @@
 # ruff: noqa E402
 import logging
 from contextlib import asynccontextmanager
+from typing import Any, AsyncGenerator
 
 from fastapi import FastAPI
 from fastapi_cache import FastAPICache
@@ -21,7 +22,7 @@ logger = logging.getLogger("app")
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def lifespan(app: FastAPI) -> AsyncGenerator[None, Any]:
     # При старте приложения
     logger.info("Приложение стартовало")
     await redis_manager.connect()
