@@ -38,8 +38,8 @@ async def setup_redis():
     await redis_manager_auth.connect()
     await redis_manager.connect()
 
-    await redis_manager_auth._redis.flushdb()
-    await redis_manager._redis.flushdb()
+    await redis_manager_auth.redis.flushdb()
+    await redis_manager.redis.flushdb()
     yield
     await redis_manager_auth.close()
     await redis_manager.close()

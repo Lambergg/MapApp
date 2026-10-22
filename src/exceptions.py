@@ -16,10 +16,6 @@ class UserNotFoundException(MapAppException):
     detail = "Пользователь не найден"
 
 
-class ToShortPasswordValueErrorException(MapAppException):
-    detail = "Пароль должен быть не менее восьми символов"
-
-
 class ObjectAlreadyExistsException(MapAppException):
     detail = "Похожий объект уже существует"
 
@@ -40,28 +36,8 @@ class ObjectTypeErrorException(MapAppException):
     detail = "Данные должны быть в формате dict или BaseModel"
 
 
-class UserDeleteTokenException(MapAppException):
-    detail = "Вы уже вышли из аккаунта"
-
-
 class EventsDeletePastException(MapAppException):
     detail = "Ошибка удаления прошедших мероприятий"
-
-
-class UserAllReadyExistsException(MapAppException):
-    detail = "Пользователь с таким email уже зарегистрирован"
-
-
-class UserNotRegisterException(MapAppException):
-    detail = "Пользователь с таким email не зарегистрирован"
-
-
-class WrongPasswordException(MapAppException):
-    detail = "Неверный пароль"
-
-
-class AdminOnlyAccessException(MapAppException):
-    detail = "Доступ только для администратора"
 
 
 # === HTTP-исключения (для ответа клиенту) ===
