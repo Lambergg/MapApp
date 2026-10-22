@@ -18,22 +18,24 @@ class RedisManager:
     :type port: int
     :param db: Номер базы данных (по умолчанию 0).
     :type db: int
+    :param decode_responses: Декодировать ответы Redis (по умолчанию False).
+    :type decode_responses: bool
     """
 
-    _redis = redis.Redis
-
-    def __init__(self, host: str, port: int, db: int = 0) -> None:
+    def __init__(self, host: str, port: int, db: int = 0, decode_responses: bool = False) -> None:
         self.host = host
         self.port = port
+        self.redis = None
         self.db = db
+        self.decode_responses = decode_responses
 
     async def connect(self) -> None:
         """
         Устанавливает соединение с Redis.
         """
         logger.info("Подключаюсь к Redis...")
-        self._redis = await redis.Redis(
-            host=self.host, port=self.port, db=self.db, decode_responses=True
+        self.redis = redis.Redis(
+            host=self.host, port=self.port, db=self.db, decode_responses=self.decode_responses
         )
         logger.info("Redis подключен")
 
@@ -44,11 +46,11 @@ class RedisManager:
         :return: True, если пинг успешен, иначе False.
         :rtype: bool
         """
-        if self._redis is None:
+        if self.redis is None:
             logger.error("Нет подключения")
             return False
         try:
-            await self._redis.ping()
+            await self.redis.ping()
             logger.info("Пинг прошел успешно!")
             return True
         except Exception as e:
@@ -69,7 +71,9 @@ class RedisManager:
         :type expire: int | None
         """
         if expire:
-            await self._redis.set(key, value, ex=expire)
+            await self.redis.set(key, value, ex=expire)
+        else:
+            await self.redis.set(key, value)
         logger.info(f"{key} и {value} сохранено в редис")
 
     async def get(self, key: str) -> str | None:
@@ -81,7 +85,7 @@ class RedisManager:
         :return: Значение или None, если ключ не найден.
         :rtype: str | None
         """
-        return await self._redis.get(key)
+        return await self.redis.get(key)
 
     async def delete(self, key: str) -> None:
         """
@@ -90,10 +94,10 @@ class RedisManager:
         :param key: Ключ для удаления.
         :type key: str
         """
-        await self._redis.delete(key)
+        await self.redis.delete(key)
 
     async def close(self) -> None:
         """
         Закрывает соединение с Redis.
         """
-        await self._redis.close()
+        await self.redis.close()

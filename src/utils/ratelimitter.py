@@ -40,7 +40,7 @@ class RateLimiter:
             redis.call("EXPIRE", KEYS[1], ARGV[4])
             return 0
             """
-            self._lua_sha = await redis_manager._redis.script_load(script)  # type: ignore
+            self._lua_sha = await redis_manager.redis.script_load(script)  # type: ignore
 
     async def is_limited(
         self,
@@ -71,7 +71,7 @@ class RateLimiter:
         window_start_ms = current_ms - window_seconds * 1000
         member_id = f"{current_ms}-{random.randint(0, 100_000)}"
 
-        result = await redis_manager._redis.evalsha(
+        result = await redis_manager.redis.evalsha(
             self._lua_sha,  # type: ignore
             1,  # type: ignore
             key,  # type: ignore

@@ -13,7 +13,7 @@ from src.api.chat import router as chat
 from src.api.events import router as events_router
 from src.api.images import router as images_router
 from src.health.health import router as heals_router
-from src.init import redis_manager, redis_manager_auth
+from src.init import redis_manager, redis_manager_auth, redis_manager_cache
 
 logging.basicConfig(
     level=logging.INFO, format="%(name)s %(asctime)s %(levelname)s %(message)s"
@@ -27,15 +27,17 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, Any]:
     logger.info("Приложение стартовало")
     await redis_manager.connect()
     await redis_manager_auth.connect()
+    await redis_manager_cache.connect()
     await redis_manager.ping()
     FastAPICache.init(
-        RedisBackend(redis_manager._redis), prefix="fastapi-cache"
+        RedisBackend(redis_manager_cache.redis), prefix="fastapi-cache"
     )
     logger.info("FastApiCache инициирован")
     yield
     # При выключении/перезагрузке приложения
     await redis_manager.close()
     await redis_manager_auth.close()
+    await redis_manager_cache.close()
     logger.info("Подключение к Redis закрыто")
     logger.info("Приложение остановлено")
 
