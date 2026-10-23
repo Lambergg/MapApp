@@ -114,6 +114,11 @@ class TokenWrongTypeHTTPException(MapAppHTTPException):
     detail = "Неверный тип токена"
 
 
+class NotTokenHTTPException(MapAppHTTPException):
+    status_code = 401
+    detail = "Вы не предоставили токен доступа"
+
+
 class ExpiredSignatureErrorHTTPException(MapAppHTTPException):
     status_code = 401
     detail = "Токен истек"

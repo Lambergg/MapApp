@@ -7,7 +7,7 @@ from pydantic import BaseModel
 from src.config import settings
 from src.connectors.ws_connector import manager
 from src.database import async_session_maker
-from src.exceptions import ObjectNotFoundException
+from src.exceptions import ObjectNotFoundException, NotTokenHTTPException
 from src.init import redis_manager_auth
 from src.services.admin import AdminService
 from src.services.auth import AuthService
@@ -50,9 +50,7 @@ def get_token(request: Request) -> str:
     """
     token = request.cookies.get("access_token") or None
     if not token:
-        raise HTTPException(
-            status_code=401, detail="Вы не предоставили токен доступа"
-        )
+        raise NotTokenHTTPException
     return token
 
 
