@@ -26,8 +26,8 @@ from src.exceptions import (EventMaxUsersHTTPException,
                             WrongRefreshTokenHTTPException,
                             WrongUserDataHTTPException)
 from src.init import redis_manager_auth
-from src.schemas.users import (UserAddDTO, UserDTO, UserLoginDTO, UserPatchDTO,
-                               UserRequestAddDTO, UserWithEvents)
+from src.schemas.users import (UserAddDTO, UserDTO, UserLoginDTO,
+                               UserRequestAddDTO, UserWithEvents, UserProfilePutDTO)
 from src.services.base import BaseService
 from src.tasks.tasks import send_email
 
@@ -302,7 +302,7 @@ class AuthService(BaseService):
         self, request: Request, response: Response
     ) -> dict[str, str]:
         """
-        Обновляет access и refresh токены по текущему refresh-токену.
+        Обновляет access и refresh токены по-текущему refresh-токену.
 
         :param request: HTTP-запрос с куками.
         :type request: Request
@@ -397,7 +397,7 @@ class AuthService(BaseService):
     async def edit_user_profile(
         self,
         user_id: int,
-        data: UserPatchDTO,
+        data: UserProfilePutDTO,
         role,
         exclude_unset: bool = False,
     ) -> None:
@@ -412,7 +412,7 @@ class AuthService(BaseService):
         :param user_id: ID пользователя.
         :type user_id: Int
         :param data: Новые данные профиля.
-        :type data: UserPatchDTO
+        :type data: UserProfilePutDTO
         :param exclude_unset: Игнорировать неустановленные поля.
         :type exclude_unset: Bool
         :param role: Роли пользователей.

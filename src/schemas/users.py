@@ -101,7 +101,7 @@ class UserPutDTO(BaseModel):
     is_active: bool = Field(...)
 
 
-class UserPatchDTO(BaseModel):
+class UserProfilePutDTO(BaseModel):
     """
     Схема для полного обновления профиля пользователя.
     Используется при PUT-запросе к `/auth/edit_profile/{id}`.

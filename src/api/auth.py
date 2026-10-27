@@ -5,8 +5,8 @@ from fastapi import APIRouter, Body, Depends, Path, Request, Response, status
 from src.api.dependencies import (get_auth_service, get_current_user_id,
                                   get_current_user_role)
 from src.common.constants import MAX_ID_VALUE, MIN_ID_VALUE
-from src.schemas.users import (UserLoginDTO, UserPatchDTO, UserRequestAddDTO,
-                               UserWithEvents)
+from src.schemas.users import (UserLoginDTO, UserRequestAddDTO,
+                               UserWithEvents, UserProfilePutDTO)
 from src.services.auth import AuthService
 from src.utils.ratelimitter import rate_limiter_factory
 
@@ -153,7 +153,7 @@ async def edit_user_profile(
         le=MAX_ID_VALUE,
         description="path-параметр ID пользователя (до 2147483647)",
     ),
-    user_data: UserPatchDTO = Body(
+    user_data: UserProfilePutDTO = Body(
         openapi_examples={
             "1": {
                 "summary": "Пример данных",
