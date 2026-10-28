@@ -159,7 +159,6 @@ class EventsService(BaseService):
         event_id: int,
         data: EventsUpdateDTO,
         role,
-        exclude_unset: bool = False,
     ) -> None:
         """
         Обновляет существующее событие.
@@ -187,10 +186,9 @@ class EventsService(BaseService):
         except ObjectNotFoundException:
             raise EventsNotFoundHTTPException
 
-        update_data = data.model_dump(exclude_unset=exclude_unset)
         try:
             await self.db.events.edit(
-                update_data, id=event_id, exclude_unset=exclude_unset
+                data, id=event_id, exclude_unset=False
             )
         except ObjectEmptyDataException:
             raise EventDataEmptyHTTPException

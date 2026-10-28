@@ -181,7 +181,7 @@ async def edit_user_profile(
     """
 
     await service.edit_user_profile(
-        user_id, user_data, role, exclude_unset=True
+        user_id, user_data, role
     )
     return
 

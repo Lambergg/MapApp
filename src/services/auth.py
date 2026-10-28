@@ -399,7 +399,6 @@ class AuthService(BaseService):
         user_id: int,
         data: UserProfilePutDTO,
         role,
-        exclude_unset: bool = False,
     ) -> None:
         """
         Обновляет профиль пользователя, включая участие в событиях.
@@ -437,7 +436,7 @@ class AuthService(BaseService):
         if not user.is_active:
             raise UserIsBannedHTTPException
 
-        update_data = data.model_dump(exclude_unset=exclude_unset)
+        update_data = data.model_dump()
 
         events_ids_for_sync = update_data.pop("events_ids", None)
 
@@ -477,7 +476,7 @@ class AuthService(BaseService):
 
         try:
             await self.db.users.edit(
-                update_data, id=user_id, exclude_unset=exclude_unset
+                update_data, id=user_id, exclude_unset=False
             )
 
             await self.db.commit()

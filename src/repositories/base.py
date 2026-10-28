@@ -168,15 +168,16 @@ class BaseRepository:
         :raises ObjectNotNullException: При попытке установить NULL в NOT NULL поле.
         """
         try:
-            if isinstance(data, BaseModel):
-                values = data.model_dump(exclude_unset=exclude_unset)
-                if not values:
-                    raise ObjectNoDataException
-            elif isinstance(data, dict):
-                values = data
-                if not values:
-                    raise ObjectEmptyDataException
-            else:
+            try:
+                if isinstance(data, BaseModel):
+                    values = data.model_dump(exclude_unset=exclude_unset)
+                    if not values:
+                        raise ObjectNoDataException
+                else:
+                    values = data
+                    if not values:
+                        raise ObjectEmptyDataException
+            except TypeError:
                 raise ObjectTypeErrorException
 
             update_stmt = (

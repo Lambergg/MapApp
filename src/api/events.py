@@ -217,7 +217,7 @@ async def edit_event(
     :raises HTTPException 404: Если событие не найдено.
     """
 
-    await service.edit_event(event_id, event_data, role, exclude_unset=True)
+    await service.edit_event(event_id, event_data, role)
     return
 
 
