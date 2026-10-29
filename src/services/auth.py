@@ -412,8 +412,6 @@ class AuthService(BaseService):
         :type user_id: Int
         :param data: Новые данные профиля.
         :type data: UserProfilePutDTO
-        :param exclude_unset: Игнорировать неустановленные поля.
-        :type exclude_unset: Bool
         :param role: Роли пользователей.
         :raises UserIndexWrongHTTPException: Если ID ≤ 0.
         :raises UserNotFoundHTTPException: Если пользователь не найден.
@@ -446,9 +444,6 @@ class AuthService(BaseService):
                 update_data["hashed_password"] = await self.hash_password(
                     password
                 )
-
-        if not data.model_dump(exclude_unset=True):
-            return
 
         if events_ids_for_sync is not None:
             if events_ids_for_sync:
