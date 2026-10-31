@@ -5,7 +5,7 @@ from src.config import settings
 from src.init import redis_manager_auth
 from src.seed_data import pwd_context
 from src.services.auth import AuthService
-from src.schemas.users import UserRequestAddDTO, UserAddDTO
+from src.schemas.users import UserRequestAddDTO, UserAddDTO, UserLoginDTO
 
 
 def test_create_access_token():
@@ -112,4 +112,39 @@ async def test_register_user(db):
                 and 0 < user.id == user.id
                 and user.role == "guest"
                 and user.is_active is True
+        )
+
+async def test_login_user(db):
+    user_id = 1
+    user_role = "guest"
+    username = "test_name"
+    data = UserLoginDTO(
+        email="test_email@example.com",
+        password="test_password"
+    )
+    user = await db.users.get_user_with_hashed_password(
+        email=data.email
+    )
+
+    access_token = AuthService().create_access_token(
+        user_id, user_role=user_role, username=username
+    )
+    refresh_token = AuthService().create_refresh_token()
+
+    await AuthService().store_refresh_token(user.id, refresh_token)
+
+    await redis_manager_auth.set(
+        f"user_role:{user.id}",
+        user.role,
+        expire=timedelta(days=settings.REFRESH_TOKEN_EXPIRES_DAYS),
+    )
+    assert access_token is not None
+    if user:
+        assert (
+                user.name == "test_name"
+                and user.sname == "test_sname"
+                and user.age == 20
+                and user.email == "test_email@example.com"
+                and user.is_active is True
+                and user.role == "guest"
         )
