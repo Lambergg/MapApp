@@ -10,3 +10,7 @@ wheels/
 .venv
 .env
 .idea
+
+#Celery-generatedd files
+clerybeat-schedule
+/celerybeat-schedule

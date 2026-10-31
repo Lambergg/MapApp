@@ -1,13 +1,17 @@
 import asyncio
 import logging
 import os
+from datetime import datetime
 
 from fastapi_mail import FastMail, MessageSchema, MessageType
 from PIL import Image
 from pydantic import EmailStr
 
+from src.database import async_session_maker_null_pool
+from src.exceptions import EventsDeletePastException, EventsDeletePastHTTPEException
 from src.mailconfig import conf
 from src.tasks.celery_app import celery_instance
+from src.utils.db_manager import DBManager
 
 logger = logging.getLogger("tasks")
 
@@ -57,6 +61,13 @@ def resize_image(image_path: str) -> None:
 
 @celery_instance.task
 def send_email(email: EmailStr, username: str, password: str) -> None:
+    """
+    Отправка письма с данными для входа.
+    :param email:
+    :param username:
+    :param password:
+    :return: None
+    """
     html_content = f"""
     <h3>Добро пожаловать в приложение "MapApp"!</h3>
     <p>Вы успешно зарегистрированы.</p>
@@ -79,3 +90,22 @@ def send_email(email: EmailStr, username: str, password: str) -> None:
     # Запускаем корутину в новом event loop внутри синхронной задачи
     asyncio.run(_send())
     logger.info("Пользователь создан. Письмо с данными отправляется.")
+
+
+async def delete_past_events_helper():
+    async with DBManager(session_factory=async_session_maker_null_pool) as db:
+        try:
+            now = datetime.now()
+            await db.events.delete_past_events(before=now)
+            await db.commit()
+            logger.info("Устаревшие события удалены!!!")
+        except EventsDeletePastException:
+            logger.error(
+                "Произошла ошибка при попытке удалить устаревшие мероприятия"
+            )
+            raise EventsDeletePastHTTPEException
+
+
+@celery_instance.task(name="delete_past_events")
+def delete_past_events():
+    asyncio.run(delete_past_events_helper())

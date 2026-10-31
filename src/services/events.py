@@ -62,18 +62,6 @@ class EventsService(BaseService):
             logger.error(f"WrongUserData. Route: /events/all. Role: {role}")
             raise WrongUserDataHTTPException
 
-        # Удаляем прошедшие события
-        try:
-            now = datetime.now()
-            await self.db.events.delete_past_events(before=now)
-            await self.db.commit()
-            logger.info("Устаревшие события удалены!!!")
-        except EventsDeletePastException:
-            logger.error(
-                "Произошла ошибка при попытке удалить устаревшие мероприятия"
-            )
-            raise EventsDeletePastHTTPEException
-
         events = await self.db.events.get_all()
         return events
 
