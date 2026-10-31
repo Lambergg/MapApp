@@ -167,8 +167,6 @@ class EventsService(BaseService):
         :type event_id: Int
         :param data: Новые данные события.
         :type data: EventsUpdateDTO
-        :param exclude_unset: Игнорировать неустановленные поля.
-        :type exclude_unset: Bool
         :param role: Роль авторизованного юзера
         :raises EventIndexWrongHTTPException: Если ID ≤ 0.
         :raises EventsNotFoundHTTPException: Если событие не найдено.
