@@ -66,6 +66,22 @@ services:
       - map_db
       - map_cache
 
+  map_celery_beat:
+    container_name: 'map_celery_beat'
+    build:
+      context: .
+    networks:
+      - MapNetwork
+    env_file:
+      - .env
+    environment:
+      - TZ=Europe/Moscow
+    command: "celery --app=src.tasks.celery_app:celery_instance beat -l INFO --schedule=/tmp/celerybeat-schedule"
+    depends_on:
+      - map_db
+      - map_cache
+      - map_celery_worker
+
   map_nginx:
     image: nginx:alpine
     container_name: 'map_nginx'
