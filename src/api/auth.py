@@ -5,8 +5,8 @@ from fastapi import APIRouter, Body, Depends, Path, Request, Response, status
 from src.api.dependencies import (get_auth_service, get_current_user_id,
                                   get_current_user_role)
 from src.common.constants import MAX_ID_VALUE, MIN_ID_VALUE
-from src.schemas.users import (UserLoginDTO, UserRequestAddDTO,
-                               UserWithEvents, UserProfilePutDTO)
+from src.schemas.users import (UserLoginDTO, UserProfilePutDTO,
+                               UserRequestAddDTO, UserWithEvents)
 from src.services.auth import AuthService
 from src.utils.ratelimitter import rate_limiter_factory
 
@@ -180,9 +180,7 @@ async def edit_user_profile(
     :return: HTTP 200 OK.
     """
 
-    await service.edit_user_profile(
-        user_id, user_data, role
-    )
+    await service.edit_user_profile(user_id, user_data, role)
     return
 
 

@@ -1,20 +1,20 @@
-import pytest
-from unittest.mock import AsyncMock, MagicMock, patch
-from fastapi import HTTPException, Request
 from datetime import timedelta
+from unittest.mock import AsyncMock, MagicMock, patch
 
-from src.api.dependencies import (
-    get_token, get_current_user_id, get_db_manager, get_db,
-    get_current_user_role, get_admin_service, get_auth_service,
-    get_event_service, get_chat_service
-)
-from src.exceptions import NotTokenHTTPException
-from src.services.auth import AuthService
-from src.services.admin import AdminService
-from src.services.events import EventsService
-from src.services.chat import ChatService
-from src.exceptions import ObjectNotFoundException
+import pytest
+from fastapi import HTTPException, Request
+
+from src.api.dependencies import (get_admin_service, get_auth_service,
+                                  get_chat_service, get_current_user_id,
+                                  get_current_user_role, get_db,
+                                  get_db_manager, get_event_service, get_token)
 from src.config import settings
+from src.exceptions import NotTokenHTTPException, ObjectNotFoundException
+from src.services.admin import AdminService
+from src.services.auth import AuthService
+from src.services.chat import ChatService
+from src.services.events import EventsService
+
 
 def test_get_token_success():
     mock_request = MagicMock(spec=Request)
@@ -23,12 +23,14 @@ def test_get_token_success():
     token = get_token(mock_request)
     assert token == "my_secret_token"
 
+
 def test_get_token_missing():
     mock_request = MagicMock(spec=Request)
     mock_request.cookies = {}
 
     with pytest.raises(NotTokenHTTPException):
         get_token(mock_request)
+
 
 @patch("src.api.dependencies.AuthService")
 def test_get_current_user_id_success(mock_auth_service_cls):
@@ -39,7 +41,10 @@ def test_get_current_user_id_success(mock_auth_service_cls):
     user_id = get_current_user_id(token="fake.jwt.token")
 
     assert user_id == 42
-    mock_service_instance.decode_access_token.assert_called_once_with("fake.jwt.token")
+    mock_service_instance.decode_access_token.assert_called_once_with(
+        "fake.jwt.token"
+    )
+
 
 @patch("src.api.dependencies.DBManager")
 def test_get_db_manager(mock_db_manager_cls):
@@ -47,6 +52,7 @@ def test_get_db_manager(mock_db_manager_cls):
     mock_db_manager_cls.assert_called_once()
 
     assert "session_factory" in mock_db_manager_cls.call_args.kwargs
+
 
 @pytest.mark.asyncio
 @patch("src.api.dependencies.get_db_manager")
@@ -70,6 +76,7 @@ async def test_get_db_lifecycle(mock_get_db_manager):
         pass
     mock_manager.__aexit__.assert_awaited_once()
 
+
 @pytest.mark.asyncio
 @patch("src.api.dependencies.redis_manager_auth")
 async def test_get_current_user_role_from_redis(mock_redis):
@@ -82,6 +89,7 @@ async def test_get_current_user_role_from_redis(mock_redis):
     mock_redis.get.assert_awaited_once_with("user_role:1")
 
     mock_db.users.get_one.assert_not_called()
+
 
 @pytest.mark.asyncio
 @patch("src.api.dependencies.redis_manager_auth")
@@ -101,8 +109,9 @@ async def test_get_current_user_role_from_db(mock_redis):
     mock_redis.set.assert_awaited_once_with(
         "user_role:2",
         "user",
-        expire=timedelta(days=settings.REFRESH_TOKEN_EXPIRES_DAYS)
+        expire=timedelta(days=settings.REFRESH_TOKEN_EXPIRES_DAYS),
     )
+
 
 @pytest.mark.asyncio
 @patch("src.api.dependencies.redis_manager_auth")
@@ -116,6 +125,7 @@ async def test_get_current_user_role_not_found(mock_redis):
 
     assert exc_info.value.status_code == 401
 
+
 @pytest.mark.asyncio
 @patch("src.api.dependencies.redis_manager_auth")
 async def test_get_current_user_role_db_error(mock_redis):
@@ -126,6 +136,7 @@ async def test_get_current_user_role_db_error(mock_redis):
     with pytest.raises(ObjectNotFoundException):
         await get_current_user_role(db=mock_db, user_id=4)
 
+
 @pytest.mark.asyncio
 async def test_get_admin_service():
     mock_db = MagicMock()
@@ -133,6 +144,7 @@ async def test_get_admin_service():
 
     assert isinstance(service, AdminService)
     assert service.db == mock_db
+
 
 @pytest.mark.asyncio
 async def test_get_auth_service():
@@ -142,6 +154,7 @@ async def test_get_auth_service():
     assert isinstance(service, AuthService)
     assert service.db == mock_db
 
+
 @pytest.mark.asyncio
 async def test_get_event_service():
     mock_db = MagicMock()
@@ -149,6 +162,7 @@ async def test_get_event_service():
 
     assert isinstance(service, EventsService)
     assert service.db == mock_db
+
 
 @pytest.mark.asyncio
 @patch("src.api.dependencies.manager")

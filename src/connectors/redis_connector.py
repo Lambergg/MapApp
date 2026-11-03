@@ -22,7 +22,9 @@ class RedisManager:
     :type decode_responses: bool
     """
 
-    def __init__(self, host: str, port: int, db: int = 0, decode_responses: bool = False) -> None:
+    def __init__(
+        self, host: str, port: int, db: int = 0, decode_responses: bool = False
+    ) -> None:
         self.host = host
         self.port = port
         self.redis = None
@@ -35,7 +37,10 @@ class RedisManager:
         """
         logger.info("Подключаюсь к Redis...")
         self.redis = redis.Redis(
-            host=self.host, port=self.port, db=self.db, decode_responses=self.decode_responses
+            host=self.host,
+            port=self.port,
+            db=self.db,
+            decode_responses=self.decode_responses,
         )
         logger.info("Redis подключен")
 

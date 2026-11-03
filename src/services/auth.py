@@ -27,7 +27,8 @@ from src.exceptions import (EventMaxUsersHTTPException,
                             WrongUserDataHTTPException)
 from src.init import redis_manager_auth
 from src.schemas.users import (UserAddDTO, UserDTO, UserLoginDTO,
-                               UserRequestAddDTO, UserWithEvents, UserProfilePutDTO)
+                               UserProfilePutDTO, UserRequestAddDTO,
+                               UserWithEvents)
 from src.services.base import BaseService
 from src.tasks.tasks import send_email
 
@@ -166,7 +167,9 @@ class AuthService(BaseService):
         :return: True, если пароли совпадают.
         :rtype: Bool
         """
-        return await asyncio.to_thread(self.pwd_context.verify, plain_password, hashed_password)
+        return await asyncio.to_thread(
+            self.pwd_context.verify, plain_password, hashed_password
+        )
 
     def decode_access_token(self, token: str) -> dict:
         """

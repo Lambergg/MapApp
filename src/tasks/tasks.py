@@ -8,7 +8,8 @@ from PIL import Image
 from pydantic import EmailStr
 
 from src.database import async_session_maker_null_pool
-from src.exceptions import EventsDeletePastException, EventsDeletePastHTTPEException
+from src.exceptions import (EventsDeletePastException,
+                            EventsDeletePastHTTPEException)
 from src.mailconfig import conf
 from src.tasks.celery_app import celery_instance
 from src.utils.db_manager import DBManager

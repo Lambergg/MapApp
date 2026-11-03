@@ -1,12 +1,9 @@
 import logging
-from datetime import datetime
 
 from src.exceptions import (EventDataEmptyHTTPException,
                             EventIndexWrongHTTPException,
                             EventNotFoundHTTPException,
                             EventsAlreadyExistsHTTPException,
-                            EventsDeletePastException,
-                            EventsDeletePastHTTPEException,
                             EventsNotFoundHTTPException,
                             ObjectAlreadyExistsException,
                             ObjectEmptyDataException, ObjectNotFoundException,
@@ -173,9 +170,7 @@ class EventsService(BaseService):
             raise EventsNotFoundHTTPException
 
         try:
-            await self.db.events.edit(
-                data, id=event_id, exclude_unset=False
-            )
+            await self.db.events.edit(data, id=event_id, exclude_unset=False)
         except ObjectEmptyDataException:
             raise EventDataEmptyHTTPException
 

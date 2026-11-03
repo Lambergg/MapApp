@@ -1,19 +1,21 @@
-import pytest
-from unittest.mock import AsyncMock, MagicMock, patch
 from datetime import datetime, timedelta, timezone
-from fastapi import Response, Request
-import jwt
+from unittest.mock import AsyncMock, MagicMock, patch
 
-from src.services.auth import AuthService
-from src.schemas.users import UserRequestAddDTO, UserLoginDTO, UserAddDTO
+import jwt
+import pytest
+from fastapi import Request, Response
+
 from src.config import settings
-from src.exceptions import (
-    UserPasswordToShortHTTPException, UserAllReadyExistsHTTPException,
-    UserNotRegisterHTTPException, WrongPasswordHTTPException, UserIsBannedHTTPException,
-    WrongRefreshTokenHTTPException, RefreshTokenRequiredHTTPException,
-    UserDeleteTokenHTTPException, ExpiredSignatureErrorHTTPException, TokenWrongTypeHTTPException
-)
-from src.exceptions import ObjectAlreadyExistsException, ObjectNotFoundException
+from src.exceptions import (ExpiredSignatureErrorHTTPException,
+                            ObjectAlreadyExistsException,
+                            RefreshTokenRequiredHTTPException,
+                            TokenWrongTypeHTTPException,
+                            UserAllReadyExistsHTTPException,
+                            UserIsBannedHTTPException,
+                            UserNotRegisterHTTPException)
+from src.schemas.users import UserLoginDTO, UserRequestAddDTO
+from src.services.auth import AuthService
+
 
 @pytest.fixture
 def mock_db():
@@ -25,9 +27,11 @@ def mock_db():
     db.commit = AsyncMock()
     return db
 
+
 @pytest.fixture
 def service(mock_db):
     return AuthService(db=mock_db)
+
 
 @pytest.fixture
 def mock_redis():
@@ -37,41 +41,70 @@ def mock_redis():
         mock.delete = AsyncMock()
         yield mock
 
+
 def test_create_access_token(service):
-    token = service.create_access_token(user_id=1, user_role="admin", username="Ivan")
-    payload = jwt.decode(token, settings.JWT_SECRET_KEY, algorithms=[settings.JWT_ALGORITHM])
+    token = service.create_access_token(
+        user_id=1, user_role="admin", username="Ivan"
+    )
+    payload = jwt.decode(
+        token, settings.JWT_SECRET_KEY, algorithms=[settings.JWT_ALGORITHM]
+    )
 
     assert payload["user_id"] == 1
     assert payload["user_role"] == "admin"
     assert payload["username"] == "Ivan"
     assert payload["type"] == "access"
 
+
 def test_decode_access_token_success(service):
     token = service.create_access_token(1, "user", "Test")
     payload = service.decode_access_token(token)
     assert payload["user_id"] == 1
 
+
 def test_decode_access_token_wrong_type(service):
-    to_encode = {"type": "refresh", "user_id": 1, "exp": datetime.now(timezone.utc) + timedelta(minutes=5)}
-    token = jwt.encode(to_encode, settings.JWT_SECRET_KEY, algorithm=settings.JWT_ALGORITHM)
+    to_encode = {
+        "type": "refresh",
+        "user_id": 1,
+        "exp": datetime.now(timezone.utc) + timedelta(minutes=5),
+    }
+    token = jwt.encode(
+        to_encode, settings.JWT_SECRET_KEY, algorithm=settings.JWT_ALGORITHM
+    )
 
     with pytest.raises(TokenWrongTypeHTTPException):
         service.decode_access_token(token)
 
+
 def test_decode_access_token_expired(service):
-    to_encode = {"type": "access", "exp": datetime.now(timezone.utc) - timedelta(minutes=5)}
-    token = jwt.encode(to_encode, settings.JWT_SECRET_KEY, algorithm=settings.JWT_ALGORITHM)
+    to_encode = {
+        "type": "access",
+        "exp": datetime.now(timezone.utc) - timedelta(minutes=5),
+    }
+    token = jwt.encode(
+        to_encode, settings.JWT_SECRET_KEY, algorithm=settings.JWT_ALGORITHM
+    )
 
     with pytest.raises(ExpiredSignatureErrorHTTPException):
         service.decode_access_token(token)
+
 
 @pytest.mark.asyncio
 async def test_store_refresh_token(service, mock_redis):
     await service.store_refresh_token(user_id=1, refresh_token="rt_123")
 
     assert mock_redis.set.call_count == 2
-    mock_redis.set.assert_any_call("refresh_token:1", "rt_123", expire=timedelta(days=settings.REFRESH_TOKEN_EXPIRES_DAYS))
-    mock_redis.set.assert_any_call("rt:rt_123", "1", expire=timedelta(days=settings.REFRESH_TOKEN_EXPIRES_DAYS))
+    mock_redis.set.assert_any_call(
+        "refresh_token:1",
+        "rt_123",
+        expire=timedelta(days=settings.REFRESH_TOKEN_EXPIRES_DAYS),
+    )
+    mock_redis.set.assert_any_call(
+        "rt:rt_123",
+        "1",
+        expire=timedelta(days=settings.REFRESH_TOKEN_EXPIRES_DAYS),
+    )
+
 
 @pytest.mark.asyncio
 async def test_get_refresh_token(service, mock_redis):
@@ -80,6 +113,7 @@ async def test_get_refresh_token(service, mock_redis):
 
     mock_redis.get.assert_awaited_once_with("refresh_token:1")
     assert token == "rt_123"
+
 
 @pytest.mark.asyncio
 async def test_delete_refresh_token(service, mock_redis):
@@ -90,6 +124,7 @@ async def test_delete_refresh_token(service, mock_redis):
     mock_redis.delete.assert_any_call("rt:rt_123")
     mock_redis.delete.assert_any_call("user_role:1")
 
+
 @pytest.mark.asyncio
 async def test_hash_and_verify_password(service):
     password = "secret_password"
@@ -99,11 +134,18 @@ async def test_hash_and_verify_password(service):
     assert await service.verify_password(password, hashed) is True
     assert await service.verify_password("wrong_password", hashed) is False
 
+
 @pytest.mark.asyncio
 @patch("src.services.auth.send_email")
-async def test_register_user_success(mock_send_email, service, mock_db, mock_redis):
+async def test_register_user_success(
+    mock_send_email, service, mock_db, mock_redis
+):
     data = UserRequestAddDTO(
-        name="Test", sname="Test", age=20, email="test@test.com", password="password123"
+        name="Test",
+        sname="Test",
+        age=20,
+        email="test@test.com",
+        password="password123",
     )
 
     await service.register_user(data)
@@ -115,13 +157,21 @@ async def test_register_user_success(mock_send_email, service, mock_db, mock_red
     args, kwargs = mock_send_email.delay.call_args
     assert kwargs["email"] == "test@test.com"
 
+
 @pytest.mark.asyncio
 async def test_register_user_already_exists(service, mock_db):
-    data = UserRequestAddDTO(name="Test", sname="Test", age=20, email="test@test.com", password="password123")
+    data = UserRequestAddDTO(
+        name="Test",
+        sname="Test",
+        age=20,
+        email="test@test.com",
+        password="password123",
+    )
     mock_db.users.add.side_effect = ObjectAlreadyExistsException()
 
     with pytest.raises(UserAllReadyExistsHTTPException):
         await service.register_user(data)
+
 
 @pytest.mark.asyncio
 async def test_login_user_success(service, mock_db, mock_redis):
@@ -143,7 +193,12 @@ async def test_login_user_success(service, mock_db, mock_redis):
     assert "refresh_token" in result
     assert mock_response.set_cookie.call_count == 2
 
-    mock_redis.set.assert_any_call("user_role:1", "user", expire=timedelta(days=settings.REFRESH_TOKEN_EXPIRES_DAYS))
+    mock_redis.set.assert_any_call(
+        "user_role:1",
+        "user",
+        expire=timedelta(days=settings.REFRESH_TOKEN_EXPIRES_DAYS),
+    )
+
 
 @pytest.mark.asyncio
 async def test_login_user_not_found(service, mock_db):
@@ -153,6 +208,7 @@ async def test_login_user_not_found(service, mock_db):
 
     with pytest.raises(UserNotRegisterHTTPException):
         await service.login_user(data, mock_response)
+
 
 @pytest.mark.asyncio
 async def test_login_user_banned(service, mock_db):
@@ -166,6 +222,7 @@ async def test_login_user_banned(service, mock_db):
     with pytest.raises(UserIsBannedHTTPException):
         await service.login_user(data, mock_response)
 
+
 @pytest.mark.asyncio
 async def test_logout_user_success(service, mock_redis):
     mock_request = MagicMock(spec=Request)
@@ -177,6 +234,7 @@ async def test_logout_user_success(service, mock_redis):
     assert mock_response.delete_cookie.call_count == 2
     assert mock_redis.delete.call_count == 3
 
+
 @pytest.mark.asyncio
 async def test_refresh_tokens_success(service, mock_db, mock_redis):
     mock_request = MagicMock(spec=Request)
@@ -186,7 +244,7 @@ async def test_refresh_tokens_success(service, mock_db, mock_redis):
     # Настраиваем Redis
     mock_redis.get.side_effect = lambda key: {
         "rt:old_rt": "1",
-        "user_role:1": "admin"
+        "user_role:1": "admin",
     }.get(key)
 
     mock_user = MagicMock()
@@ -200,6 +258,7 @@ async def test_refresh_tokens_success(service, mock_db, mock_redis):
 
     mock_redis.delete.assert_any_call("rt:old_rt")
 
+
 @pytest.mark.asyncio
 async def test_refresh_tokens_missing(service):
     mock_request = MagicMock(spec=Request)
@@ -207,6 +266,7 @@ async def test_refresh_tokens_missing(service):
 
     with pytest.raises(RefreshTokenRequiredHTTPException):
         await service.refresh_tokens(mock_request, MagicMock())
+
 
 @pytest.mark.asyncio
 async def test_get_me_success(service, mock_db):
@@ -216,6 +276,7 @@ async def test_get_me_success(service, mock_db):
 
     user = await service.get_me(user_id=1)
     assert user == mock_user
+
 
 @pytest.mark.asyncio
 async def test_get_me_banned(service, mock_db):

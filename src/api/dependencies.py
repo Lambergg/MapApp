@@ -7,7 +7,7 @@ from pydantic import BaseModel
 from src.config import settings
 from src.connectors.ws_connector import manager
 from src.database import async_session_maker
-from src.exceptions import ObjectNotFoundException, NotTokenHTTPException
+from src.exceptions import NotTokenHTTPException, ObjectNotFoundException
 from src.init import redis_manager_auth
 from src.services.admin import AdminService
 from src.services.auth import AuthService
